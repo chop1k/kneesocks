@@ -1,0 +1,97 @@
+{
+  "Tcp": {
+    "BindIP": "127.0.0.1",
+    "BindPort": 1080,
+    "BindZone": "",
+    "ClientBufferSize": 512,
+    "HostBufferSize": 512
+  },
+  "Udp": {
+    "BindIP": "127.0.0.1",
+    "BindPort": 1080,
+    "BindZone": "",
+    "BufferSize": 65535
+  },
+  "SocksV4": {
+    "AllowConnect": true,
+    "AllowBind": true,
+    "ConnectDeadline": 120,
+    "BindDeadline": 120
+  },
+  "SocksV4a": {
+    "AllowConnect": true,
+    "AllowBind": true,
+    "ConnectDeadline": 120,
+    "BindDeadline": 120
+  },
+  "SocksV5": {
+    "AllowConnect": true,
+    "AllowBind": true,
+    "AllowUdpAssociation": true,
+    "AllowIPv4": true,
+    "AllowIPv6": true,
+    "AllowDomain": true,
+    "AuthenticationMethodsAllowed": [
+      "no-authentication",
+      "name/password"
+    ],
+    "ConnectDeadline": 120,
+    "BindDeadline": 120
+  },
+  "Log": {
+    "Formats": {
+      "Replacer": "{ %s }"
+    },
+    "Loggers": {
+      "Tcp": {
+        "Formats": {
+          "Listen": "{ now } | { addr } | Listening tcp.",
+          "ConnectionAccepted": "{ now } | { client } | Connection accepted.",
+          "ConnectionDenied": "{ now } | { client } | Connection denied.",
+          "ConnectionBound": "{ now } | { client } | Connection bound with $host.",
+          "ConnectionProtocolDetermined": "{ now } | { client } | Connection protocol determined as { protocol }."
+        },
+        "Outputs": {
+          "Console": {},
+          "File": {
+            "Path": "/tmp/{ now_date }"
+          }
+        }
+      },
+      "SocksV5": {
+        "Formats": {
+          "ConnectRequest": "{ now } | { client } -> { chunk.Address } | Received connect request. ",
+          "ConnectSuccessful": "{ now } | { client } -> { chunk.Address } | Connection successful. ",
+          "ConnectFailed": "{ now } | { client } -> { chunk.Address } | Connection failed. ",
+          "BindRequest": "{ now } | { client } -> { chunk.Address } | Received bind request. ",
+          "BindSuccessful": "{ now } | { client } -> { chunk.Address } | Bind successful. ",
+          "BindFailed": "{ now } | { client } -> { chunk.Address } | Bind failed. ",
+          "Bound": "{ now } | { client } -> { chunk.Address } | Successfully bound. ",
+          "UdpAssociationRequest": "{ now } | { client } -> { chunk.Address } | Received udp association request. ",
+          "UdpAssociationSuccessful": "{ now } | { client } -> { chunk.Address } | Association successful. ",
+          "UdpAssociationFailed": "{ now } | { client } -> { chunk.Address } | Association failed. ",
+          "AuthenticationSuccessful": "{ now } | { client } | Authentication successful. ",
+          "AuthenticationFailed": "{ now } | { client } | Authentication failed. "
+        },
+        "Outputs": {
+          "Console": {},
+          "File": {
+            "Path": "/tmp/{ now_date }_v5"
+          }
+        }
+      }
+    }
+  },
+  "WhiteList": [],
+  "BlackList": [],
+  "Users": [
+    {
+      "Name": "test",
+      "Password": "test"
+    }
+  ],
+  "Unix": {
+    "Enable": false,
+    "AuthenticationMethodsAllowed": []
+  }
+}
