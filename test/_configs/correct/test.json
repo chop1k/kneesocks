@@ -89,9 +89,5 @@
       "Name": "test",
       "Password": "test"
     }
-  ],
-  "Unix": {
-    "Enable": false,
-    "AuthenticationMethodsAllowed": []
-  }
+  ]
 }

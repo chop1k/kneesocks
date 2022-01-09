@@ -2,6 +2,7 @@ package logger
 
 import (
 	"socks/config"
+	"socks/logger/output"
 	v4 "socks/protocol/v4"
 	"strconv"
 )
@@ -28,11 +29,11 @@ func NewBaseSocksV4Logger(config config.SocksV4LoggerConfig, replacer string, en
 		var outputs []Output
 
 		if config.IsConsoleOutputEnabled() {
-			outputs = append(outputs, NewConsoleOutput(replacer))
+			outputs = append(outputs, output.NewConsoleOutput(replacer))
 		}
 
 		if config.IsFileOutputEnabled() {
-			outputs = append(outputs, NewFileOutput(config.GetFilePathFormat(), replacer))
+			outputs = append(outputs, output.NewFileOutput(config.GetFilePathFormat(), replacer))
 		}
 
 		return BaseSocksV4Logger{

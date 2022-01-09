@@ -1,4 +1,4 @@
-package logger
+package output
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func (f FileOutput) Log(format string, parameters map[string]string) {
 	path := f.pathTemplate
 
 	for k, v := range parameters {
-		path = strings.Replace(path, fmt.Sprintf(f.replacer, k), v, -1)
+		path = strings.ReplaceAll(path, fmt.Sprintf(f.replacer, k), v)
 	}
 
 	file, ok := f.files[path]

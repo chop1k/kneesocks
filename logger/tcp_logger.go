@@ -2,6 +2,7 @@ package logger
 
 import (
 	"socks/config"
+	"socks/logger/output"
 )
 
 type TcpLogger interface {
@@ -23,11 +24,11 @@ func NewBaseTcpLogger(config config.TcpLoggerConfig, replacer string, enabled bo
 		var outputs []Output
 
 		if config.IsConsoleOutputEnabled() {
-			outputs = append(outputs, NewConsoleOutput(replacer))
+			outputs = append(outputs, output.NewConsoleOutput(replacer))
 		}
 
 		if config.IsFileOutputEnabled() {
-			outputs = append(outputs, NewFileOutput(config.GetFilePathFormat(), replacer))
+			outputs = append(outputs, output.NewFileOutput(config.GetFilePathFormat(), replacer))
 		}
 
 		return BaseTcpLogger{
