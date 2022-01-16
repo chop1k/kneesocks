@@ -6,7 +6,6 @@ type Config interface {
 	IsSocksV4Enabled() bool
 	IsSocksV4aEnabled() bool
 	IsSocksV5Enabled() bool
-	IsUnixEnabled() bool
 }
 
 type BaseConfig struct {
@@ -27,8 +26,4 @@ func (b BaseConfig) IsSocksV4aEnabled() bool {
 
 func (b BaseConfig) IsSocksV5Enabled() bool {
 	return b.config.SocksV5 != nil
-}
-
-func (b BaseConfig) IsUnixEnabled() bool {
-	return b.config.Unix != nil
 }

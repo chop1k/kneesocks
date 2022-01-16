@@ -4,7 +4,8 @@
     "BindPort": 1080,
     "BindZone": "",
     "ClientBufferSize": 512,
-    "HostBufferSize": 512
+    "HostBufferSize": 512,
+    "ExchangeDeadline": 60
   },
   "Udp": {
     "BindIP": "127.0.0.1",
@@ -83,7 +84,13 @@
     }
   },
   "WhiteList": [],
-  "BlackList": [],
+  "BlackList": [
+    "localhost",
+    "127.0.0.1",
+    "192.168.0.*",
+    "0.0.0.0",
+    "::1"
+  ],
   "Users": [
     {
       "Name": "test",

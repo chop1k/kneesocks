@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net"
 	"os"
-	config2 "socks/config/tree"
+	"socks/config"
 	"socks/logger"
 	v5 "socks/protocol/v5"
 	"socks/utils"
 	"syscall"
+	"time"
 )
 
 type V5Handler interface {
@@ -19,25 +20,29 @@ type BaseV5Handler struct {
 	protocol              v5.Protocol
 	parser                v5.Parser
 	bindManager           BindManager
-	config                config2.Config
+	config                config.SocksV5Config
 	streamHandler         StreamHandler
 	utils                 utils.AddressUtils
 	udpAssociationManager UdpAssociationManager
 	authenticationHandler AuthenticationHandler
 	logger                logger.SocksV5Logger
+	tcpConfig             config.TcpConfig
+	udpConfig             config.UdpConfig
 }
 
 func NewBaseV5Handler(
 	protocol v5.Protocol,
 	parser v5.Parser,
 	bindManager BindManager,
-	config config2.Config,
+	config config.SocksV5Config,
 	streamHandler StreamHandler,
 	utils utils.AddressUtils,
 	udpAssociationManager UdpAssociationManager,
 	authenticationHandler AuthenticationHandler,
 	logger logger.SocksV5Logger,
-) BaseV5Handler {
+	tcpConfig config.TcpConfig,
+	udpConfig config.UdpConfig,
+) (BaseV5Handler, error) {
 	return BaseV5Handler{
 		protocol:              protocol,
 		parser:                parser,
@@ -48,7 +53,9 @@ func NewBaseV5Handler(
 		udpAssociationManager: udpAssociationManager,
 		authenticationHandler: authenticationHandler,
 		logger:                logger,
-	}
+		tcpConfig:             tcpConfig,
+		udpConfig:             udpConfig,
+	}, nil
 }
 
 func (b BaseV5Handler) HandleV5(request []byte, client net.Conn) {
@@ -64,37 +71,37 @@ func (b BaseV5Handler) HandleV5(request []byte, client net.Conn) {
 }
 
 func (b BaseV5Handler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(1, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	_ = b.protocol.ResponseWithCode(1, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Handler) sendCommandNotSupportedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(7, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	_ = b.protocol.ResponseWithCode(7, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Handler) sendAddressNotSupportedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(8, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	_ = b.protocol.ResponseWithCode(8, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Handler) sendConnectionRefusedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(5, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	_ = b.protocol.ResponseWithCode(5, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Handler) sendNetworkUnreachableAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(3, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	_ = b.protocol.ResponseWithCode(3, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Handler) sendHostUnreachableAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(4, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	_ = b.protocol.ResponseWithCode(4, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Handler) sendConnectionNotAllowedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(2, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	_ = b.protocol.ResponseWithCode(2, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 	_ = client.Close()
 }
 
@@ -140,13 +147,37 @@ func (b BaseV5Handler) handleCommand(request []byte, client net.Conn) {
 	if chunk.CommandCode == 1 {
 		go b.logger.ConnectRequest(client.RemoteAddr().String(), chunk)
 
+		if !b.config.IsConnectAllowed() {
+			b.sendConnectionNotAllowedAndClose(client)
+
+			go b.logger.ConnectNowAllowed(client.RemoteAddr().String(), chunk)
+
+			return
+		}
+
 		b.handleConnect(chunk, client)
 	} else if chunk.CommandCode == 2 {
 		go b.logger.BindRequest(client.RemoteAddr().String(), chunk)
 
+		if !b.config.IsBindAllowed() {
+			b.sendConnectionNotAllowedAndClose(client)
+
+			go b.logger.BindNotAllowed(client.RemoteAddr().String(), chunk)
+
+			return
+		}
+
 		b.handleBind(chunk, client)
 	} else if chunk.CommandCode == 3 {
 		go b.logger.UdpAssociationRequest(client.RemoteAddr().String(), chunk)
+
+		if !b.config.IsUdpAssociationAllowed() {
+			b.sendConnectionNotAllowedAndClose(client)
+
+			go b.logger.UdpAssociationNotAllowed(client.RemoteAddr().String(), chunk)
+
+			return
+		}
 
 		b.handleUdpAssociate(chunk, client)
 	} else {
@@ -160,12 +191,14 @@ func (b BaseV5Handler) handleConnect(chunk v5.RequestChunk, client net.Conn) {
 	var host net.Conn
 	var err error
 
+	deadline := time.Second * time.Duration(b.config.GetConnectDeadline())
+
 	if chunk.AddressType == 1 {
-		host, err = net.Dial("tcp4", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port))
+		host, err = net.DialTimeout("tcp4", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port), deadline)
 	} else if chunk.AddressType == 3 {
-		host, err = net.Dial("tcp", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port))
+		host, err = net.DialTimeout("tcp", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port), deadline)
 	} else if chunk.AddressType == 4 {
-		host, err = net.Dial("tcp6", fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port))
+		host, err = net.DialTimeout("tcp6", fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port), deadline)
 	} else {
 		b.sendAddressNotSupportedAndClose(client)
 
@@ -300,7 +333,7 @@ func (b BaseV5Handler) handleBind(chunk v5.RequestChunk, client net.Conn) {
 }
 
 func (b BaseV5Handler) bindSendFirstResponse(chunk v5.RequestChunk, address string, client net.Conn) {
-	err := b.protocol.ResponseWithCode(0, 1, "0.0.0.0", uint16(b.config.Tcp.BindPort), client)
+	err := b.protocol.ResponseWithCode(0, 1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
 
 	if err != nil {
 		_ = client.Close()
@@ -316,7 +349,9 @@ func (b BaseV5Handler) bindSendFirstResponse(chunk v5.RequestChunk, address stri
 }
 
 func (b BaseV5Handler) bindWait(chunk v5.RequestChunk, address string, client net.Conn) {
-	host, err := b.bindManager.ReceiveHost(address)
+	deadline := time.Second * time.Duration(b.config.GetBindDeadline())
+
+	host, err := b.bindManager.ReceiveHost(address, deadline)
 
 	if err != nil {
 		_ = client.Close()
@@ -404,7 +439,7 @@ func (b BaseV5Handler) handleUdpAssociate(chunk v5.RequestChunk, client net.Conn
 }
 
 func (b BaseV5Handler) udpSendResponse(chunk v5.RequestChunk, address string, client net.Conn) {
-	err := b.protocol.ResponseWithCode(0, 1, "0.0.0.0", uint16(b.config.Udp.BindPort), client)
+	err := b.protocol.ResponseWithCode(0, 1, "0.0.0.0", uint16(b.udpConfig.GetBindPort()), client)
 
 	if err != nil {
 		b.sendFailAndClose(client)

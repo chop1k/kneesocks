@@ -3,8 +3,10 @@ package server
 import (
 	"fmt"
 	"net"
+	"socks/config"
 	"socks/logger"
 	"socks/utils"
+	"time"
 )
 
 type ConnectionHandler interface {
@@ -20,6 +22,7 @@ type BaseConnectionHandler struct {
 	bindManager           BindManager
 	utils                 utils.AddressUtils
 	tcpLogger             logger.TcpLogger
+	config                config.TcpConfig
 }
 
 func NewBaseConnectionHandler(
@@ -31,8 +34,9 @@ func NewBaseConnectionHandler(
 	bindManager BindManager,
 	utils utils.AddressUtils,
 	tcpLogger logger.TcpLogger,
-) *BaseConnectionHandler {
-	return &BaseConnectionHandler{
+	config config.TcpConfig,
+) (BaseConnectionHandler, error) {
+	return BaseConnectionHandler{
 		authenticationHandler: authenticationHandler,
 		streamHandler:         streamHandler,
 		v5Handler:             v5Handler,
@@ -41,10 +45,11 @@ func NewBaseConnectionHandler(
 		bindManager:           bindManager,
 		utils:                 utils,
 		tcpLogger:             tcpLogger,
-	}
+		config:                config,
+	}, nil
 }
 
-func (b *BaseConnectionHandler) HandleConnection(client net.Conn) {
+func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
 	buffer := make([]byte, 512)
 
 	i, err := client.Read(buffer)
@@ -167,7 +172,9 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 		return
 	}
 
-	host, receiveErr := b.bindManager.ReceiveClient(addr)
+	deadline := time.Second * time.Duration(b.config.GetExchangeDeadline())
+
+	host, receiveErr := b.bindManager.ReceiveClient(addr, deadline)
 
 	if receiveErr != nil {
 		_ = client.Close()

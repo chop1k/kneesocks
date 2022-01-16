@@ -13,8 +13,8 @@ type Config struct {
 	SocksV4a  *SocksV4aConfig
 	SocksV5   *SocksV5Config
 	Log       LogConfig `validate:"required"`
-	WhiteList []string  `validate:"required,dive,ip|hostname"`
-	BlackList []string  `validate:"required,dive,ip|hostname"`
+	WhiteList []string  `validate:"required"`
+	BlackList []string  `validate:"required"`
 	Users     []User    `validate:"required"`
 }
 

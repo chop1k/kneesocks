@@ -11,13 +11,18 @@ type SocksV5Logger interface {
 	ConnectRequest(client string, chunk v5.RequestChunk)
 	ConnectFailed(client string, chunk v5.RequestChunk)
 	ConnectSuccessful(client string, chunk v5.RequestChunk)
+	ConnectNowAllowed(client string, chunk v5.RequestChunk)
+	ConnectTimeout(client string, chunk v5.RequestChunk)
 	BindRequest(client string, chunk v5.RequestChunk)
 	BindFailed(client string, chunk v5.RequestChunk)
 	BindSuccessful(client string, chunk v5.RequestChunk)
+	BindNotAllowed(client string, chunk v5.RequestChunk)
+	BindTimeout(client string, chunk v5.RequestChunk)
 	Bound(client string, host string, chunk v5.RequestChunk)
 	UdpAssociationRequest(client string, chunk v5.RequestChunk)
 	UdpAssociationSuccessful(client string, chunk v5.RequestChunk)
 	UdpAssociationFailed(client string, chunk v5.RequestChunk)
+	UdpAssociationNotAllowed(client string, chunk v5.RequestChunk)
 	AuthenticationSuccessful(client string)
 	AuthenticationFailed(client string)
 	TransferFinished(client string, host string)
@@ -89,6 +94,14 @@ func (b BaseSocksV5Logger) ConnectSuccessful(client string, chunk v5.RequestChun
 	}
 }
 
+func (b BaseSocksV5Logger) ConnectNowAllowed(client string, chunk v5.RequestChunk) {
+
+}
+
+func (b BaseSocksV5Logger) ConnectTimeout(client string, chunk v5.RequestChunk) {
+
+}
+
 func (b BaseSocksV5Logger) BindRequest(client string, chunk v5.RequestChunk) {
 	if !b.enabled {
 		return
@@ -123,6 +136,14 @@ func (b BaseSocksV5Logger) BindSuccessful(client string, chunk v5.RequestChunk) 
 	for _, output := range b.outputs {
 		output.Log(b.config.GetBindSuccessfulFormat(), parameters)
 	}
+}
+
+func (b BaseSocksV5Logger) BindNotAllowed(client string, chunk v5.RequestChunk) {
+
+}
+
+func (b BaseSocksV5Logger) BindTimeout(client string, chunk v5.RequestChunk) {
+
 }
 
 func (b BaseSocksV5Logger) Bound(client string, host string, chunk v5.RequestChunk) {
@@ -173,6 +194,10 @@ func (b BaseSocksV5Logger) UdpAssociationFailed(client string, chunk v5.RequestC
 	for _, output := range b.outputs {
 		output.Log(b.config.GetUdpAssociationFailedFormat(), parameters)
 	}
+}
+
+func (b BaseSocksV5Logger) UdpAssociationNotAllowed(client string, chunk v5.RequestChunk) {
+
 }
 
 func (b BaseSocksV5Logger) AuthenticationSuccessful(client string) {

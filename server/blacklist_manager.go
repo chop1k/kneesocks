@@ -13,7 +13,9 @@ type BaseBlacklist struct {
 }
 
 func NewBaseBlacklist(config tree.Config) BaseBlacklist {
-	return BaseBlacklist{config: config}
+	return BaseBlacklist{
+		config: config,
+	}
 }
 
 func (b BaseBlacklist) IsBlacklisted(addrType byte, addr string) bool {

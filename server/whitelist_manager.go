@@ -13,7 +13,9 @@ type BaseWhitelist struct {
 }
 
 func NewBaseWhitelist(config tree.Config) BaseWhitelist {
-	return BaseWhitelist{config: config}
+	return BaseWhitelist{
+		config: config,
+	}
 }
 
 func (b BaseWhitelist) IsWhitelisted(addrType byte, addr string) bool {

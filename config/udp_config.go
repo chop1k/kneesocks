@@ -14,7 +14,9 @@ type BaseUdpConfig struct {
 }
 
 func NewBaseUdpConfig(config tree.Config) BaseUdpConfig {
-	return BaseUdpConfig{config: config}
+	return BaseUdpConfig{
+		config: config,
+	}
 }
 
 func (b BaseUdpConfig) GetBindIp() string {

@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"net"
+	"time"
 )
 
 var (
@@ -10,6 +11,7 @@ var (
 	HostChannelClosedError   = errors.New("Host channel is closed. ")
 	ClientChannelClosedError = errors.New("Client channel is closed. ")
 	AddressAlreadyBoundError = errors.New("Address already bound. ")
+	TimeoutError             = errors.New("Timeout. ")
 )
 
 type bundle struct {
@@ -86,14 +88,28 @@ func (m BindManager) SendClient(addr string, client net.Conn) error {
 	return nil
 }
 
-func (m BindManager) ReceiveClient(addr string) (net.Conn, error) {
+func (m BindManager) ReceiveClient(addr string, deadline time.Duration) (net.Conn, error) {
 	channel, ok := m.addresses[addr]
 
 	if !ok {
 		return nil, AddressNotExistsError
 	}
 
-	client, ko := <-channel.client
+	timer := time.NewTimer(deadline)
+
+	var client net.Conn
+	var ko bool
+
+	select {
+	case client, ko = <-channel.client:
+		timer.Stop()
+
+		break
+	case _ = <-timer.C:
+		timer.Stop()
+
+		return nil, TimeoutError
+	}
 
 	if !ko {
 		return nil, ClientChannelClosedError
@@ -102,14 +118,28 @@ func (m BindManager) ReceiveClient(addr string) (net.Conn, error) {
 	return client, nil
 }
 
-func (m BindManager) ReceiveHost(addr string) (net.Conn, error) {
+func (m BindManager) ReceiveHost(addr string, deadline time.Duration) (net.Conn, error) {
 	channel, ok := m.addresses[addr]
 
 	if !ok {
 		return nil, AddressNotExistsError
 	}
 
-	host, ko := <-channel.host
+	timer := time.NewTimer(deadline)
+
+	var host net.Conn
+	var ko bool
+
+	select {
+	case host, ko = <-channel.host:
+		timer.Stop()
+
+		break
+	case _ = <-timer.C:
+		timer.Stop()
+
+		return nil, TimeoutError
+	}
 
 	if !ko {
 		return nil, HostChannelClosedError

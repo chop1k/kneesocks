@@ -6,4 +6,5 @@ type TcpConfig struct {
 	BindZone         string
 	ClientBufferSize uint `validate:"required"`
 	HostBufferSize   uint `validate:"required"`
+	ExchangeDeadline uint `validate:"required"`
 }

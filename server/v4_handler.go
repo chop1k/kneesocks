@@ -3,10 +3,11 @@ package server
 import (
 	"fmt"
 	"net"
-	config2 "socks/config/tree"
+	"socks/config"
 	"socks/logger"
 	v4 "socks/protocol/v4"
 	"socks/utils"
+	"time"
 )
 
 type V4Handler interface {
@@ -17,7 +18,8 @@ type BaseV4Handler struct {
 	protocol      v4.Protocol
 	parser        v4.Parser
 	bindManager   BindManager
-	config        config2.Config
+	config        config.SocksV4Config
+	tcpConfig     config.TcpConfig
 	streamHandler StreamHandler
 	utils         utils.AddressUtils
 	logger        logger.SocksV4Logger
@@ -27,20 +29,22 @@ func NewBaseV4Handler(
 	protocol v4.Protocol,
 	parser v4.Parser,
 	bindManager BindManager,
-	config config2.Config,
+	config config.SocksV4Config,
+	tcpConfig config.TcpConfig,
 	streamHandler StreamHandler,
 	utils utils.AddressUtils,
 	logger logger.SocksV4Logger,
-) BaseV4Handler {
+) (BaseV4Handler, error) {
 	return BaseV4Handler{
 		protocol:      protocol,
 		parser:        parser,
 		bindManager:   bindManager,
 		config:        config,
+		tcpConfig:     tcpConfig,
 		streamHandler: streamHandler,
 		utils:         utils,
 		logger:        logger,
-	}
+	}, nil
 }
 
 func (b BaseV4Handler) HandleV4(request []byte, client net.Conn) {
@@ -55,9 +59,25 @@ func (b BaseV4Handler) HandleV4(request []byte, client net.Conn) {
 	if chunk.CommandCode == 1 {
 		go b.logger.ConnectRequest(client.RemoteAddr().String(), chunk)
 
+		if !b.config.IsConnectAllowed() {
+			b.sendFailAndClose(client)
+
+			go b.logger.ConnectNotAllowed(client.RemoteAddr().String(), chunk)
+
+			return
+		}
+
 		b.handleConnect(chunk, client)
 	} else if chunk.CommandCode == 2 {
 		go b.logger.BindRequest(client.RemoteAddr().String(), chunk)
+
+		if !b.config.IsBindAllowed() {
+			b.sendFailAndClose(client)
+
+			go b.logger.BindNotAllowed(client.RemoteAddr().String(), chunk)
+
+			return
+		}
 
 		b.handleBind(chunk, client)
 	} else {
@@ -66,14 +86,16 @@ func (b BaseV4Handler) HandleV4(request []byte, client net.Conn) {
 }
 
 func (b BaseV4Handler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCode(91, uint16(b.config.Tcp.BindPort), net.IP{0, 0, 0, 0}, client)
+	_ = b.protocol.ResponseWithCode(91, uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
 	_ = client.Close()
 }
 
 func (b BaseV4Handler) handleConnect(chunk v4.RequestChunk, client net.Conn) {
 	addr := fmt.Sprintf("%s:%d", chunk.DestinationIp, chunk.DestinationPort)
 
-	host, err := net.Dial("tcp4", addr)
+	deadline := time.Second * time.Duration(b.config.GetConnectDeadline())
+
+	host, err := net.DialTimeout("tcp4", addr, deadline)
 
 	if err != nil {
 		b.sendFailAndClose(client)
@@ -87,7 +109,7 @@ func (b BaseV4Handler) handleConnect(chunk v4.RequestChunk, client net.Conn) {
 }
 
 func (b BaseV4Handler) connectSendSuccess(chunk v4.RequestChunk, host net.Conn, client net.Conn) {
-	err := b.protocol.ResponseWithCode(90, uint16(b.config.Tcp.BindPort), net.IP{0, 0, 0, 0}, client)
+	err := b.protocol.ResponseWithCode(90, uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
 
 	if err != nil {
 		b.sendFailAndClose(client)
@@ -140,9 +162,11 @@ func (b BaseV4Handler) bindSendFirstResponse(chunk v4.RequestChunk, address stri
 }
 
 func (b BaseV4Handler) bindWait(chunk v4.RequestChunk, address string, client net.Conn) {
-	host, waitErr := b.bindManager.ReceiveHost(address)
+	deadline := time.Second * time.Duration(b.config.GetBindDeadline())
 
-	if waitErr != nil {
+	host, err := b.bindManager.ReceiveHost(address, deadline)
+
+	if err != nil {
 		b.sendFailAndClose(client)
 
 		go b.logger.BindFailed(client.RemoteAddr().String(), chunk)

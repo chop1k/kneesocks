@@ -11,9 +11,13 @@ type SocksV4aLogger interface {
 	ConnectRequest(client string, chunk v4a.RequestChunk)
 	ConnectFailed(client string, chunk v4a.RequestChunk)
 	ConnectSuccessful(client string, chunk v4a.RequestChunk)
+	ConnectNotAllowed(client string, chunk v4a.RequestChunk)
+	ConnectTimeout(client string, chunk v4a.RequestChunk)
 	BindRequest(client string, chunk v4a.RequestChunk)
 	BindFailed(client string, chunk v4a.RequestChunk)
 	BindSuccessful(client string, chunk v4a.RequestChunk)
+	BindNotAllowed(client string, chunk v4a.RequestChunk)
+	BindTimeout(client string, chunk v4a.RequestChunk)
 	Bound(client string, host string, chunk v4a.RequestChunk)
 	TransferFinished(client string, host string)
 }
@@ -84,6 +88,14 @@ func (b BaseSocksV4aLogger) ConnectSuccessful(client string, chunk v4a.RequestCh
 	}
 }
 
+func (b BaseSocksV4aLogger) ConnectNotAllowed(client string, chunk v4a.RequestChunk) {
+
+}
+
+func (b BaseSocksV4aLogger) ConnectTimeout(client string, chunk v4a.RequestChunk) {
+
+}
+
 func (b BaseSocksV4aLogger) BindRequest(client string, chunk v4a.RequestChunk) {
 	if !b.enabled {
 		return
@@ -118,6 +130,14 @@ func (b BaseSocksV4aLogger) BindSuccessful(client string, chunk v4a.RequestChunk
 	for _, output := range b.outputs {
 		output.Log(b.config.GetBindSuccessfulFormat(), parameters)
 	}
+}
+
+func (b BaseSocksV4aLogger) BindNotAllowed(client string, chunk v4a.RequestChunk) {
+
+}
+
+func (b BaseSocksV4aLogger) BindTimeout(client string, chunk v4a.RequestChunk) {
+
 }
 
 func (b BaseSocksV4aLogger) Bound(client string, host string, chunk v4a.RequestChunk) {

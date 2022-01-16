@@ -11,7 +11,9 @@ type BaseBlacklistConfig struct {
 }
 
 func NewBaseBlacklistConfig(config tree.Config) BaseBlacklistConfig {
-	return BaseBlacklistConfig{config: config}
+	return BaseBlacklistConfig{
+		config: config,
+	}
 }
 
 func (b BaseBlacklistConfig) GetBlacklist() []string {

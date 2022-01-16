@@ -11,7 +11,9 @@ type BaseWhitelistConfig struct {
 }
 
 func NewBaseWhitelistConfig(config tree.Config) BaseWhitelistConfig {
-	return BaseWhitelistConfig{config: config}
+	return BaseWhitelistConfig{
+		config: config,
+	}
 }
 
 func (b BaseWhitelistConfig) GetWhitelist() []string {
