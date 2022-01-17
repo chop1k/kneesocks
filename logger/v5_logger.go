@@ -1,28 +1,28 @@
 package logger
 
 import (
-	"fmt"
 	"github.com/rs/zerolog"
-	v5 "socks/protocol/v5"
 )
 
 type SocksV5Logger interface {
-	ConnectRequest(client string, chunk v5.RequestChunk)
-	ConnectFailed(client string, chunk v5.RequestChunk)
-	ConnectSuccessful(client string, chunk v5.RequestChunk)
-	ConnectNowAllowed(client string, chunk v5.RequestChunk)
-	ConnectTimeout(client string, chunk v5.RequestChunk)
-	ConnectUnreachable(client string, chunk v5.RequestChunk)
-	BindRequest(client string, chunk v5.RequestChunk)
-	BindFailed(client string, chunk v5.RequestChunk)
-	BindSuccessful(client string, chunk v5.RequestChunk)
-	BindNotAllowed(client string, chunk v5.RequestChunk)
-	BindTimeout(client string, chunk v5.RequestChunk)
-	Bound(client string, host string, chunk v5.RequestChunk)
-	UdpAssociationRequest(client string, chunk v5.RequestChunk)
-	UdpAssociationSuccessful(client string, chunk v5.RequestChunk)
-	UdpAssociationFailed(client string, chunk v5.RequestChunk)
-	UdpAssociationNotAllowed(client string, chunk v5.RequestChunk)
+	ConnectRequest(client string, address string)
+	ConnectFailed(client string, address string)
+	ConnectSuccessful(client string, address string)
+	ConnectNotAllowed(client string, address string)
+	ConnectTimeout(client string, address string)
+	ConnectRefused(client string, address string)
+	ConnectHostUnreachable(client string, address string)
+	ConnectNetworkUnreachable(client string, address string)
+	BindRequest(client string, address string)
+	BindFailed(client string, address string)
+	BindSuccessful(client string, address string)
+	BindNotAllowed(client string, address string)
+	BindTimeout(client string, address string)
+	Bound(client string, host string)
+	UdpAssociationRequest(client string)
+	UdpAssociationSuccessful(client string, address string)
+	UdpAssociationFailed(client string, address string)
+	UdpAssociationNotAllowed(client string)
 	AuthenticationSuccessful(client string)
 	AuthenticationFailed(client string)
 	TransferFinished(client string, host string)
@@ -38,7 +38,7 @@ func NewBaseSocksV5Logger(logger zerolog.Logger) (BaseSocksV5Logger, error) {
 	}, nil
 }
 
-func (b BaseSocksV5Logger) ConnectRequest(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) ConnectRequest(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -47,11 +47,11 @@ func (b BaseSocksV5Logger) ConnectRequest(client string, chunk v5.RequestChunk) 
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Received connect request.")
 }
 
-func (b BaseSocksV5Logger) ConnectFailed(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) ConnectFailed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -60,11 +60,11 @@ func (b BaseSocksV5Logger) ConnectFailed(client string, chunk v5.RequestChunk) {
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Connect failed.")
 }
 
-func (b BaseSocksV5Logger) ConnectSuccessful(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) ConnectSuccessful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -73,11 +73,11 @@ func (b BaseSocksV5Logger) ConnectSuccessful(client string, chunk v5.RequestChun
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Connect successful.")
 }
 
-func (b BaseSocksV5Logger) ConnectNowAllowed(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) ConnectNotAllowed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -86,11 +86,11 @@ func (b BaseSocksV5Logger) ConnectNowAllowed(client string, chunk v5.RequestChun
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Connect not allowed due to ruleset.")
 }
 
-func (b BaseSocksV5Logger) ConnectUnreachable(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) ConnectTimeout(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -99,24 +99,11 @@ func (b BaseSocksV5Logger) ConnectUnreachable(client string, chunk v5.RequestChu
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
-		Msg("Host unreachable.")
-}
-
-func (b BaseSocksV5Logger) ConnectTimeout(client string, chunk v5.RequestChunk) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Connect failed due to timeout. ")
 }
 
-func (b BaseSocksV5Logger) BindRequest(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) ConnectRefused(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -125,11 +112,50 @@ func (b BaseSocksV5Logger) BindRequest(client string, chunk v5.RequestChunk) {
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
+		Msg("Connect refused by host. ")
+}
+
+func (b BaseSocksV5Logger) ConnectHostUnreachable(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Host unreachable. ")
+}
+
+func (b BaseSocksV5Logger) ConnectNetworkUnreachable(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Network unreachable. ")
+}
+
+func (b BaseSocksV5Logger) BindRequest(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
 		Msg("Received bind request. ")
 }
 
-func (b BaseSocksV5Logger) BindFailed(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) BindFailed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -138,11 +164,11 @@ func (b BaseSocksV5Logger) BindFailed(client string, chunk v5.RequestChunk) {
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Bind failed. ")
 }
 
-func (b BaseSocksV5Logger) BindSuccessful(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) BindSuccessful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -151,11 +177,11 @@ func (b BaseSocksV5Logger) BindSuccessful(client string, chunk v5.RequestChunk) 
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Bind successful. ")
 }
 
-func (b BaseSocksV5Logger) BindNotAllowed(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) BindNotAllowed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -164,11 +190,11 @@ func (b BaseSocksV5Logger) BindNotAllowed(client string, chunk v5.RequestChunk) 
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Bind not allowed due to ruleset. ")
 }
 
-func (b BaseSocksV5Logger) BindTimeout(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) BindTimeout(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -177,11 +203,11 @@ func (b BaseSocksV5Logger) BindTimeout(client string, chunk v5.RequestChunk) {
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("host", address).
 		Msg("Bind failed due to timeout. ")
 }
 
-func (b BaseSocksV5Logger) Bound(client string, host string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) Bound(client string, host string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -190,12 +216,11 @@ func (b BaseSocksV5Logger) Bound(client string, host string, chunk v5.RequestChu
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
 		Str("host_bound", host).
 		Msg("Bound successfully. ")
 }
 
-func (b BaseSocksV5Logger) UdpAssociationRequest(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) UdpAssociationRequest(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -204,11 +229,10 @@ func (b BaseSocksV5Logger) UdpAssociationRequest(client string, chunk v5.Request
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
 		Msg("Received udp association request. ")
 }
 
-func (b BaseSocksV5Logger) UdpAssociationSuccessful(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) UdpAssociationSuccessful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -217,11 +241,11 @@ func (b BaseSocksV5Logger) UdpAssociationSuccessful(client string, chunk v5.Requ
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("bind_address", address).
 		Msg("Udp associate successful. ")
 }
 
-func (b BaseSocksV5Logger) UdpAssociationFailed(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) UdpAssociationFailed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -230,11 +254,11 @@ func (b BaseSocksV5Logger) UdpAssociationFailed(client string, chunk v5.RequestC
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
+		Str("bind_address", address).
 		Msg("Udp associate failed. ")
 }
 
-func (b BaseSocksV5Logger) UdpAssociationNotAllowed(client string, chunk v5.RequestChunk) {
+func (b BaseSocksV5Logger) UdpAssociationNotAllowed(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -243,7 +267,6 @@ func (b BaseSocksV5Logger) UdpAssociationNotAllowed(client string, chunk v5.Requ
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)).
 		Msg("Udp associate not allowed due to ruleset. ")
 }
 

@@ -605,8 +605,9 @@ func registerProtocol(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			builder := ctn.Get("v5_builder").(v5.Builder)
+			parser := ctn.Get("v5_parser").(v5.Parser)
 
-			return v5.NewProtocol(builder), nil
+			return v5.NewProtocol(builder, parser), nil
 		},
 	}
 
@@ -782,7 +783,7 @@ func registerServer(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			protocol := ctn.Get("v4a").(v4a.Protocol)
 			cfg := ctn.Get("v4a_config").(config.SocksV4aConfig)
-			v4Logger := ctn.Get("v4a_logger").(logger.SocksV4aLogger)
+			v4aLogger := ctn.Get("v4a_logger").(logger.SocksV4aLogger)
 			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
 
@@ -790,7 +791,7 @@ func registerServer(builder di.Builder) {
 				cfg,
 				tcpConfig,
 				streamHandler,
-				v4Logger,
+				v4aLogger,
 				protocol,
 			)
 		},
@@ -844,34 +845,100 @@ func registerServer(builder di.Builder) {
 		},
 	}
 
-	v5HandlerDef := di.Def{
-		Name:  "v5_handler",
+	v5ConnectHandler := di.Def{
+		Name:  "v5_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
-			bindManager := ctn.Get("bind_manager").(server.BindManager)
 			protocol := ctn.Get("v5").(v5.Protocol)
-			parser := ctn.Get("v5_parser").(v5.Parser)
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
-			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-			udpAssociationManager := ctn.Get("udp_association_manager").(server.UdpAssociationManager)
-			authenticationHandler := ctn.Get("authentication_handler").(server.AuthenticationHandler)
 			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
 			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
-			udpConfig := ctn.Get("udp_config").(config.UdpConfig)
+			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
+			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 
-			return server.NewBaseV5Handler(
+			return server.NewBaseV5ConnectHandler(
 				protocol,
-				parser,
+				cfg,
+				streamHandler,
+				v5Logger,
+				tcpConfig,
+				addressUtils,
+			)
+		},
+	}
+
+	v5BindHandler := di.Def{
+		Name:  "v5_bind_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v5").(v5.Protocol)
+			cfg := ctn.Get("v5_config").(config.SocksV5Config)
+			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
+			bindManager := ctn.Get("bind_manager").(server.BindManager)
+			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+
+			return server.NewBaseV5BindHandler(
+				protocol,
 				bindManager,
 				cfg,
 				streamHandler,
 				addressUtils,
+				v5Logger,
+				tcpConfig,
+			)
+		},
+	}
+
+	v5UdpAssociationHandler := di.Def{
+		Name:  "v5_udp_association_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v5").(v5.Protocol)
+			cfg := ctn.Get("v5_config").(config.SocksV5Config)
+			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+			udpAssociationManager := ctn.Get("udp_association_manager").(server.UdpAssociationManager)
+			udpConfig := ctn.Get("udp_config").(config.UdpConfig)
+
+			return server.NewBaseV5UdpAssociationHandler(
+				protocol,
+				cfg,
+				addressUtils,
 				udpAssociationManager,
-				authenticationHandler,
 				v5Logger,
 				tcpConfig,
 				udpConfig,
+			)
+		},
+	}
+
+	v5HandlerDef := di.Def{
+		Name:  "v5_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v5").(v5.Protocol)
+			parser := ctn.Get("v5_parser").(v5.Parser)
+			cfg := ctn.Get("v5_config").(config.SocksV5Config)
+			authenticationHandler := ctn.Get("authentication_handler").(server.AuthenticationHandler)
+			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+			connectHandler := ctn.Get("v5_connect_handler").(server.V5ConnectHandler)
+			bindHandler := ctn.Get("v5_bind_handler").(server.V5BindHandler)
+			associationHandler := ctn.Get("v5_udp_association_handler").(server.V5UdpAssociationHandler)
+
+			return server.NewBaseV5Handler(
+				protocol,
+				parser,
+				cfg,
+				authenticationHandler,
+				v5Logger,
+				tcpConfig,
+				connectHandler,
+				bindHandler,
+				associationHandler,
 			)
 		},
 	}
@@ -908,6 +975,9 @@ func registerServer(builder di.Builder) {
 		v4aConnectHandlerDef,
 		v4aBindHandlerDef,
 		v4aHandlerDef,
+		v5ConnectHandler,
+		v5BindHandler,
+		v5UdpAssociationHandler,
 		v5HandlerDef,
 		packetHandlerDef,
 		udpAssociationManagerDef,

@@ -6,46 +6,62 @@ import (
 
 type MethodsChunk struct {
 	SocksVersion byte
-	Methods []byte
+	Methods      []byte
 }
 
 type MethodSelectionChunk struct {
 	SocksVersion byte
-	Method byte
+	Method       byte
 }
 
 type RequestChunk struct {
 	SocksVersion byte
-	CommandCode byte
-	AddressType byte
-	Address string
-	Port uint16
+	CommandCode  byte
+	AddressType  byte
+	Address      string
+	Port         uint16
 }
 
 type ResponseChunk struct {
 	SocksVersion byte
-	ReplyCode byte
-	AddressType byte
-	Address string
-	Port uint16
+	ReplyCode    byte
+	AddressType  byte
+	Address      string
+	Port         uint16
 }
 
 type UdpRequest struct {
-	Fragment byte
+	Fragment    byte
 	AddressType byte
-	Address string
-	Port uint16
-	Data []byte
+	Address     string
+	Port        uint16
+	Data        []byte
 }
 
 type Protocol struct {
 	builder Builder
+	parser  Parser
 }
 
-func NewProtocol(builder Builder) Protocol {
+func NewProtocol(builder Builder, parser Parser) Protocol {
 	return Protocol{
 		builder: builder,
+		parser:  parser,
 	}
+}
+
+func (p Protocol) ReceiveRequest(client net.Conn) (RequestChunk, error) {
+	request := make([]byte, 1024)
+
+	i, err := client.Read(request)
+
+	if err != nil {
+		_ = client.Close()
+
+		return RequestChunk{}, err
+	}
+
+	return p.parser.ParseRequest(request[:i])
 }
 
 func (p Protocol) SelectMethod(method byte, client net.Conn) error {
@@ -65,7 +81,7 @@ func (p Protocol) SelectMethod(method byte, client net.Conn) error {
 	return err
 }
 
-func (p Protocol) ResponseWithCode(code byte, addrType byte, addr string, port uint16, client net.Conn) error {
+func (p Protocol) responseWithCode(code byte, addrType byte, addr string, port uint16, client net.Conn) error {
 	chunk := ResponseChunk{
 		SocksVersion: 5,
 		ReplyCode:    code,
@@ -87,4 +103,36 @@ func (p Protocol) ResponseWithCode(code byte, addrType byte, addr string, port u
 	}
 
 	return nil
+}
+
+func (p Protocol) ResponseWithSuccess(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(0, addrType, addr, port, client)
+}
+
+func (p Protocol) ResponseWithFail(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(1, addrType, addr, port, client)
+}
+
+func (p Protocol) ResponseWithNotAllowed(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(2, addrType, addr, port, client)
+}
+
+func (p Protocol) ResponseWithNetworkUnreachable(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(3, addrType, addr, port, client)
+}
+
+func (p Protocol) ResponseWithHostUnreachable(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(4, addrType, addr, port, client)
+}
+
+func (p Protocol) ResponseWithConnectionRefused(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(5, addrType, addr, port, client)
+}
+
+func (p Protocol) ResponseWithCommandNotSupported(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(7, addrType, addr, port, client)
+}
+
+func (p Protocol) ResponseWithAddressNotSupported(addrType byte, addr string, port uint16, client net.Conn) error {
+	return p.responseWithCode(8, addrType, addr, port, client)
 }
