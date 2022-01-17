@@ -849,20 +849,20 @@ func registerServer(builder di.Builder) {
 		Name:  "v5_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v5").(v5.Protocol)
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
 			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
-			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+			sender := ctn.Get("v5_sender").(server.V5Sender)
+			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
 
 			return server.NewBaseV5ConnectHandler(
-				protocol,
 				cfg,
 				streamHandler,
 				v5Logger,
-				tcpConfig,
 				addressUtils,
+				sender,
+				errorHandler,
 			)
 		},
 	}
@@ -871,22 +871,20 @@ func registerServer(builder di.Builder) {
 		Name:  "v5_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v5").(v5.Protocol)
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
 			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
-			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
 			bindManager := ctn.Get("bind_manager").(server.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+			sender := ctn.Get("v5_sender").(server.V5Sender)
 
 			return server.NewBaseV5BindHandler(
-				protocol,
 				bindManager,
 				cfg,
 				streamHandler,
 				addressUtils,
 				v5Logger,
-				tcpConfig,
+				sender,
 			)
 		},
 	}
@@ -895,22 +893,18 @@ func registerServer(builder di.Builder) {
 		Name:  "v5_udp_association_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v5").(v5.Protocol)
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
 			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
-			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			udpAssociationManager := ctn.Get("udp_association_manager").(server.UdpAssociationManager)
-			udpConfig := ctn.Get("udp_config").(config.UdpConfig)
+			sender := ctn.Get("v5_sender").(server.V5Sender)
 
 			return server.NewBaseV5UdpAssociationHandler(
-				protocol,
 				cfg,
 				addressUtils,
 				udpAssociationManager,
 				v5Logger,
-				tcpConfig,
-				udpConfig,
+				sender,
 			)
 		},
 	}
@@ -924,10 +918,10 @@ func registerServer(builder di.Builder) {
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
 			authenticationHandler := ctn.Get("authentication_handler").(server.AuthenticationHandler)
 			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
-			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			connectHandler := ctn.Get("v5_connect_handler").(server.V5ConnectHandler)
 			bindHandler := ctn.Get("v5_bind_handler").(server.V5BindHandler)
 			associationHandler := ctn.Get("v5_udp_association_handler").(server.V5UdpAssociationHandler)
+			sender := ctn.Get("v5_sender").(server.V5Sender)
 
 			return server.NewBaseV5Handler(
 				protocol,
@@ -935,10 +929,40 @@ func registerServer(builder di.Builder) {
 				cfg,
 				authenticationHandler,
 				v5Logger,
-				tcpConfig,
 				connectHandler,
 				bindHandler,
 				associationHandler,
+				sender,
+			)
+		},
+	}
+
+	v5SenderDef := di.Def{
+		Name:  "v5_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v5").(v5.Protocol)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+			udpConfig := ctn.Get("udp_config").(config.UdpConfig)
+
+			return server.NewBaseV5Sender(
+				protocol,
+				tcpConfig,
+				udpConfig,
+			)
+		},
+	}
+
+	v5ErrorHandlerDef := di.Def{
+		Name:  "v5_error_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			sender := ctn.Get("v5_sender").(server.V5Sender)
+			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
+
+			return server.NewBaseV5ErrorHandler(
+				v5Logger,
+				sender,
 			)
 		},
 	}
@@ -979,6 +1003,8 @@ func registerServer(builder di.Builder) {
 		v5BindHandler,
 		v5UdpAssociationHandler,
 		v5HandlerDef,
+		v5SenderDef,
+		v5ErrorHandlerDef,
 		packetHandlerDef,
 		udpAssociationManagerDef,
 		serverDef,

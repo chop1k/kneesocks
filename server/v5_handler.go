@@ -18,10 +18,10 @@ type BaseV5Handler struct {
 	config                config.SocksV5Config
 	authenticationHandler AuthenticationHandler
 	logger                logger.SocksV5Logger
-	tcpConfig             config.TcpConfig
 	connectHandler        V5ConnectHandler
 	bindHandler           V5BindHandler
 	udpAssociationHandler V5UdpAssociationHandler
+	sender                V5Sender
 }
 
 func NewBaseV5Handler(
@@ -30,10 +30,10 @@ func NewBaseV5Handler(
 	config config.SocksV5Config,
 	authenticationHandler AuthenticationHandler,
 	logger logger.SocksV5Logger,
-	tcpConfig config.TcpConfig,
 	connectHandler V5ConnectHandler,
 	bindHandler V5BindHandler,
 	udpAssociationHandler V5UdpAssociationHandler,
+	sender V5Sender,
 ) (BaseV5Handler, error) {
 	return BaseV5Handler{
 		protocol:              protocol,
@@ -41,10 +41,10 @@ func NewBaseV5Handler(
 		config:                config,
 		authenticationHandler: authenticationHandler,
 		logger:                logger,
-		tcpConfig:             tcpConfig,
 		connectHandler:        connectHandler,
 		bindHandler:           bindHandler,
 		udpAssociationHandler: udpAssociationHandler,
+		sender:                sender,
 	}, nil
 }
 
@@ -52,32 +52,12 @@ func (b BaseV5Handler) HandleV5(request []byte, client net.Conn) {
 	methods, err := b.parser.ParseMethods(request)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		return
 	}
 
 	b.handleAuthentication(methods, client)
-}
-
-func (b BaseV5Handler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
-	_ = client.Close()
-}
-
-func (b BaseV5Handler) sendCommandNotSupportedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCommandNotSupported(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
-	_ = client.Close()
-}
-
-func (b BaseV5Handler) sendConnectionNotAllowedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithNotAllowed(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
-	_ = client.Close()
-}
-
-func (b BaseV5Handler) sendAddressNotSupportedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithAddressNotSupported(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
-	_ = client.Close()
 }
 
 func (b BaseV5Handler) handleAuthentication(methods v5.MethodsChunk, client net.Conn) {
@@ -114,7 +94,7 @@ func (b BaseV5Handler) handleCommand(client net.Conn) {
 	} else if chunk.AddressType == 4 {
 		address = fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
 	} else {
-		b.sendAddressNotSupportedAndClose(client)
+		b.sender.SendAddressNotSupportedAndClose(client)
 
 		return
 	}
@@ -126,7 +106,7 @@ func (b BaseV5Handler) handleCommand(client net.Conn) {
 	} else if chunk.CommandCode == 3 {
 		b.handleUdpAssociate(client)
 	} else {
-		b.sendCommandNotSupportedAndClose(client)
+		b.sender.SendCommandNotSupportedAndClose(client)
 
 		return
 	}
@@ -136,7 +116,7 @@ func (b BaseV5Handler) handleConnect(address string, client net.Conn) {
 	b.logger.ConnectRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsConnectAllowed() {
-		b.sendConnectionNotAllowedAndClose(client)
+		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.ConnectNotAllowed(client.RemoteAddr().String(), address)
 
@@ -150,7 +130,7 @@ func (b BaseV5Handler) handleBind(address string, client net.Conn) {
 	b.logger.BindRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsBindAllowed() {
-		b.sendConnectionNotAllowedAndClose(client)
+		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.BindNotAllowed(client.RemoteAddr().String(), address)
 
@@ -164,7 +144,7 @@ func (b BaseV5Handler) handleUdpAssociate(client net.Conn) {
 	b.logger.UdpAssociationRequest(client.RemoteAddr().String())
 
 	if !b.config.IsUdpAssociationAllowed() {
-		b.sendConnectionNotAllowedAndClose(client)
+		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.UdpAssociationNotAllowed(client.RemoteAddr().String())
 

@@ -4,7 +4,6 @@ import (
 	"net"
 	"socks/config"
 	"socks/logger"
-	v5 "socks/protocol/v5"
 	"socks/utils"
 )
 
@@ -13,45 +12,34 @@ type V5UdpAssociationHandler interface {
 }
 
 type BaseV5UdpAssociationHandler struct {
-	protocol              v5.Protocol
 	config                config.SocksV5Config
 	utils                 utils.AddressUtils
 	udpAssociationManager UdpAssociationManager
 	logger                logger.SocksV5Logger
-	tcpConfig             config.TcpConfig
-	udpConfig             config.UdpConfig
+	sender                V5Sender
 }
 
 func NewBaseV5UdpAssociationHandler(
-	protocol v5.Protocol,
 	config config.SocksV5Config,
 	utils utils.AddressUtils,
 	udpAssociationManager UdpAssociationManager,
 	logger logger.SocksV5Logger,
-	tcpConfig config.TcpConfig,
-	udpConfig config.UdpConfig,
+	sender V5Sender,
 ) (BaseV5UdpAssociationHandler, error) {
 	return BaseV5UdpAssociationHandler{
-		protocol:              protocol,
 		config:                config,
 		utils:                 utils,
 		udpAssociationManager: udpAssociationManager,
 		logger:                logger,
-		tcpConfig:             tcpConfig,
-		udpConfig:             udpConfig,
+		sender:                sender,
 	}, nil
-}
-
-func (b BaseV5UdpAssociationHandler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
-	_ = client.Close()
 }
 
 func (b BaseV5UdpAssociationHandler) HandleV5UdpAssociation(client net.Conn) {
 	address, _, err := b.utils.ParseAddress(client.RemoteAddr().String())
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		b.logger.UdpAssociationFailed(client.RemoteAddr().String(), address)
 
@@ -64,10 +52,10 @@ func (b BaseV5UdpAssociationHandler) HandleV5UdpAssociation(client net.Conn) {
 }
 
 func (b BaseV5UdpAssociationHandler) udpSendResponse(address string, client net.Conn) {
-	err := b.protocol.ResponseWithSuccess(1, "0.0.0.0", uint16(b.udpConfig.GetBindPort()), client)
+	err := b.sender.SendSuccessWithUdpPort(client)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		b.logger.UdpAssociationFailed(client.RemoteAddr().String(), address)
 

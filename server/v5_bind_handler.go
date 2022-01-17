@@ -4,7 +4,6 @@ import (
 	"net"
 	"socks/config"
 	"socks/logger"
-	v5 "socks/protocol/v5"
 	"socks/utils"
 	"time"
 )
@@ -14,50 +13,37 @@ type V5BindHandler interface {
 }
 
 type BaseV5BindHandler struct {
-	protocol      v5.Protocol
 	bindManager   BindManager
 	config        config.SocksV5Config
 	streamHandler StreamHandler
 	utils         utils.AddressUtils
 	logger        logger.SocksV5Logger
-	tcpConfig     config.TcpConfig
+	sender        V5Sender
 }
 
 func NewBaseV5BindHandler(
-	protocol v5.Protocol,
 	bindManager BindManager,
 	config config.SocksV5Config,
 	streamHandler StreamHandler,
 	utils utils.AddressUtils,
 	logger logger.SocksV5Logger,
-	tcpConfig config.TcpConfig,
+	sender V5Sender,
 ) (BaseV5BindHandler, error) {
 	return BaseV5BindHandler{
-		protocol:      protocol,
 		bindManager:   bindManager,
 		config:        config,
 		streamHandler: streamHandler,
 		utils:         utils,
 		logger:        logger,
-		tcpConfig:     tcpConfig,
+		sender:        sender,
 	}, nil
-}
-
-func (b BaseV5BindHandler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
-	_ = client.Close()
-}
-
-func (b BaseV5BindHandler) sendConnectionNotAllowedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithNotAllowed(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
-	_ = client.Close()
 }
 
 func (b BaseV5BindHandler) HandleV5Bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
-		b.sendConnectionNotAllowedAndClose(client)
+		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.BindFailed(client.RemoteAddr().String(), address)
 
@@ -70,7 +56,7 @@ func (b BaseV5BindHandler) HandleV5Bind(address string, client net.Conn) {
 }
 
 func (b BaseV5BindHandler) bindSendFirstResponse(address string, client net.Conn) {
-	err := b.protocol.ResponseWithSuccess(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	err := b.sender.SendSuccessWithTcpPort(client)
 
 	if err != nil {
 		_ = client.Close()
@@ -105,7 +91,7 @@ func (b BaseV5BindHandler) bindCheckAddress(address string, host, client net.Con
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 
@@ -117,7 +103,7 @@ func (b BaseV5BindHandler) bindCheckAddress(address string, host, client net.Con
 	addrType, determineErr := b.utils.DetermineAddressType(hostAddr)
 
 	if determineErr != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 
@@ -130,10 +116,10 @@ func (b BaseV5BindHandler) bindCheckAddress(address string, host, client net.Con
 }
 
 func (b BaseV5BindHandler) sendSecondResponse(address string, addrType byte, hostAddress string, hostPort uint16, host, client net.Conn) {
-	err := b.protocol.ResponseWithSuccess(addrType, hostAddress, hostPort, client)
+	err := b.sender.SendSuccessWithParameters(addrType, hostAddress, hostPort, client)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 
@@ -145,7 +131,7 @@ func (b BaseV5BindHandler) sendSecondResponse(address string, addrType byte, hos
 	err = b.bindManager.SendClient(address, client)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 
