@@ -1,64 +1,60 @@
 package config
 
-import "socks/config/tree"
+import (
+	"errors"
+	"socks/config/tree"
+)
+
+var (
+	SocksV4LoggerDisabledError        = errors.New("SocksV4 logger is disabled. ")
+	SocksV4ConsoleOutputDisabledError = errors.New("SocksV4 console output is disabled. ")
+	SocksV4FileOutputDisabledError    = errors.New("SocksV4 console output is disabled. ")
+)
 
 type SocksV4LoggerConfig interface {
-	GetConnectRequestFormat() string
-	GetConnectFailedFormat() string
-	GetConnectSuccessfulFormat() string
-	GetBindRequestFormat() string
-	GetBindFailedFormat() string
-	GetBindSuccessfulFormat() string
-	GetBoundFormat() string
-	IsConsoleOutputEnabled() bool
-	IsFileOutputEnabled() bool
-	GetFilePathFormat() string
+	GetLevel() (int, error)
+	GetConsoleOutput() (tree.ConsoleOutputConfig, error)
+	GetFileOutput() (tree.FileOutputConfig, error)
 }
 
 type BaseSocksV4LoggerConfig struct {
 	config tree.Config
 }
 
-func NewBaseSocksV4LoggerConfig(config tree.Config) BaseSocksV4LoggerConfig {
-	return BaseSocksV4LoggerConfig{config: config}
+func NewBaseSocksV4LoggerConfig(config tree.Config) (BaseSocksV4LoggerConfig, error) {
+	return BaseSocksV4LoggerConfig{
+		config: config,
+	}, nil
 }
 
-func (b BaseSocksV4LoggerConfig) GetConnectRequestFormat() string {
-	return b.config.Log.Loggers.SocksV4.Formats.ConnectRequest
+func (b BaseSocksV4LoggerConfig) GetLevel() (int, error) {
+	if b.config.Log.SocksV4 == nil {
+		return 0, SocksV4LoggerDisabledError
+	}
+
+	return b.config.Log.SocksV4.Level, nil
 }
 
-func (b BaseSocksV4LoggerConfig) GetConnectFailedFormat() string {
-	return b.config.Log.Loggers.SocksV4.Formats.ConnectFailed
+func (b BaseSocksV4LoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.ConsoleOutputConfig{}, SocksV4LoggerDisabledError
+	}
+
+	if b.config.Log.SocksV4.Console == nil {
+		return tree.ConsoleOutputConfig{}, SocksV4ConsoleOutputDisabledError
+	}
+
+	return *b.config.Log.SocksV4.Console, nil
 }
 
-func (b BaseSocksV4LoggerConfig) GetConnectSuccessfulFormat() string {
-	return b.config.Log.Loggers.SocksV4.Formats.ConnectSuccessful
-}
+func (b BaseSocksV4LoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.FileOutputConfig{}, SocksV4LoggerDisabledError
+	}
 
-func (b BaseSocksV4LoggerConfig) GetBindRequestFormat() string {
-	return b.config.Log.Loggers.SocksV4.Formats.BindRequest
-}
+	if b.config.Log.SocksV4.File == nil {
+		return tree.FileOutputConfig{}, SocksV4FileOutputDisabledError
+	}
 
-func (b BaseSocksV4LoggerConfig) GetBindFailedFormat() string {
-	return b.config.Log.Loggers.SocksV4.Formats.BindFailed
-}
-
-func (b BaseSocksV4LoggerConfig) GetBindSuccessfulFormat() string {
-	return b.config.Log.Loggers.SocksV4.Formats.BindSuccessful
-}
-
-func (b BaseSocksV4LoggerConfig) GetBoundFormat() string {
-	return b.config.Log.Loggers.SocksV4.Formats.Bound
-}
-
-func (b BaseSocksV4LoggerConfig) IsConsoleOutputEnabled() bool {
-	return b.config.Log.Loggers.SocksV4.Outputs.Console != nil
-}
-
-func (b BaseSocksV4LoggerConfig) IsFileOutputEnabled() bool {
-	return b.config.Log.Loggers.SocksV4.Outputs.File != nil
-}
-
-func (b BaseSocksV4LoggerConfig) GetFilePathFormat() string {
-	return b.config.Log.Loggers.SocksV4.Outputs.File.Path
+	return *b.config.Log.SocksV4.File, nil
 }

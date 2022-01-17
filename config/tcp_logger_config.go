@@ -1,54 +1,60 @@
 package config
 
-import "socks/config/tree"
+import (
+	"errors"
+	"socks/config/tree"
+)
+
+var (
+	TcpLoggerDisabledError        = errors.New("Tcp logger is disabled. ")
+	TcpConsoleOutputDisabledError = errors.New("Tcp console output is disabled. ")
+	TcpFileOutputDisabledError    = errors.New("Tcp console output is disabled. ")
+)
 
 type TcpLoggerConfig interface {
-	GetConnectionAcceptedFormat() string
-	GetConnectionDeniedFormat() string
-	GetConnectionProtocolDeterminedFormat() string
-	GetConnectionBoundFormat() string
-	GetListenFormat() string
-	IsConsoleOutputEnabled() bool
-	IsFileOutputEnabled() bool
-	GetFilePathFormat() string
+	GetLevel() (int, error)
+	GetConsoleOutput() (tree.ConsoleOutputConfig, error)
+	GetFileOutput() (tree.FileOutputConfig, error)
 }
 
 type BaseTcpLoggerConfig struct {
 	config tree.Config
 }
 
-func NewBaseTcpLoggerConfig(config tree.Config) BaseTcpLoggerConfig {
-	return BaseTcpLoggerConfig{config: config}
+func NewBaseTcpLoggerConfig(config tree.Config) (BaseTcpLoggerConfig, error) {
+	return BaseTcpLoggerConfig{
+		config: config,
+	}, nil
 }
 
-func (b BaseTcpLoggerConfig) GetConnectionAcceptedFormat() string {
-	return b.config.Log.Loggers.Tcp.Formats.ConnectionAccepted
+func (b BaseTcpLoggerConfig) GetLevel() (int, error) {
+	if b.config.Log.Tcp == nil {
+		return 0, TcpLoggerDisabledError
+	}
+
+	return b.config.Log.Tcp.Level, nil
 }
 
-func (b BaseTcpLoggerConfig) GetConnectionDeniedFormat() string {
-	return b.config.Log.Loggers.Tcp.Formats.ConnectionDenied
+func (b BaseTcpLoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.ConsoleOutputConfig{}, TcpLoggerDisabledError
+	}
+
+	if b.config.Log.Tcp.Console == nil {
+		return tree.ConsoleOutputConfig{}, TcpConsoleOutputDisabledError
+	}
+
+	return *b.config.Log.Tcp.Console, nil
 }
 
-func (b BaseTcpLoggerConfig) GetConnectionProtocolDeterminedFormat() string {
-	return b.config.Log.Loggers.Tcp.Formats.ConnectionProtocolDetermined
-}
+func (b BaseTcpLoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.FileOutputConfig{}, TcpLoggerDisabledError
+	}
 
-func (b BaseTcpLoggerConfig) GetConnectionBoundFormat() string {
-	return b.config.Log.Loggers.Tcp.Formats.ConnectionBound
-}
+	if b.config.Log.Tcp.File == nil {
+		return tree.FileOutputConfig{}, TcpFileOutputDisabledError
+	}
 
-func (b BaseTcpLoggerConfig) GetListenFormat() string {
-	return b.config.Log.Loggers.Tcp.Formats.Listen
-}
-
-func (b BaseTcpLoggerConfig) IsConsoleOutputEnabled() bool {
-	return b.config.Log.Loggers.Tcp.Outputs.Console != nil
-}
-
-func (b BaseTcpLoggerConfig) IsFileOutputEnabled() bool {
-	return b.config.Log.Loggers.Tcp.Outputs.File != nil
-}
-
-func (b BaseTcpLoggerConfig) GetFilePathFormat() string {
-	return b.config.Log.Loggers.Tcp.Outputs.File.Path
+	return *b.config.Log.Tcp.File, nil
 }

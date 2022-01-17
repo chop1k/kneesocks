@@ -1,10 +1,9 @@
 package logger
 
 import (
-	"socks/config"
-	"socks/logger/output"
+	"fmt"
+	"github.com/rs/zerolog"
 	"socks/protocol/v4a"
-	"strconv"
 )
 
 type SocksV4aLogger interface {
@@ -12,6 +11,7 @@ type SocksV4aLogger interface {
 	ConnectFailed(client string, chunk v4a.RequestChunk)
 	ConnectSuccessful(client string, chunk v4a.RequestChunk)
 	ConnectNotAllowed(client string, chunk v4a.RequestChunk)
+	ConnectUnreachable(client string, chunk v4a.RequestChunk)
 	ConnectTimeout(client string, chunk v4a.RequestChunk)
 	BindRequest(client string, chunk v4a.RequestChunk)
 	BindFailed(client string, chunk v4a.RequestChunk)
@@ -23,151 +23,181 @@ type SocksV4aLogger interface {
 }
 
 type BaseSocksV4aLogger struct {
-	outputs []Output
-	config  config.SocksV4aLoggerConfig
-	enabled bool
+	logger zerolog.Logger
 }
 
-func NewBaseSocksV4aLogger(config config.SocksV4aLoggerConfig, replacer string, enabled bool) BaseSocksV4aLogger {
-	if enabled {
-		var outputs []Output
-
-		if config.IsConsoleOutputEnabled() {
-			outputs = append(outputs, output.NewConsoleOutput(replacer))
-		}
-
-		if config.IsFileOutputEnabled() {
-			outputs = append(outputs, output.NewFileOutput(config.GetFilePathFormat(), replacer))
-		}
-
-		return BaseSocksV4aLogger{
-			outputs: outputs,
-			config:  config,
-			enabled: true,
-		}
-	} else {
-		return BaseSocksV4aLogger{
-			enabled: false,
-		}
-	}
+func NewBaseSocksV4aLogger(logger zerolog.Logger) (BaseSocksV4aLogger, error) {
+	return BaseSocksV4aLogger{
+		logger: logger,
+	}, nil
 }
 
 func (b BaseSocksV4aLogger) ConnectRequest(client string, chunk v4a.RequestChunk) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicSocksV4aParameters(client, chunk)
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetConnectRequestFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Received connect request. ")
 }
 
 func (b BaseSocksV4aLogger) ConnectFailed(client string, chunk v4a.RequestChunk) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicSocksV4aParameters(client, chunk)
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetConnectFailedFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Connect failed. ")
 }
 
 func (b BaseSocksV4aLogger) ConnectSuccessful(client string, chunk v4a.RequestChunk) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicSocksV4aParameters(client, chunk)
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetConnectSuccessfulFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Connect successful. ")
 }
 
 func (b BaseSocksV4aLogger) ConnectNotAllowed(client string, chunk v4a.RequestChunk) {
+	e := b.logger.Info()
 
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Connect not allowed due to ruleset. ")
+}
+
+func (b BaseSocksV4aLogger) ConnectUnreachable(client string, chunk v4a.RequestChunk) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Host unreachable. ")
 }
 
 func (b BaseSocksV4aLogger) ConnectTimeout(client string, chunk v4a.RequestChunk) {
+	e := b.logger.Info()
 
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Connect failed due to timeout. ")
 }
 
 func (b BaseSocksV4aLogger) BindRequest(client string, chunk v4a.RequestChunk) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicSocksV4aParameters(client, chunk)
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetBindRequestFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Received bind request. ")
 }
 
 func (b BaseSocksV4aLogger) BindFailed(client string, chunk v4a.RequestChunk) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicSocksV4aParameters(client, chunk)
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetBindFailedFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Bind failed. ")
 }
 
 func (b BaseSocksV4aLogger) BindSuccessful(client string, chunk v4a.RequestChunk) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicSocksV4aParameters(client, chunk)
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetBindSuccessfulFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Bind successful. ")
 }
 
 func (b BaseSocksV4aLogger) BindNotAllowed(client string, chunk v4a.RequestChunk) {
+	e := b.logger.Info()
 
-}
-
-func (b BaseSocksV4aLogger) BindTimeout(client string, chunk v4a.RequestChunk) {
-
-}
-
-func (b BaseSocksV4aLogger) Bound(client string, host string, chunk v4a.RequestChunk) {
-	if !b.enabled {
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicSocksV4aParameters(client, chunk)
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Bind failed due to ruleset. ")
+}
 
-	parameters["host"] = host
+func (b BaseSocksV4aLogger) BindTimeout(client string, chunk v4a.RequestChunk) {
+	e := b.logger.Info()
 
-	for _, output := range b.outputs {
-		output.Log(b.config.GetBoundFormat(), parameters)
+	if !e.Enabled() {
+		return
 	}
+
+	e.
+		Str("client", client).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Bind failed due to timeout. ")
+}
+
+func (b BaseSocksV4aLogger) Bound(client string, host string, chunk v4a.RequestChunk) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Msg("Bound successfully. ")
 }
 
 func (b BaseSocksV4aLogger) TransferFinished(client string, host string) {
+	e := b.logger.Info()
 
-}
+	if !e.Enabled() {
+		return
+	}
 
-func getBasicSocksV4aParameters(client string, chunk v4a.RequestChunk) map[string]string {
-	parameters := getBasicParameters()
-
-	parameters["client"] = client
-
-	parameters["chunk.CommandCode"] = string(chunk.CommandCode)
-	parameters["chunk.DestinationIp"] = chunk.DestinationIp.String()
-	parameters["chunk.DestinationPort"] = strconv.Itoa(int(chunk.DestinationPort))
-	parameters["chunk.SocksVersion"] = string(chunk.SocksVersion)
-	parameters["chunk.Domain"] = chunk.Domain
-
-	return parameters
+	e.
+		Str("client", client).
+		Str("host", host).
+		Msg("Transfer finished. ")
 }

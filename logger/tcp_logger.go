@@ -1,117 +1,98 @@
 package logger
 
 import (
-	"socks/config"
-	"socks/logger/output"
+	"github.com/rs/zerolog"
 )
 
 type TcpLogger interface {
-	ConnectionAccepted(addr string)
-	ConnectionDenied(addr string)
-	ConnectionProtocolDetermined(addr string, protocol string)
+	ConnectionAccepted(client string)
+	ConnectionDenied(client string)
+	ConnectionProtocolDetermined(client string, protocol string)
 	ConnectionBound(client string, host string)
+	ConnectionExchangeTimeout(client string)
 	Listen(addr string)
 }
 
 type BaseTcpLogger struct {
-	outputs []Output
-	config  config.TcpLoggerConfig
-	enabled bool
+	logger zerolog.Logger
 }
 
-func NewBaseTcpLogger(config config.TcpLoggerConfig, replacer string, enabled bool) BaseTcpLogger {
-	if enabled {
-		var outputs []Output
-
-		if config.IsConsoleOutputEnabled() {
-			outputs = append(outputs, output.NewConsoleOutput(replacer))
-		}
-
-		if config.IsFileOutputEnabled() {
-			outputs = append(outputs, output.NewFileOutput(config.GetFilePathFormat(), replacer))
-		}
-
-		return BaseTcpLogger{
-			outputs: outputs,
-			config:  config,
-			enabled: true,
-		}
-
-	} else {
-		return BaseTcpLogger{
-			enabled: false,
-		}
-	}
+func NewBaseTcpLogger(logger zerolog.Logger) (BaseTcpLogger, error) {
+	return BaseTcpLogger{
+		logger: logger,
+	}, nil
 }
 
 func (b BaseTcpLogger) ConnectionAccepted(client string) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicParameters()
-
-	parameters["client"] = client
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetConnectionAcceptedFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Msg("New tcp connection. ")
 }
 
 func (b BaseTcpLogger) ConnectionDenied(client string) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicParameters()
-
-	parameters["client"] = client
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetConnectionDeniedFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Msg("New tcp connection. ")
 }
 
 func (b BaseTcpLogger) ConnectionProtocolDetermined(client string, protocol string) {
-	if !b.enabled {
+	e := b.logger.Debug()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicParameters()
-
-	parameters["client"] = client
-	parameters["protocol"] = protocol
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetConnectionProtocolDeterminedFormat(), parameters)
-	}
+	e.
+		Str("client", client).
+		Str("protocol", protocol).
+		Msg("Connection protocol determined. ")
 }
 
 func (b BaseTcpLogger) ConnectionBound(client string, host string) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicParameters()
+	e.
+		Str("client", client).
+		Str("host", host).
+		Msg("Connection bound. ")
+}
 
-	parameters["client"] = client
-	parameters["host"] = host
+func (b BaseTcpLogger) ConnectionExchangeTimeout(client string) {
+	e := b.logger.Info()
 
-	for _, output := range b.outputs {
-		output.Log(b.config.GetConnectionBoundFormat(), parameters)
+	if !e.Enabled() {
+		return
 	}
+
+	e.
+		Str("client", client).
+		Msg("Connection exchange timeout. ")
 }
 
 func (b BaseTcpLogger) Listen(addr string) {
-	if !b.enabled {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
 		return
 	}
 
-	parameters := getBasicParameters()
-
-	parameters["addr"] = addr
-
-	for _, output := range b.outputs {
-		output.Log(b.config.GetListenFormat(), parameters)
-	}
+	e.
+		Str("addr", addr).
+		Msg("Listening for tcp connection. ")
 }

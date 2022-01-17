@@ -1,80 +1,60 @@
 package config
 
-import "socks/config/tree"
+import (
+	"errors"
+	"socks/config/tree"
+)
+
+var (
+	SocksV5LoggerDisabledError        = errors.New("SocksV5 logger is disabled. ")
+	SocksV5ConsoleOutputDisabledError = errors.New("SocksV5 console output is disabled. ")
+	SocksV5FileOutputDisabledError    = errors.New("SocksV5 console output is disabled. ")
+)
 
 type SocksV5LoggerConfig interface {
-	SocksV4aLoggerConfig
-	GetAuthenticationSuccessfulFormat() string
-	GetAuthenticationFailedFormat() string
-	GetUdpAssociationRequestFormat() string
-	GetUdpAssociationSuccessfulFormat() string
-	GetUdpAssociationFailedFormat() string
+	GetLevel() (int, error)
+	GetConsoleOutput() (tree.ConsoleOutputConfig, error)
+	GetFileOutput() (tree.FileOutputConfig, error)
 }
 
 type BaseSocksV5LoggerConfig struct {
 	config tree.Config
 }
 
-func NewBaseSocksV5LoggerConfig(config tree.Config) BaseSocksV5LoggerConfig {
-	return BaseSocksV5LoggerConfig{config: config}
+func NewBaseSocksV5LoggerConfig(config tree.Config) (BaseSocksV5LoggerConfig, error) {
+	return BaseSocksV5LoggerConfig{
+		config: config,
+	}, nil
 }
 
-func (b BaseSocksV5LoggerConfig) GetConnectRequestFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.ConnectRequest
+func (b BaseSocksV5LoggerConfig) GetLevel() (int, error) {
+	if b.config.Log.SocksV5 == nil {
+		return 0, SocksV5LoggerDisabledError
+	}
+
+	return b.config.Log.SocksV5.Level, nil
 }
 
-func (b BaseSocksV5LoggerConfig) GetConnectFailedFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.ConnectFailed
+func (b BaseSocksV5LoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.ConsoleOutputConfig{}, SocksV5LoggerDisabledError
+	}
+
+	if b.config.Log.SocksV5.Console == nil {
+		return tree.ConsoleOutputConfig{}, SocksV5ConsoleOutputDisabledError
+	}
+
+	return *b.config.Log.SocksV5.Console, nil
 }
 
-func (b BaseSocksV5LoggerConfig) GetConnectSuccessfulFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.ConnectSuccessful
-}
+func (b BaseSocksV5LoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.FileOutputConfig{}, SocksV5LoggerDisabledError
+	}
 
-func (b BaseSocksV5LoggerConfig) GetBindRequestFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.BindRequest
-}
+	if b.config.Log.SocksV5.File == nil {
+		return tree.FileOutputConfig{}, SocksV5FileOutputDisabledError
+	}
 
-func (b BaseSocksV5LoggerConfig) GetBindFailedFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.BindFailed
-}
-
-func (b BaseSocksV5LoggerConfig) GetBindSuccessfulFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.BindSuccessful
-}
-
-func (b BaseSocksV5LoggerConfig) GetBoundFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.Bound
-}
-
-func (b BaseSocksV5LoggerConfig) IsConsoleOutputEnabled() bool {
-	return b.config.Log.Loggers.SocksV5.Outputs.Console != nil
-}
-
-func (b BaseSocksV5LoggerConfig) IsFileOutputEnabled() bool {
-	return b.config.Log.Loggers.SocksV5.Outputs.File != nil
-}
-
-func (b BaseSocksV5LoggerConfig) GetFilePathFormat() string {
-	return b.config.Log.Loggers.SocksV5.Outputs.File.Path
-}
-
-func (b BaseSocksV5LoggerConfig) GetAuthenticationSuccessfulFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.AuthenticationSuccessful
-}
-
-func (b BaseSocksV5LoggerConfig) GetAuthenticationFailedFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.AuthenticationFailed
-}
-
-func (b BaseSocksV5LoggerConfig) GetUdpAssociationRequestFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.UdpAssociationRequest
-}
-
-func (b BaseSocksV5LoggerConfig) GetUdpAssociationSuccessfulFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.UdpAssociationSuccessful
-}
-
-func (b BaseSocksV5LoggerConfig) GetUdpAssociationFailedFormat() string {
-	return b.config.Log.Loggers.SocksV5.Formats.UdpAssociationFailed
+	return *b.config.Log.SocksV5.File, nil
 }

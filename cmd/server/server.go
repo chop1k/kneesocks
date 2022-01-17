@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog"
 	"github.com/sarulabs/di"
+	"io"
 	"os"
 	"socks/config"
 	"socks/config/tree"
@@ -112,23 +114,13 @@ func registerConfig(builder di.Builder) {
 		},
 	}
 
-	logConfigDef := di.Def{
-		Name:  "log_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
-
-			return config.NewBaseLogConfig(cfgTree), nil
-		},
-	}
-
 	tcpLoggerConfigDef := di.Def{
 		Name:  "tcp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfgTree := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseTcpLoggerConfig(cfgTree), nil
+			return config.NewBaseTcpLoggerConfig(cfgTree)
 		},
 	}
 
@@ -138,7 +130,7 @@ func registerConfig(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfgTree := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseUdpLoggerConfig(cfgTree), nil
+			return config.NewBaseUdpLoggerConfig(cfgTree)
 		},
 	}
 
@@ -148,7 +140,7 @@ func registerConfig(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfgTree := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV4LoggerConfig(cfgTree), nil
+			return config.NewBaseSocksV4LoggerConfig(cfgTree)
 		},
 	}
 
@@ -158,7 +150,7 @@ func registerConfig(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfgTree := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV4aLoggerConfig(cfgTree), nil
+			return config.NewBaseSocksV4aLoggerConfig(cfgTree)
 		},
 	}
 
@@ -168,7 +160,7 @@ func registerConfig(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfgTree := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV5LoggerConfig(cfgTree), nil
+			return config.NewBaseSocksV5LoggerConfig(cfgTree)
 		},
 	}
 
@@ -234,7 +226,6 @@ func registerConfig(builder di.Builder) {
 		v4ConfigDef,
 		v4aConfigDef,
 		v5ConfigDef,
-		logConfigDef,
 		tcpLoggerConfigDef,
 		udpLoggerConfigDef,
 		v4LoggerConfigDef,
@@ -251,6 +242,201 @@ func registerConfig(builder di.Builder) {
 		panic(err)
 	}
 
+	registerZeroLog(builder)
+}
+
+func registerZeroLog(builder di.Builder) {
+	buildLogger := func(level int, loggers ...io.Writer) (zerolog.Logger, error) {
+		return zerolog.New(zerolog.MultiLevelWriter(loggers...)).
+			With().
+			Timestamp().
+			Logger().
+			Level(zerolog.Level(level)), nil
+	}
+
+	tcpZeroLoggerDef := di.Def{
+		Name:  "tcp_zero_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("tcp_logger_config").(config.TcpLoggerConfig)
+
+			level, err := cfg.GetLevel()
+
+			var loggers []io.Writer
+
+			if err != nil {
+				return buildLogger(126, loggers...)
+			}
+
+			if output, err := cfg.GetConsoleOutput(); err == nil {
+				loggers = append(loggers, zerolog.ConsoleWriter{
+					Out:        os.Stdout,
+					TimeFormat: output.TimeFormat,
+				})
+			} else {
+				if err == config.TcpLoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			if output, err := cfg.GetFileOutput(); err == nil {
+				file, err := os.Open(output.Path)
+
+				if err != nil {
+					return nil, err
+				}
+
+				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+			} else {
+				if err == config.TcpLoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			return buildLogger(level, loggers...)
+		},
+	}
+
+	v4ZeroLoggerDef := di.Def{
+		Name:  "v4_zero_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4_logger_config").(config.SocksV4LoggerConfig)
+
+			level, err := cfg.GetLevel()
+
+			var loggers []io.Writer
+
+			if err != nil {
+				return buildLogger(126, loggers...)
+			}
+
+			if output, err := cfg.GetConsoleOutput(); err == nil {
+				loggers = append(loggers, zerolog.ConsoleWriter{
+					Out:        os.Stdout,
+					TimeFormat: output.TimeFormat,
+				})
+			} else {
+				if err == config.SocksV4LoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			if output, err := cfg.GetFileOutput(); err == nil {
+				file, err := os.Open(output.Path)
+
+				if err != nil {
+					return nil, err
+				}
+
+				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+			} else {
+				if err == config.SocksV4LoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			return buildLogger(level, loggers...)
+		},
+	}
+
+	v4aZeroLoggerDef := di.Def{
+		Name:  "v4a_zero_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4a_logger_config").(config.SocksV4aLoggerConfig)
+
+			level, err := cfg.GetLevel()
+
+			var loggers []io.Writer
+
+			if err != nil {
+				return buildLogger(126, loggers...)
+			}
+
+			if output, err := cfg.GetConsoleOutput(); err == nil {
+				loggers = append(loggers, zerolog.ConsoleWriter{
+					Out:        os.Stdout,
+					TimeFormat: output.TimeFormat,
+				})
+			} else {
+				if err == config.SocksV4aLoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			if output, err := cfg.GetFileOutput(); err == nil {
+				file, err := os.Open(output.Path)
+
+				if err != nil {
+					return nil, err
+				}
+
+				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+			} else {
+				if err == config.SocksV4aLoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			return buildLogger(level, loggers...)
+		},
+	}
+
+	v5ZeroLoggerDef := di.Def{
+		Name:  "v5_zero_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v5_logger_config").(config.SocksV5LoggerConfig)
+
+			level, err := cfg.GetLevel()
+
+			var loggers []io.Writer
+
+			if err != nil {
+				return buildLogger(126, loggers...)
+			}
+
+			if output, err := cfg.GetConsoleOutput(); err == nil {
+				loggers = append(loggers, zerolog.ConsoleWriter{
+					Out:        os.Stdout,
+					TimeFormat: output.TimeFormat,
+				})
+			} else {
+				if err == config.SocksV5LoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			if output, err := cfg.GetFileOutput(); err == nil {
+				file, err := os.Open(output.Path)
+
+				if err != nil {
+					return nil, err
+				}
+
+				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+			} else {
+				if err == config.SocksV5LoggerDisabledError {
+					return buildLogger(126, loggers...)
+				}
+			}
+
+			return buildLogger(level, loggers...)
+		},
+	}
+
+	err := builder.Add(
+		tcpZeroLoggerDef,
+		v4ZeroLoggerDef,
+		v4aZeroLoggerDef,
+		v5ZeroLoggerDef,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
 	registerLogger(builder)
 }
 
@@ -261,10 +447,9 @@ func registerLogger(builder di.Builder) {
 		Name:  "tcp_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("tcp_logger_config").(config.TcpLoggerConfig)
-			logConfig := ctn.Get("log_config").(config.LogConfig)
+			zero := ctn.Get("tcp_zero_logger").(zerolog.Logger)
 
-			return logger.NewBaseTcpLogger(cfg, logConfig.GetReplacer(), logConfig.IsTcpLoggerEnabled()), nil
+			return logger.NewBaseTcpLogger(zero)
 		},
 	}
 
@@ -274,10 +459,9 @@ func registerLogger(builder di.Builder) {
 		Name:  "v4_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_logger_config").(config.SocksV4LoggerConfig)
-			logConfig := ctn.Get("log_config").(config.LogConfig)
+			zero := ctn.Get("v4_zero_logger").(zerolog.Logger)
 
-			return logger.NewBaseSocksV4Logger(cfg, logConfig.GetReplacer(), logConfig.IsSocksV4LoggerEnabled()), nil
+			return logger.NewBaseSocksV4Logger(zero)
 		},
 	}
 
@@ -285,10 +469,9 @@ func registerLogger(builder di.Builder) {
 		Name:  "v4a_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4a_logger_config").(config.SocksV4aLoggerConfig)
-			logConfig := ctn.Get("log_config").(config.LogConfig)
+			zero := ctn.Get("v4a_zero_logger").(zerolog.Logger)
 
-			return logger.NewBaseSocksV4aLogger(cfg, logConfig.GetReplacer(), logConfig.IsSocksV4aLoggerEnabled()), nil
+			return logger.NewBaseSocksV4aLogger(zero)
 		},
 	}
 
@@ -296,10 +479,9 @@ func registerLogger(builder di.Builder) {
 		Name:  "v5_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v5_logger_config").(config.SocksV5LoggerConfig)
-			logConfig := ctn.Get("log_config").(config.LogConfig)
+			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return logger.NewBaseSocksV5Logger(cfg, logConfig.GetReplacer(), logConfig.IsSocksV5LoggerEnabled()), nil
+			return logger.NewBaseSocksV5Logger(zero)
 		},
 	}
 

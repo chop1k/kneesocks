@@ -40,46 +40,28 @@
     "BindDeadline": 120
   },
   "Log": {
-    "Formats": {
-      "Replacer": "{ %s }"
+    "Tcp": {
+      "Level": 0,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
+      }
     },
-    "Loggers": {
-      "Tcp": {
-        "Formats": {
-          "Listen": "{ now } | { addr } | Listening tcp.",
-          "ConnectionAccepted": "{ now } | { client } | Connection accepted.",
-          "ConnectionDenied": "{ now } | { client } | Connection denied.",
-          "ConnectionBound": "{ now } | { client } | Connection bound with $host.",
-          "ConnectionProtocolDetermined": "{ now } | { client } | Connection protocol determined as { protocol }."
-        },
-        "Outputs": {
-          "Console": {},
-          "File": {
-            "Path": "/tmp/{ now_date }"
-          }
-        }
-      },
-      "SocksV5": {
-        "Formats": {
-          "ConnectRequest": "{ now } | { client } -> { chunk.Address } | Received connect request. ",
-          "ConnectSuccessful": "{ now } | { client } -> { chunk.Address } | Connection successful. ",
-          "ConnectFailed": "{ now } | { client } -> { chunk.Address } | Connection failed. ",
-          "BindRequest": "{ now } | { client } -> { chunk.Address } | Received bind request. ",
-          "BindSuccessful": "{ now } | { client } -> { chunk.Address } | Bind successful. ",
-          "BindFailed": "{ now } | { client } -> { chunk.Address } | Bind failed. ",
-          "Bound": "{ now } | { client } -> { chunk.Address } | Successfully bound. ",
-          "UdpAssociationRequest": "{ now } | { client } -> { chunk.Address } | Received udp association request. ",
-          "UdpAssociationSuccessful": "{ now } | { client } -> { chunk.Address } | Association successful. ",
-          "UdpAssociationFailed": "{ now } | { client } -> { chunk.Address } | Association failed. ",
-          "AuthenticationSuccessful": "{ now } | { client } | Authentication successful. ",
-          "AuthenticationFailed": "{ now } | { client } | Authentication failed. "
-        },
-        "Outputs": {
-          "Console": {},
-          "File": {
-            "Path": "/tmp/{ now_date }_v5"
-          }
-        }
+    "SocksV4": {
+      "Level": 0,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
+      }
+    },
+    "SocksV4a": {
+      "Level": 0,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
+      }
+    },
+    "SocksV5": {
+      "Level": 0,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
       }
     }
   },

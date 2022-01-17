@@ -1,44 +1,60 @@
 package config
 
-import "socks/config/tree"
+import (
+	"errors"
+	"socks/config/tree"
+)
+
+var (
+	UdpLoggerDisabledError        = errors.New("Udp logger is disabled. ")
+	UdpConsoleOutputDisabledError = errors.New("Udp console output is disabled. ")
+	UdpFileOutputDisabledError    = errors.New("Udp console output is disabled. ")
+)
 
 type UdpLoggerConfig interface {
-	GetPacketReceivedFormat() string
-	GetPacketDeniedFormat() string
-	GetPacketSentFormat() string
-	IsConsoleOutputEnabled() bool
-	IsFileOutputEnabled() bool
-	GetFilePathFormat() string
+	GetLevel() (int, error)
+	GetConsoleOutput() (tree.ConsoleOutputConfig, error)
+	GetFileOutput() (tree.FileOutputConfig, error)
 }
 
 type BaseUdpLoggerConfig struct {
 	config tree.Config
 }
 
-func NewBaseUdpLoggerConfig(config tree.Config) BaseUdpLoggerConfig {
-	return BaseUdpLoggerConfig{config: config}
+func NewBaseUdpLoggerConfig(config tree.Config) (BaseUdpLoggerConfig, error) {
+	return BaseUdpLoggerConfig{
+		config: config,
+	}, nil
 }
 
-func (b BaseUdpLoggerConfig) GetPacketReceivedFormat() string {
-	return b.config.Log.Loggers.Udp.Formats.PacketReceived
+func (b BaseUdpLoggerConfig) GetLevel() (int, error) {
+	if b.config.Log.Udp == nil {
+		return 0, UdpLoggerDisabledError
+	}
+
+	return b.config.Log.Udp.Level, nil
 }
 
-func (b BaseUdpLoggerConfig) GetPacketDeniedFormat() string {
-	return b.config.Log.Loggers.Udp.Formats.PacketDenied
+func (b BaseUdpLoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.ConsoleOutputConfig{}, UdpLoggerDisabledError
+	}
+
+	if b.config.Log.Udp.Console == nil {
+		return tree.ConsoleOutputConfig{}, UdpConsoleOutputDisabledError
+	}
+
+	return *b.config.Log.Udp.Console, nil
 }
 
-func (b BaseUdpLoggerConfig) GetPacketSentFormat() string {
-	return b.config.Log.Loggers.Udp.Formats.PacketSent
-}
+func (b BaseUdpLoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
+	if b.config.Log.SocksV4 == nil {
+		return tree.FileOutputConfig{}, UdpLoggerDisabledError
+	}
 
-func (b BaseUdpLoggerConfig) IsConsoleOutputEnabled() bool {
-	return b.config.Log.Loggers.Udp.Outputs.Console != nil
-}
+	if b.config.Log.Udp.File == nil {
+		return tree.FileOutputConfig{}, UdpFileOutputDisabledError
+	}
 
-func (b BaseUdpLoggerConfig) IsFileOutputEnabled() bool {
-	return b.config.Log.Loggers.Udp.Outputs.File != nil
-}
-
-func (b BaseUdpLoggerConfig) GetFilePathFormat() string {
-	return b.config.Log.Loggers.Udp.Outputs.File.Path
+	return *b.config.Log.Udp.File, nil
 }
