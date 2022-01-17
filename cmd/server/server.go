@@ -776,28 +776,70 @@ func registerServer(builder di.Builder) {
 		},
 	}
 
+	v4aConnectHandlerDef := di.Def{
+		Name:  "v4a_connect_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v4a").(v4a.Protocol)
+			cfg := ctn.Get("v4a_config").(config.SocksV4aConfig)
+			v4Logger := ctn.Get("v4a_logger").(logger.SocksV4aLogger)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
+
+			return server.NewBaseV4aConnectHandler(
+				cfg,
+				tcpConfig,
+				streamHandler,
+				v4Logger,
+				protocol,
+			)
+		},
+	}
+
+	v4aBindHandlerDef := di.Def{
+		Name:  "v4a_bind_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v4a").(v4a.Protocol)
+			cfg := ctn.Get("v4a_config").(config.SocksV4aConfig)
+			v4aLogger := ctn.Get("v4a_logger").(logger.SocksV4aLogger)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
+			bindManager := ctn.Get("bind_manager").(server.BindManager)
+			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+
+			return server.NewBaseV4aBindHandler(
+				cfg,
+				tcpConfig,
+				v4aLogger,
+				streamHandler,
+				protocol,
+				bindManager,
+				addressUtils,
+			)
+		},
+	}
+
 	v4aHandlerDef := di.Def{
 		Name:  "v4a_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
-			bindManager := ctn.Get("bind_manager").(server.BindManager)
 			protocol := ctn.Get("v4a").(v4a.Protocol)
 			parser := ctn.Get("v4a_parser").(v4a.Parser)
 			cfg := ctn.Get("v4a_config").(config.SocksV4aConfig)
-			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			v4aLogger := ctn.Get("v4a_logger").(logger.SocksV4aLogger)
 			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+			connectHandler := ctn.Get("v4a_connect_handler").(server.V4aConnectHandler)
+			bindHandler := ctn.Get("v4a_bind_handler").(server.V4aBindHandler)
 
 			return server.NewBaseV4aHandler(
 				protocol,
 				parser,
-				bindManager,
 				cfg,
-				streamHandler,
-				addressUtils,
 				v4aLogger,
 				tcpConfig,
+				connectHandler,
+				bindHandler,
 			)
 		},
 	}
@@ -863,6 +905,8 @@ func registerServer(builder di.Builder) {
 		v4BindHandlerDef,
 		v4ConnectHandlerDef,
 		v4HandlerDef,
+		v4aConnectHandlerDef,
+		v4aBindHandlerDef,
 		v4aHandlerDef,
 		v5HandlerDef,
 		packetHandlerDef,

@@ -5,18 +5,18 @@ import (
 )
 
 type RequestChunk struct {
-	SocksVersion byte
-	CommandCode byte
+	SocksVersion    byte
+	CommandCode     byte
 	DestinationPort uint16
-	DestinationIp net.IP
-	Domain string
+	DestinationIp   net.IP
+	Domain          string
 }
 
 type ResponseChunk struct {
-	SocksVersion byte
-	CommandCode byte
+	SocksVersion    byte
+	CommandCode     byte
 	DestinationPort uint16
-	DestinationIp net.IP
+	DestinationIp   net.IP
 }
 
 type Protocol struct {
@@ -31,7 +31,7 @@ func NewProtocol(
 	}
 }
 
-func (p Protocol) ResponseWithCode(code byte, port uint16, ip net.IP, client net.Conn) error {
+func (p Protocol) responseWithCode(code byte, port uint16, ip net.IP, client net.Conn) error {
 	chunk := ResponseChunk{
 		SocksVersion:    0, // НЕ МЕНЯЙ ВСЁ НАЕБНЕТСЯ СПЕЦИФИКАЦИЯ ГОВНО
 		CommandCode:     code,
@@ -47,5 +47,13 @@ func (p Protocol) ResponseWithCode(code byte, port uint16, ip net.IP, client net
 
 	_, err := client.Write(response)
 
-	return err	
+	return err
+}
+
+func (p Protocol) ResponseWithSuccess(port uint16, ip net.IP, client net.Conn) error {
+	return p.responseWithCode(90, port, ip, client)
+}
+
+func (p Protocol) ResponseWithFail(port uint16, ip net.IP, client net.Conn) error {
+	return p.responseWithCode(91, port, ip, client)
 }

@@ -1,24 +1,22 @@
 package logger
 
 import (
-	"fmt"
 	"github.com/rs/zerolog"
-	"socks/protocol/v4a"
 )
 
 type SocksV4aLogger interface {
-	ConnectRequest(client string, chunk v4a.RequestChunk)
-	ConnectFailed(client string, chunk v4a.RequestChunk)
-	ConnectSuccessful(client string, chunk v4a.RequestChunk)
-	ConnectNotAllowed(client string, chunk v4a.RequestChunk)
-	ConnectUnreachable(client string, chunk v4a.RequestChunk)
-	ConnectTimeout(client string, chunk v4a.RequestChunk)
-	BindRequest(client string, chunk v4a.RequestChunk)
-	BindFailed(client string, chunk v4a.RequestChunk)
-	BindSuccessful(client string, chunk v4a.RequestChunk)
-	BindNotAllowed(client string, chunk v4a.RequestChunk)
-	BindTimeout(client string, chunk v4a.RequestChunk)
-	Bound(client string, host string, chunk v4a.RequestChunk)
+	ConnectRequest(client string, address string)
+	ConnectFailed(client string, address string)
+	ConnectSuccessful(client string, address string)
+	ConnectNotAllowed(client string, address string)
+	ConnectUnreachable(client string, address string)
+	ConnectTimeout(client string, address string)
+	BindRequest(client string, address string)
+	BindFailed(client string, address string)
+	BindSuccessful(client string, address string)
+	BindNotAllowed(client string, address string)
+	BindTimeout(client string, address string)
+	Bound(client string, host string)
 	TransferFinished(client string, host string)
 }
 
@@ -32,7 +30,7 @@ func NewBaseSocksV4aLogger(logger zerolog.Logger) (BaseSocksV4aLogger, error) {
 	}, nil
 }
 
-func (b BaseSocksV4aLogger) ConnectRequest(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) ConnectRequest(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -41,11 +39,11 @@ func (b BaseSocksV4aLogger) ConnectRequest(client string, chunk v4a.RequestChunk
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Received connect request. ")
 }
 
-func (b BaseSocksV4aLogger) ConnectFailed(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) ConnectFailed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -54,11 +52,11 @@ func (b BaseSocksV4aLogger) ConnectFailed(client string, chunk v4a.RequestChunk)
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Connect failed. ")
 }
 
-func (b BaseSocksV4aLogger) ConnectSuccessful(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) ConnectSuccessful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -67,11 +65,11 @@ func (b BaseSocksV4aLogger) ConnectSuccessful(client string, chunk v4a.RequestCh
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Connect successful. ")
 }
 
-func (b BaseSocksV4aLogger) ConnectNotAllowed(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) ConnectNotAllowed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -80,11 +78,11 @@ func (b BaseSocksV4aLogger) ConnectNotAllowed(client string, chunk v4a.RequestCh
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Connect not allowed due to ruleset. ")
 }
 
-func (b BaseSocksV4aLogger) ConnectUnreachable(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) ConnectUnreachable(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -93,11 +91,11 @@ func (b BaseSocksV4aLogger) ConnectUnreachable(client string, chunk v4a.RequestC
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Host unreachable. ")
 }
 
-func (b BaseSocksV4aLogger) ConnectTimeout(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) ConnectTimeout(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -106,11 +104,11 @@ func (b BaseSocksV4aLogger) ConnectTimeout(client string, chunk v4a.RequestChunk
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Connect failed due to timeout. ")
 }
 
-func (b BaseSocksV4aLogger) BindRequest(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) BindRequest(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -119,11 +117,11 @@ func (b BaseSocksV4aLogger) BindRequest(client string, chunk v4a.RequestChunk) {
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Received bind request. ")
 }
 
-func (b BaseSocksV4aLogger) BindFailed(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) BindFailed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -132,11 +130,11 @@ func (b BaseSocksV4aLogger) BindFailed(client string, chunk v4a.RequestChunk) {
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Bind failed. ")
 }
 
-func (b BaseSocksV4aLogger) BindSuccessful(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) BindSuccessful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -145,11 +143,11 @@ func (b BaseSocksV4aLogger) BindSuccessful(client string, chunk v4a.RequestChunk
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Bind successful. ")
 }
 
-func (b BaseSocksV4aLogger) BindNotAllowed(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) BindNotAllowed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -158,11 +156,11 @@ func (b BaseSocksV4aLogger) BindNotAllowed(client string, chunk v4a.RequestChunk
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Bind failed due to ruleset. ")
 }
 
-func (b BaseSocksV4aLogger) BindTimeout(client string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) BindTimeout(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -171,11 +169,11 @@ func (b BaseSocksV4aLogger) BindTimeout(client string, chunk v4a.RequestChunk) {
 
 	e.
 		Str("client", client).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
+		Str("host", address).
 		Msg("Bind failed due to timeout. ")
 }
 
-func (b BaseSocksV4aLogger) Bound(client string, host string, chunk v4a.RequestChunk) {
+func (b BaseSocksV4aLogger) Bound(client string, host string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -185,7 +183,6 @@ func (b BaseSocksV4aLogger) Bound(client string, host string, chunk v4a.RequestC
 	e.
 		Str("client", client).
 		Str("host", host).
-		Str("host", fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)).
 		Msg("Bound successfully. ")
 }
 
