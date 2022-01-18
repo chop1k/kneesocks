@@ -19,6 +19,8 @@ type SocksV5Logger interface {
 	BindFailed(client string, address string)
 	BindSuccessful(client string, address string)
 	BindNotAllowed(client string, address string)
+	BindNotAllowedByWhitelist(client string, address string)
+	BindNotAllowedByBlacklist(client string, address string)
 	BindTimeout(client string, address string)
 	Bound(client string, host string)
 	UdpAssociationRequest(client string)
@@ -220,6 +222,32 @@ func (b BaseSocksV5Logger) BindNotAllowed(client string, address string) {
 		Str("client", client).
 		Str("host", address).
 		Msg("Bind not allowed due to ruleset. ")
+}
+
+func (b BaseSocksV5Logger) BindNotAllowedByWhitelist(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Bind not allowed due to whitelist.")
+}
+
+func (b BaseSocksV5Logger) BindNotAllowedByBlacklist(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Bind not allowed due to blacklist.")
 }
 
 func (b BaseSocksV5Logger) BindTimeout(client string, address string) {

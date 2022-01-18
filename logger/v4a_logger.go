@@ -9,6 +9,8 @@ type SocksV4aLogger interface {
 	ConnectFailed(client string, address string)
 	ConnectSuccessful(client string, address string)
 	ConnectNotAllowed(client string, address string)
+	ConnectNotAllowedByWhitelist(client string, address string)
+	ConnectNotAllowedByBlacklist(client string, address string)
 	ConnectHostUnreachable(client string, address string)
 	ConnectNetworkUnreachable(client string, address string)
 	ConnectRefused(client string, address string)
@@ -17,6 +19,8 @@ type SocksV4aLogger interface {
 	BindFailed(client string, address string)
 	BindSuccessful(client string, address string)
 	BindNotAllowed(client string, address string)
+	BindNotAllowedByWhitelist(client string, address string)
+	BindNotAllowedByBlacklist(client string, address string)
 	BindTimeout(client string, address string)
 	Bound(client string, host string)
 	TransferFinished(client string, host string)
@@ -84,6 +88,31 @@ func (b BaseSocksV4aLogger) ConnectNotAllowed(client string, address string) {
 		Msg("Connect not allowed due to ruleset. ")
 }
 
+func (b BaseSocksV4aLogger) ConnectNotAllowedByWhitelist(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Connect not allowed due to whitelist.")
+}
+
+func (b BaseSocksV4aLogger) ConnectNotAllowedByBlacklist(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Connect not allowed due to blacklist.")
+}
 func (b BaseSocksV4aLogger) ConnectHostUnreachable(client string, address string) {
 	e := b.logger.Info()
 
@@ -186,6 +215,32 @@ func (b BaseSocksV4aLogger) BindNotAllowed(client string, address string) {
 		Str("client", client).
 		Str("host", address).
 		Msg("Bind failed due to ruleset. ")
+}
+
+func (b BaseSocksV4aLogger) BindNotAllowedByWhitelist(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Bind not allowed due to whitelist.")
+}
+
+func (b BaseSocksV4aLogger) BindNotAllowedByBlacklist(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Bind not allowed due to blacklist.")
 }
 
 func (b BaseSocksV4aLogger) BindTimeout(client string, address string) {

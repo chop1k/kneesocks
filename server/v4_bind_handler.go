@@ -19,6 +19,8 @@ type BaseV4BindHandler struct {
 	bindManager   BindManager
 	utils         utils.AddressUtils
 	sender        V4Sender
+	whitelist     WhitelistManager
+	blacklist     BlacklistManager
 }
 
 func NewBaseV4BindHandler(
@@ -28,6 +30,8 @@ func NewBaseV4BindHandler(
 	bindManager BindManager,
 	utils utils.AddressUtils,
 	sender V4Sender,
+	whitelist WhitelistManager,
+	blacklist BlacklistManager,
 ) (BaseV4BindHandler, error) {
 	return BaseV4BindHandler{
 		config:        config,
@@ -36,10 +40,36 @@ func NewBaseV4BindHandler(
 		bindManager:   bindManager,
 		utils:         utils,
 		sender:        sender,
+		whitelist:     whitelist,
+		blacklist:     blacklist,
 	}, nil
 }
 
 func (b BaseV4BindHandler) HandleV4Bind(address string, client net.Conn) {
+	whitelisted := b.whitelist.IsWhitelisted(address)
+
+	if whitelisted {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.BindNotAllowedByWhitelist(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	blacklisted := b.blacklist.IsBlacklisted(address)
+
+	if blacklisted {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.BindNotAllowedByBlacklist(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	b.bind(address, client)
+}
+
+func (b BaseV4BindHandler) bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {

@@ -818,6 +818,8 @@ func registerServer(builder di.Builder) {
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
 			sender := ctn.Get("v4_sender").(server.V4Sender)
 			errorHandler := ctn.Get("v4_error_handler").(server.V4ErrorHandler)
+			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
+			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
 
 			return server.NewBaseV4ConnectHandler(
 				cfg,
@@ -825,6 +827,8 @@ func registerServer(builder di.Builder) {
 				v4Logger,
 				sender,
 				errorHandler,
+				whitelist,
+				blacklist,
 			)
 		},
 	}
@@ -839,6 +843,8 @@ func registerServer(builder di.Builder) {
 			bindManager := ctn.Get("bind_manager").(server.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v4_sender").(server.V4Sender)
+			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
+			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
 
 			return server.NewBaseV4BindHandler(
 				cfg,
@@ -847,6 +853,8 @@ func registerServer(builder di.Builder) {
 				bindManager,
 				addressUtils,
 				sender,
+				whitelist,
+				blacklist,
 			)
 		},
 	}
@@ -910,6 +918,8 @@ func registerServer(builder di.Builder) {
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
 			sender := ctn.Get("v4a_sender").(server.V4aSender)
 			errorHandler := ctn.Get("v4a_error_handler").(server.V4aErrorHandler)
+			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
+			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
 
 			return server.NewBaseV4aConnectHandler(
 				cfg,
@@ -917,6 +927,8 @@ func registerServer(builder di.Builder) {
 				v4aLogger,
 				sender,
 				errorHandler,
+				whitelist,
+				blacklist,
 			)
 		},
 	}
@@ -931,6 +943,8 @@ func registerServer(builder di.Builder) {
 			bindManager := ctn.Get("bind_manager").(server.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v4a_sender").(server.V4aSender)
+			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
+			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
 
 			return server.NewBaseV4aBindHandler(
 				cfg,
@@ -939,6 +953,8 @@ func registerServer(builder di.Builder) {
 				bindManager,
 				addressUtils,
 				sender,
+				whitelist,
+				blacklist,
 			)
 		},
 	}
@@ -1028,6 +1044,8 @@ func registerServer(builder di.Builder) {
 			bindManager := ctn.Get("bind_manager").(server.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v5_sender").(server.V5Sender)
+			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
+			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
 
 			return server.NewBaseV5BindHandler(
 				bindManager,
@@ -1036,6 +1054,8 @@ func registerServer(builder di.Builder) {
 				addressUtils,
 				v5Logger,
 				sender,
+				whitelist,
+				blacklist,
 			)
 		},
 	}

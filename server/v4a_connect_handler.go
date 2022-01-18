@@ -17,6 +17,8 @@ type BaseV4aConnectHandler struct {
 	logger        logger.SocksV4aLogger
 	sender        V4aSender
 	errorHandler  V4aErrorHandler
+	whitelist     WhitelistManager
+	blacklist     BlacklistManager
 }
 
 func NewBaseV4aConnectHandler(
@@ -25,6 +27,8 @@ func NewBaseV4aConnectHandler(
 	logger logger.SocksV4aLogger,
 	sender V4aSender,
 	errorHandler V4aErrorHandler,
+	whitelist WhitelistManager,
+	blacklist BlacklistManager,
 ) (BaseV4aConnectHandler, error) {
 	return BaseV4aConnectHandler{
 		config:        config,
@@ -32,10 +36,36 @@ func NewBaseV4aConnectHandler(
 		logger:        logger,
 		sender:        sender,
 		errorHandler:  errorHandler,
+		whitelist:     whitelist,
+		blacklist:     blacklist,
 	}, nil
 }
 
 func (b BaseV4aConnectHandler) HandleV4aConnect(address string, client net.Conn) {
+	whitelisted := b.whitelist.IsWhitelisted(address)
+
+	if whitelisted {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.ConnectNotAllowedByWhitelist(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	blacklisted := b.blacklist.IsBlacklisted(address)
+
+	if blacklisted {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.ConnectNotAllowedByBlacklist(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	b.connect(address, client)
+}
+
+func (b BaseV4aConnectHandler) connect(address string, client net.Conn) {
 	deadline := time.Second * time.Duration(b.config.GetConnectDeadline())
 
 	host, err := net.DialTimeout("tcp", address, deadline)

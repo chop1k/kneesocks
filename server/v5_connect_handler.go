@@ -66,6 +66,10 @@ func (b BaseV5ConnectHandler) HandleV5Connect(address string, client net.Conn) {
 		return
 	}
 
+	b.connect(address, client)
+}
+
+func (b BaseV5ConnectHandler) connect(address string, client net.Conn) {
 	deadline := time.Second * time.Duration(b.config.GetConnectDeadline())
 
 	host, err := net.DialTimeout("tcp", address, deadline)

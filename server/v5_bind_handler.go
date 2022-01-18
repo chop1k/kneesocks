@@ -19,6 +19,8 @@ type BaseV5BindHandler struct {
 	utils         utils.AddressUtils
 	logger        logger.SocksV5Logger
 	sender        V5Sender
+	whitelist     WhitelistManager
+	blacklist     BlacklistManager
 }
 
 func NewBaseV5BindHandler(
@@ -28,6 +30,8 @@ func NewBaseV5BindHandler(
 	utils utils.AddressUtils,
 	logger logger.SocksV5Logger,
 	sender V5Sender,
+	whitelist WhitelistManager,
+	blacklist BlacklistManager,
 ) (BaseV5BindHandler, error) {
 	return BaseV5BindHandler{
 		bindManager:   bindManager,
@@ -36,10 +40,36 @@ func NewBaseV5BindHandler(
 		utils:         utils,
 		logger:        logger,
 		sender:        sender,
+		whitelist:     whitelist,
+		blacklist:     blacklist,
 	}, nil
 }
 
 func (b BaseV5BindHandler) HandleV5Bind(address string, client net.Conn) {
+	whitelisted := b.whitelist.IsWhitelisted(address)
+
+	if whitelisted {
+		b.sender.SendConnectionNotAllowedAndClose(client)
+
+		b.logger.BindNotAllowedByWhitelist(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	blacklisted := b.blacklist.IsBlacklisted(address)
+
+	if blacklisted {
+		b.sender.SendConnectionNotAllowedAndClose(client)
+
+		b.logger.BindNotAllowedByBlacklist(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	b.bind(address, client)
+}
+
+func (b BaseV5BindHandler) bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
