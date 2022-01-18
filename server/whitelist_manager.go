@@ -1,23 +1,44 @@
 package server
 
 import (
-	"socks/config/tree"
+	"regexp"
+	"socks/config"
 )
 
 type WhitelistManager interface {
-	IsWhitelisted(addrType byte, addr string) bool
+	IsWhitelisted(address string) bool
 }
 
-type BaseWhitelist struct {
-	config tree.Config
+type BaseWhitelistManager struct {
+	config config.WhitelistConfig
 }
 
-func NewBaseWhitelist(config tree.Config) BaseWhitelist {
-	return BaseWhitelist{
+func NewBaseWhitelistManager(config config.WhitelistConfig) (BaseWhitelistManager, error) {
+	return BaseWhitelistManager{
 		config: config,
-	}
+	}, nil
 }
 
-func (b BaseWhitelist) IsWhitelisted(addrType byte, addr string) bool {
-	panic("b")
+func (b BaseWhitelistManager) IsWhitelisted(address string) bool {
+	list := b.config.GetWhitelist()
+
+	if len(list) <= 0 {
+		return false
+	}
+
+	for _, pattern := range list {
+		matched, err := regexp.MatchString(pattern, address)
+
+		if err != nil {
+			// b.errors.Unexpected(pattern, address, err)
+
+			continue
+		}
+
+		if matched {
+			return false
+		}
+	}
+
+	return true
 }

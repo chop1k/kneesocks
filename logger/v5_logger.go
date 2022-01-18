@@ -9,6 +9,7 @@ type SocksV5Logger interface {
 	ConnectFailed(client string, address string)
 	ConnectSuccessful(client string, address string)
 	ConnectNotAllowed(client string, address string)
+	ConnectNotAllowedByWhitelist(client string, address string)
 	ConnectTimeout(client string, address string)
 	ConnectRefused(client string, address string)
 	ConnectHostUnreachable(client string, address string)
@@ -88,6 +89,19 @@ func (b BaseSocksV5Logger) ConnectNotAllowed(client string, address string) {
 		Str("client", client).
 		Str("host", address).
 		Msg("Connect not allowed due to ruleset.")
+}
+
+func (b BaseSocksV5Logger) ConnectNotAllowedByWhitelist(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Connect not allowed due to whitelist.")
 }
 
 func (b BaseSocksV5Logger) ConnectTimeout(client string, address string) {
