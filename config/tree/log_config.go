@@ -6,7 +6,6 @@ type LogConfig struct {
 	SocksV4  *SocksV4LoggerConfig
 	SocksV4a *SocksV4aLoggerConfig
 	SocksV5  *SocksV5LoggerConfig
-	Unix     *UnixLoggerConfig
 	Errors   *ErrorsLoggerConfig
 }
 
@@ -43,12 +42,6 @@ type SocksV4aLoggerConfig struct {
 }
 
 type SocksV5LoggerConfig struct {
-	Level   int
-	Console *ConsoleOutputConfig
-	File    *FileOutputConfig
-}
-
-type UnixLoggerConfig struct {
 	Level   int
 	Console *ConsoleOutputConfig
 	File    *FileOutputConfig

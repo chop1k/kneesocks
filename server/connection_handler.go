@@ -21,7 +21,7 @@ type BaseConnectionHandler struct {
 	v5Handler             V5Handler
 	bindManager           BindManager
 	utils                 utils.AddressUtils
-	tcpLogger             logger.TcpLogger
+	logger                logger.TcpLogger
 	config                config.TcpConfig
 }
 
@@ -33,7 +33,7 @@ func NewBaseConnectionHandler(
 	v5Handler V5Handler,
 	bindManager BindManager,
 	utils utils.AddressUtils,
-	tcpLogger logger.TcpLogger,
+	logger logger.TcpLogger,
 	config config.TcpConfig,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
@@ -44,7 +44,7 @@ func NewBaseConnectionHandler(
 		v4Handler:             v4Handler,
 		bindManager:           bindManager,
 		utils:                 utils,
-		tcpLogger:             tcpLogger,
+		logger:                logger,
 		config:                config,
 	}, nil
 }
@@ -93,11 +93,11 @@ func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
 	}
 
 	if request[4] == 0 && request[5] == 0 && request[6] == 0 && request[7] != 0 {
-		go b.tcpLogger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
+		b.logger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
 
 		b.v4aHandler.HandleV4a(request, client)
 	} else {
-		go b.tcpLogger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4")
+		b.logger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4")
 
 		b.v4Handler.HandleV4(request, client)
 	}
@@ -116,7 +116,7 @@ func (b BaseConnectionHandler) checkV5(request []byte, client net.Conn) {
 		return
 	}
 
-	go b.tcpLogger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV5")
+	b.logger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV5")
 
 	b.v5Handler.HandleV5(request, client)
 }
@@ -158,7 +158,7 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 		}
 	}
 
-	go b.tcpLogger.ConnectionDenied(addr)
+	b.logger.ConnectionDenied(addr)
 
 	_ = client.Close()
 }
@@ -182,7 +182,7 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 		return
 	}
 
-	go b.tcpLogger.ConnectionBound(client.RemoteAddr().String(), host.RemoteAddr().String())
+	b.logger.ConnectionBound(client.RemoteAddr().String(), host.RemoteAddr().String())
 
 	_, err = host.Write(request)
 
