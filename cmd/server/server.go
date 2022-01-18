@@ -904,7 +904,8 @@ func registerServer(builder di.Builder) {
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v5_sender").(server.V5Sender)
 			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
-			whitelistManager := ctn.Get("whitelist_manager").(server.WhitelistManager)
+			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
+			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
 
 			return server.NewBaseV5ConnectHandler(
 				cfg,
@@ -913,7 +914,8 @@ func registerServer(builder di.Builder) {
 				addressUtils,
 				sender,
 				errorHandler,
-				whitelistManager,
+				whitelist,
+				blacklist,
 			)
 		},
 	}
@@ -1049,6 +1051,16 @@ func registerServer(builder di.Builder) {
 		},
 	}
 
+	blacklistManagerDef := di.Def{
+		Name:  "blacklist_manager",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("blacklist_config").(config.BlacklistConfig)
+
+			return server.NewBaseBlacklistManager(cfg)
+		},
+	}
+
 	err := builder.Add(
 		authenticationHandlerDef,
 		connectionHandlerDef,
@@ -1074,6 +1086,7 @@ func registerServer(builder di.Builder) {
 		udpAssociationManagerDef,
 		serverDef,
 		whitelistManagerDef,
+		blacklistManagerDef,
 	)
 
 	if err != nil {

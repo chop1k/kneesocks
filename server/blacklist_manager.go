@@ -1,23 +1,40 @@
 package server
 
 import (
-	"socks/config/tree"
+	"regexp"
+	"socks/config"
 )
 
 type BlacklistManager interface {
-	IsBlacklisted(addrType byte, addr string) bool
+	IsBlacklisted(address string) bool
 }
 
-type BaseBlacklist struct {
-	config tree.Config
+type BaseBlacklistManager struct {
+	config config.BlacklistConfig
 }
 
-func NewBaseBlacklist(config tree.Config) BaseBlacklist {
-	return BaseBlacklist{
+func NewBaseBlacklistManager(config config.BlacklistConfig) (BaseBlacklistManager, error) {
+	return BaseBlacklistManager{
 		config: config,
-	}
+	}, nil
 }
 
-func (b BaseBlacklist) IsBlacklisted(addrType byte, addr string) bool {
-	panic("a")
+func (b BaseBlacklistManager) IsBlacklisted(address string) bool {
+	list := b.config.GetBlacklist()
+
+	for _, pattern := range list {
+		matched, err := regexp.MatchString(pattern, address)
+
+		if err != nil {
+			// b.errors.Unexpected(pattern, address, err)
+
+			continue
+		}
+
+		if matched {
+			return true
+		}
+	}
+
+	return false
 }

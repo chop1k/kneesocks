@@ -20,6 +20,7 @@ type BaseV5ConnectHandler struct {
 	sender        V5Sender
 	errorHandler  V5ErrorHandler
 	whitelist     WhitelistManager
+	blacklist     BlacklistManager
 }
 
 func NewBaseV5ConnectHandler(
@@ -30,6 +31,7 @@ func NewBaseV5ConnectHandler(
 	sender V5Sender,
 	errorHandler V5ErrorHandler,
 	whitelist WhitelistManager,
+	blacklist BlacklistManager,
 ) (BaseV5ConnectHandler, error) {
 	return BaseV5ConnectHandler{
 		config:        config,
@@ -39,6 +41,7 @@ func NewBaseV5ConnectHandler(
 		sender:        sender,
 		errorHandler:  errorHandler,
 		whitelist:     whitelist,
+		blacklist:     blacklist,
 	}, nil
 }
 
@@ -49,6 +52,16 @@ func (b BaseV5ConnectHandler) HandleV5Connect(address string, client net.Conn) {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.ConnectNotAllowedByWhitelist(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	blacklisted := b.blacklist.IsBlacklisted(address)
+
+	if blacklisted {
+		b.sender.SendConnectionNotAllowedAndClose(client)
+
+		b.logger.ConnectNotAllowedByBlacklist(client.RemoteAddr().String(), address)
 
 		return
 	}
