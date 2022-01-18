@@ -4,7 +4,6 @@ import (
 	"net"
 	"socks/config"
 	"socks/logger"
-	v4 "socks/protocol/v4"
 	"socks/utils"
 	"time"
 )
@@ -15,36 +14,36 @@ type V4BindHandler interface {
 
 type BaseV4BindHandler struct {
 	config        config.SocksV4Config
-	tcpConfig     config.TcpConfig
 	logger        logger.SocksV4Logger
 	streamHandler StreamHandler
-	protocol      v4.Protocol
 	bindManager   BindManager
 	utils         utils.AddressUtils
+	sender        V4Sender
 }
 
-func NewBaseV4BindHandler(config config.SocksV4Config, tcpConfig config.TcpConfig, logger logger.SocksV4Logger, streamHandler StreamHandler, protocol v4.Protocol, bindManager BindManager, utils utils.AddressUtils) (BaseV4BindHandler, error) {
+func NewBaseV4BindHandler(
+	config config.SocksV4Config,
+	logger logger.SocksV4Logger,
+	streamHandler StreamHandler,
+	bindManager BindManager,
+	utils utils.AddressUtils,
+	sender V4Sender,
+) (BaseV4BindHandler, error) {
 	return BaseV4BindHandler{
 		config:        config,
-		tcpConfig:     tcpConfig,
 		logger:        logger,
 		streamHandler: streamHandler,
-		protocol:      protocol,
 		bindManager:   bindManager,
 		utils:         utils,
+		sender:        sender,
 	}, nil
-}
-
-func (b BaseV4BindHandler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
-	_ = client.Close()
 }
 
 func (b BaseV4BindHandler) HandleV4Bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		b.logger.BindFailed(client.RemoteAddr().String(), address)
 
@@ -57,10 +56,10 @@ func (b BaseV4BindHandler) HandleV4Bind(address string, client net.Conn) {
 }
 
 func (b BaseV4BindHandler) bindSendFirstResponse(address string, client net.Conn) {
-	err := b.protocol.ResponseWithSuccess(0, net.IP{0, 0, 0, 0}, client)
+	err := b.sender.SendSuccess(client)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		b.logger.BindFailed(client.RemoteAddr().String(), address)
 
@@ -78,7 +77,7 @@ func (b BaseV4BindHandler) bindWait(address string, client net.Conn) {
 	host, err := b.bindManager.ReceiveHost(address, deadline)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		if err == TimeoutError {
 			b.logger.BindTimeout(client.RemoteAddr().String(), address)
@@ -96,7 +95,7 @@ func (b BaseV4BindHandler) bindCheckAddress(address string, host net.Conn, clien
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 
@@ -108,7 +107,7 @@ func (b BaseV4BindHandler) bindCheckAddress(address string, host net.Conn, clien
 	addrType, determineErr := b.utils.DetermineAddressType(hostAddr)
 
 	if determineErr != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 
@@ -118,7 +117,7 @@ func (b BaseV4BindHandler) bindCheckAddress(address string, host net.Conn, clien
 	}
 
 	if addrType != 1 {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 
@@ -133,10 +132,10 @@ func (b BaseV4BindHandler) bindCheckAddress(address string, host net.Conn, clien
 func (b BaseV4BindHandler) bindSendSecondResponse(address string, hostAddr string, hostPort uint16, host net.Conn, client net.Conn) {
 	ip := net.ParseIP(hostAddr).To4()
 
-	err := b.protocol.ResponseWithSuccess(hostPort, ip, client)
+	err := b.sender.SendSuccessWithParameters(ip, hostPort, client)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 

@@ -713,18 +713,18 @@ func registerServer(builder di.Builder) {
 		Name:  "v4_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v4").(v4.Protocol)
 			cfg := ctn.Get("v4_config").(config.SocksV4Config)
 			v4Logger := ctn.Get("v4_logger").(logger.SocksV4Logger)
-			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
+			sender := ctn.Get("v4_sender").(server.V4Sender)
+			errorHandler := ctn.Get("v4_error_handler").(server.V4ErrorHandler)
 
 			return server.NewBaseV4ConnectHandler(
 				cfg,
-				tcpConfig,
 				streamHandler,
 				v4Logger,
-				protocol,
+				sender,
+				errorHandler,
 			)
 		},
 	}
@@ -733,22 +733,20 @@ func registerServer(builder di.Builder) {
 		Name:  "v4_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v4").(v4.Protocol)
 			cfg := ctn.Get("v4_config").(config.SocksV4Config)
 			v4Logger := ctn.Get("v4_logger").(logger.SocksV4Logger)
-			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
 			bindManager := ctn.Get("bind_manager").(server.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+			sender := ctn.Get("v4_sender").(server.V4Sender)
 
 			return server.NewBaseV4BindHandler(
 				cfg,
-				tcpConfig,
 				v4Logger,
 				streamHandler,
-				protocol,
 				bindManager,
 				addressUtils,
+				sender,
 			)
 		},
 	}
@@ -757,22 +755,48 @@ func registerServer(builder di.Builder) {
 		Name:  "v4_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v4").(v4.Protocol)
 			parser := ctn.Get("v4_parser").(v4.Parser)
 			cfg := ctn.Get("v4_config").(config.SocksV4Config)
 			v4Logger := ctn.Get("v4_logger").(logger.SocksV4Logger)
-			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			connectHandler := ctn.Get("v4_connect_handler").(server.V4ConnectHandler)
 			bindHandler := ctn.Get("v4_bind_handler").(server.V4BindHandler)
+			sender := ctn.Get("v4_sender").(server.V4Sender)
 
 			return server.NewBaseV4Handler(
-				protocol,
 				parser,
 				cfg,
-				tcpConfig,
 				v4Logger,
 				connectHandler,
 				bindHandler,
+				sender,
+			)
+		},
+	}
+
+	v4SenderDef := di.Def{
+		Name:  "v4_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v4").(v4.Protocol)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
+
+			return server.NewBaseV4Sender(
+				protocol,
+				tcpConfig,
+			)
+		},
+	}
+
+	v4ErrorHandlerDef := di.Def{
+		Name:  "v4_error_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			sender := ctn.Get("v4_sender").(server.V4Sender)
+			v4Logger := ctn.Get("v4_logger").(logger.SocksV4Logger)
+
+			return server.NewBaseV4ErrorHandler(
+				v4Logger,
+				sender,
 			)
 		},
 	}
@@ -996,6 +1020,8 @@ func registerServer(builder di.Builder) {
 		v4BindHandlerDef,
 		v4ConnectHandlerDef,
 		v4HandlerDef,
+		v4SenderDef,
+		v4ErrorHandlerDef,
 		v4aConnectHandlerDef,
 		v4aBindHandlerDef,
 		v4aHandlerDef,
