@@ -4,7 +4,6 @@ import (
 	"net"
 	"socks/config"
 	"socks/logger"
-	"socks/protocol/v4a"
 	"time"
 )
 
@@ -14,31 +13,26 @@ type V4aConnectHandler interface {
 
 type BaseV4aConnectHandler struct {
 	config        config.SocksV4aConfig
-	tcpConfig     config.TcpConfig
 	streamHandler StreamHandler
 	logger        logger.SocksV4aLogger
-	protocol      v4a.Protocol
+	sender        V4aSender
+	errorHandler  V4aErrorHandler
 }
 
 func NewBaseV4aConnectHandler(
 	config config.SocksV4aConfig,
-	tcpConfig config.TcpConfig,
 	streamHandler StreamHandler,
 	logger logger.SocksV4aLogger,
-	protocol v4a.Protocol,
+	sender V4aSender,
+	errorHandler V4aErrorHandler,
 ) (BaseV4aConnectHandler, error) {
 	return BaseV4aConnectHandler{
 		config:        config,
-		tcpConfig:     tcpConfig,
 		streamHandler: streamHandler,
 		logger:        logger,
-		protocol:      protocol,
+		sender:        sender,
+		errorHandler:  errorHandler,
 	}, nil
-}
-
-func (b BaseV4aConnectHandler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
-	_ = client.Close()
 }
 
 func (b BaseV4aConnectHandler) HandleV4aConnect(address string, client net.Conn) {
@@ -47,9 +41,7 @@ func (b BaseV4aConnectHandler) HandleV4aConnect(address string, client net.Conn)
 	host, err := net.DialTimeout("tcp", address, deadline)
 
 	if err != nil {
-		b.sendFailAndClose(client)
-
-		b.logger.ConnectFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aNetworkError(err, address, client)
 
 		return
 	}
@@ -58,10 +50,10 @@ func (b BaseV4aConnectHandler) HandleV4aConnect(address string, client net.Conn)
 }
 
 func (b BaseV4aConnectHandler) connectSendSuccess(address string, host net.Conn, client net.Conn) {
-	err := b.protocol.ResponseWithSuccess(uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
+	err := b.sender.SendSuccess(client)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		_ = host.Close()
 

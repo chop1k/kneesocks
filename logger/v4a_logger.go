@@ -9,7 +9,9 @@ type SocksV4aLogger interface {
 	ConnectFailed(client string, address string)
 	ConnectSuccessful(client string, address string)
 	ConnectNotAllowed(client string, address string)
-	ConnectUnreachable(client string, address string)
+	ConnectHostUnreachable(client string, address string)
+	ConnectNetworkUnreachable(client string, address string)
+	ConnectRefused(client string, address string)
 	ConnectTimeout(client string, address string)
 	BindRequest(client string, address string)
 	BindFailed(client string, address string)
@@ -82,7 +84,7 @@ func (b BaseSocksV4aLogger) ConnectNotAllowed(client string, address string) {
 		Msg("Connect not allowed due to ruleset. ")
 }
 
-func (b BaseSocksV4aLogger) ConnectUnreachable(client string, address string) {
+func (b BaseSocksV4aLogger) ConnectHostUnreachable(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -106,6 +108,32 @@ func (b BaseSocksV4aLogger) ConnectTimeout(client string, address string) {
 		Str("client", client).
 		Str("host", address).
 		Msg("Connect failed due to timeout. ")
+}
+
+func (b BaseSocksV4aLogger) ConnectNetworkUnreachable(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Network unreachable. ")
+}
+
+func (b BaseSocksV4aLogger) ConnectRefused(client string, address string) {
+	e := b.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Connect refused by host. ")
 }
 
 func (b BaseSocksV4aLogger) BindRequest(client string, address string) {

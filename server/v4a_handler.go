@@ -13,32 +13,29 @@ type V4aHandler interface {
 }
 
 type BaseV4aHandler struct {
-	protocol       v4a.Protocol
 	parser         v4a.Parser
 	config         config.SocksV4aConfig
 	logger         logger.SocksV4aLogger
-	tcpConfig      config.TcpConfig
 	connectHandler V4aConnectHandler
 	bindHandler    V4aBindHandler
+	sender         V4aSender
 }
 
 func NewBaseV4aHandler(
-	protocol v4a.Protocol,
 	parser v4a.Parser,
 	config config.SocksV4aConfig,
 	logger logger.SocksV4aLogger,
-	tcpConfig config.TcpConfig,
 	connectHandler V4aConnectHandler,
 	bindHandler V4aBindHandler,
+	sender V4aSender,
 ) (BaseV4aHandler, error) {
 	return BaseV4aHandler{
-		protocol:       protocol,
 		parser:         parser,
 		config:         config,
 		logger:         logger,
-		tcpConfig:      tcpConfig,
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
+		sender:         sender,
 	}, nil
 }
 
@@ -46,7 +43,7 @@ func (b BaseV4aHandler) HandleV4a(request []byte, client net.Conn) {
 	chunk, err := b.parser.ParseRequest(request)
 
 	if err != nil {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		return
 	}
@@ -58,20 +55,15 @@ func (b BaseV4aHandler) HandleV4a(request []byte, client net.Conn) {
 	} else if chunk.CommandCode == 2 {
 		b.handleBind(address, client)
 	} else {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 	}
-}
-
-func (b BaseV4aHandler) sendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
-	_ = client.Close()
 }
 
 func (b BaseV4aHandler) handleConnect(address string, client net.Conn) {
 	b.logger.ConnectRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsConnectAllowed() {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		b.logger.ConnectNotAllowed(client.RemoteAddr().String(), address)
 
@@ -85,7 +77,7 @@ func (b BaseV4aHandler) handleBind(address string, client net.Conn) {
 	b.logger.BindRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsBindAllowed() {
-		b.sendFailAndClose(client)
+		b.sender.SendFailAndClose(client)
 
 		b.logger.BindNotAllowed(client.RemoteAddr().String(), address)
 
