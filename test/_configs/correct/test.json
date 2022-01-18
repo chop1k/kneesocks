@@ -44,24 +44,36 @@
       "Level": 0,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
+      },
+      "File": {
+        "Path": "/tmp/tcp.log"
       }
     },
     "SocksV4": {
       "Level": 0,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
+      },
+      "File": {
+        "Path": "/tmp/v4.log"
       }
     },
     "SocksV4a": {
       "Level": 0,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
+      },
+      "File": {
+        "Path": "/tmp/v4a.log"
       }
     },
     "SocksV5": {
       "Level": 0,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
+      },
+      "File": {
+        "Path": "/tmp/v5.log"
       }
     }
   },

@@ -52,7 +52,7 @@ func testV4aConnectSendRequest(picture byte, writer bufio.Writer, reader io.Read
 	require.NoError(t, writer.WriteByte(0))
 	require.NoError(t, writer.WriteByte(0))
 	require.NoError(t, writer.WriteByte(0))
-	require.NoError(t, writer.WriteByte(0))
+	require.NoError(t, writer.WriteByte(255))
 
 	host := []byte(tcpServerHost)
 

@@ -246,7 +246,9 @@ func registerConfig(builder di.Builder) {
 }
 
 func registerZeroLog(builder di.Builder) {
-	buildLogger := func(level int, loggers ...io.Writer) (zerolog.Logger, error) {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+
+	buildLogger := func(level int, loggers []io.Writer) (zerolog.Logger, error) {
 		return zerolog.New(zerolog.MultiLevelWriter(loggers...)).
 			With().
 			Timestamp().
@@ -265,7 +267,7 @@ func registerZeroLog(builder di.Builder) {
 			var loggers []io.Writer
 
 			if err != nil {
-				return buildLogger(126, loggers...)
+				return buildLogger(126, loggers)
 			}
 
 			if output, err := cfg.GetConsoleOutput(); err == nil {
@@ -275,25 +277,25 @@ func registerZeroLog(builder di.Builder) {
 				})
 			} else {
 				if err == config.TcpLoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.Open(output.Path)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
 
 				if err != nil {
 					return nil, err
 				}
 
-				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+				loggers = append(loggers, file)
 			} else {
 				if err == config.TcpLoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
-			return buildLogger(level, loggers...)
+			return buildLogger(level, loggers)
 		},
 	}
 
@@ -308,7 +310,7 @@ func registerZeroLog(builder di.Builder) {
 			var loggers []io.Writer
 
 			if err != nil {
-				return buildLogger(126, loggers...)
+				return buildLogger(126, loggers)
 			}
 
 			if output, err := cfg.GetConsoleOutput(); err == nil {
@@ -318,25 +320,25 @@ func registerZeroLog(builder di.Builder) {
 				})
 			} else {
 				if err == config.SocksV4LoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.Open(output.Path)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
 
 				if err != nil {
 					return nil, err
 				}
 
-				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+				loggers = append(loggers, file)
 			} else {
 				if err == config.SocksV4LoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
-			return buildLogger(level, loggers...)
+			return buildLogger(level, loggers)
 		},
 	}
 
@@ -351,7 +353,7 @@ func registerZeroLog(builder di.Builder) {
 			var loggers []io.Writer
 
 			if err != nil {
-				return buildLogger(126, loggers...)
+				return buildLogger(126, loggers)
 			}
 
 			if output, err := cfg.GetConsoleOutput(); err == nil {
@@ -361,25 +363,25 @@ func registerZeroLog(builder di.Builder) {
 				})
 			} else {
 				if err == config.SocksV4aLoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.Open(output.Path)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
 
 				if err != nil {
 					return nil, err
 				}
 
-				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+				loggers = append(loggers, file)
 			} else {
 				if err == config.SocksV4aLoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
-			return buildLogger(level, loggers...)
+			return buildLogger(level, loggers)
 		},
 	}
 
@@ -394,7 +396,7 @@ func registerZeroLog(builder di.Builder) {
 			var loggers []io.Writer
 
 			if err != nil {
-				return buildLogger(126, loggers...)
+				return buildLogger(126, loggers)
 			}
 
 			if output, err := cfg.GetConsoleOutput(); err == nil {
@@ -404,25 +406,25 @@ func registerZeroLog(builder di.Builder) {
 				})
 			} else {
 				if err == config.SocksV5LoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.Open(output.Path)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
 
 				if err != nil {
 					return nil, err
 				}
 
-				loggers = append(loggers, zerolog.New(file).Level(zerolog.Level(level)))
+				loggers = append(loggers, file)
 			} else {
 				if err == config.SocksV5LoggerDisabledError {
-					return buildLogger(126, loggers...)
+					return buildLogger(126, loggers)
 				}
 			}
 
-			return buildLogger(level, loggers...)
+			return buildLogger(level, loggers)
 		},
 	}
 
