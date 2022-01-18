@@ -10,7 +10,9 @@ type TcpLogger interface {
 	ConnectionProtocolDetermined(client string, protocol string)
 	ConnectionBound(client string, host string)
 	ConnectionExchangeTimeout(client string)
-	Listen(addr string)
+	Listen(address string)
+	ListenError(address string, err error)
+	AcceptError(err error)
 }
 
 type BaseTcpLogger struct {
@@ -32,7 +34,7 @@ func (b BaseTcpLogger) ConnectionAccepted(client string) {
 
 	e.
 		Str("client", client).
-		Msg("New tcp connection. ")
+		Msg("Tcp connection accepted.")
 }
 
 func (b BaseTcpLogger) ConnectionDenied(client string) {
@@ -44,7 +46,7 @@ func (b BaseTcpLogger) ConnectionDenied(client string) {
 
 	e.
 		Str("client", client).
-		Msg("New tcp connection. ")
+		Msg("Tcp connection denied.")
 }
 
 func (b BaseTcpLogger) ConnectionProtocolDetermined(client string, protocol string) {
@@ -57,7 +59,7 @@ func (b BaseTcpLogger) ConnectionProtocolDetermined(client string, protocol stri
 	e.
 		Str("client", client).
 		Str("protocol", protocol).
-		Msg("Connection protocol determined. ")
+		Msg("Connection protocol determined.")
 }
 
 func (b BaseTcpLogger) ConnectionBound(client string, host string) {
@@ -70,11 +72,11 @@ func (b BaseTcpLogger) ConnectionBound(client string, host string) {
 	e.
 		Str("client", client).
 		Str("host", host).
-		Msg("Connection bound. ")
+		Msg("Connection bound.")
 }
 
 func (b BaseTcpLogger) ConnectionExchangeTimeout(client string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -82,10 +84,10 @@ func (b BaseTcpLogger) ConnectionExchangeTimeout(client string) {
 
 	e.
 		Str("client", client).
-		Msg("Connection exchange timeout. ")
+		Msg("Connection exchange timeout.")
 }
 
-func (b BaseTcpLogger) Listen(addr string) {
+func (b BaseTcpLogger) Listen(address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -93,6 +95,31 @@ func (b BaseTcpLogger) Listen(addr string) {
 	}
 
 	e.
-		Str("addr", addr).
-		Msg("Listening for tcp connection. ")
+		Str("address", address).
+		Msg("Listening for tcp connection.")
+}
+
+func (b BaseTcpLogger) ListenError(address string, err error) {
+	e := b.logger.Fatal()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Err(err).
+		Msg("Got listen error.")
+}
+
+func (b BaseTcpLogger) AcceptError(err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Err(err).
+		Msg("Got accept error.")
 }

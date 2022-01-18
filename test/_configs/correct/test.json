@@ -40,31 +40,34 @@
     "BindDeadline": 120
   },
   "Log": {
+    "Server": {
+      "Level": 0,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
+      }
+    },
     "Tcp": {
       "Level": 0,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
-      },
-      "File": {
-        "Path": "/tmp/tcp.log"
+      }
+    },
+    "Udp": {
+      "Level": 0,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
       }
     },
     "SocksV4": {
       "Level": 0,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
-      },
-      "File": {
-        "Path": "/tmp/v4.log"
       }
     },
     "SocksV4a": {
       "Level": 0,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
-      },
-      "File": {
-        "Path": "/tmp/v4a.log"
       }
     },
     "SocksV5": {
@@ -77,13 +80,13 @@
       }
     }
   },
-  "WhiteList": [],
+  "WhiteList": [
+  ],
   "BlackList": [
-    "localhost",
-    "127.0.0.1",
-    "192.168.0.*",
-    "0.0.0.0",
-    "::1"
+    "localhost:*",
+    "127.0.0.1:*",
+    "192.168.0.*:*",
+    "0.0.0.0:*"
   ],
   "Users": [
     {

@@ -3,6 +3,7 @@ package server
 import (
 	"regexp"
 	"socks/config"
+	"socks/logger"
 )
 
 type WhitelistManager interface {
@@ -11,11 +12,16 @@ type WhitelistManager interface {
 
 type BaseWhitelistManager struct {
 	config config.WhitelistConfig
+	logger logger.ServerLogger
 }
 
-func NewBaseWhitelistManager(config config.WhitelistConfig) (BaseWhitelistManager, error) {
+func NewBaseWhitelistManager(
+	config config.WhitelistConfig,
+	logger logger.ServerLogger,
+) (BaseWhitelistManager, error) {
 	return BaseWhitelistManager{
 		config: config,
+		logger: logger,
 	}, nil
 }
 
@@ -30,7 +36,7 @@ func (b BaseWhitelistManager) IsWhitelisted(address string) bool {
 		matched, err := regexp.MatchString(pattern, address)
 
 		if err != nil {
-			// b.errors.Unexpected(pattern, address, err)
+			b.logger.WhitelistMatchError(address, pattern, err)
 
 			continue
 		}

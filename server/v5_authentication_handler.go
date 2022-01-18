@@ -2,35 +2,38 @@ package server
 
 import (
 	"net"
-	config2 "socks/config/tree"
+	"socks/config"
 	"socks/protocol/auth/password"
 	v5 "socks/protocol/v5"
 )
 
-type AuthenticationHandler interface {
+type V5AuthenticationHandler interface {
 	HandleAuthentication(methods v5.MethodsChunk, client net.Conn) bool
 }
 
-type BaseAuthenticationHandler struct {
-	config   config2.Config
+type BaseV5AuthenticationHandler struct {
 	password password.Password
 	protocol v5.Protocol
+	config   config.SocksV5Config
+	users    config.UsersConfig
 }
 
 func NewBaseAuthenticationHandler(
-	config config2.Config,
 	password password.Password,
 	protocol v5.Protocol,
-) BaseAuthenticationHandler {
-	return BaseAuthenticationHandler{
-		config:   config,
+	config config.SocksV5Config,
+	users config.UsersConfig,
+) BaseV5AuthenticationHandler {
+	return BaseV5AuthenticationHandler{
 		password: password,
 		protocol: protocol,
+		config:   config,
+		users:    users,
 	}
 }
 
-func (b BaseAuthenticationHandler) HandleAuthentication(methods v5.MethodsChunk, client net.Conn) bool {
-	for _, method := range b.config.SocksV5.AuthenticationMethodsAllowed {
+func (b BaseV5AuthenticationHandler) HandleAuthentication(methods v5.MethodsChunk, client net.Conn) bool {
+	for _, method := range b.config.GetAuthenticationMethods() {
 		var code byte
 
 		if method == "no-authentication" {
@@ -67,18 +70,18 @@ func (b BaseAuthenticationHandler) HandleAuthentication(methods v5.MethodsChunk,
 	return false
 }
 
-func (b BaseAuthenticationHandler) handleNoAuthentication() bool {
+func (b BaseV5AuthenticationHandler) handleNoAuthentication() bool {
 	return true
 }
 
-func (b BaseAuthenticationHandler) handlePassword(client net.Conn) bool {
+func (b BaseV5AuthenticationHandler) handlePassword(client net.Conn) bool {
 	request, err := b.password.ReceiveRequest(client)
 
 	if err != nil {
 		return false
 	}
 
-	for _, user := range b.config.Users {
+	for _, user := range b.users.GetUsers() {
 		if user.Name == request.Name && user.Password == request.Password {
 			err := b.password.ResponseWith(0, client)
 

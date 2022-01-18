@@ -16,7 +16,7 @@ type BaseV5Handler struct {
 	protocol              v5.Protocol
 	parser                v5.Parser
 	config                config.SocksV5Config
-	authenticationHandler AuthenticationHandler
+	authenticationHandler V5AuthenticationHandler
 	logger                logger.SocksV5Logger
 	connectHandler        V5ConnectHandler
 	bindHandler           V5BindHandler
@@ -28,7 +28,7 @@ func NewBaseV5Handler(
 	protocol v5.Protocol,
 	parser v5.Parser,
 	config config.SocksV5Config,
-	authenticationHandler AuthenticationHandler,
+	authenticationHandler V5AuthenticationHandler,
 	logger logger.SocksV5Logger,
 	connectHandler V5ConnectHandler,
 	bindHandler V5BindHandler,

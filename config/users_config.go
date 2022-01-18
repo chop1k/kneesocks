@@ -10,10 +10,10 @@ type BaseUsersConfig struct {
 	config tree.Config
 }
 
-func NewBaseUsersConfig(config tree.Config) BaseUsersConfig {
+func NewBaseUsersConfig(config tree.Config) (BaseUsersConfig, error) {
 	return BaseUsersConfig{
 		config: config,
-	}
+	}, nil
 }
 
 func (b BaseUsersConfig) GetUsers() []tree.User {

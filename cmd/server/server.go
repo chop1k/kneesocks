@@ -58,9 +58,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseConfig(cfgTree), nil
+			return config.NewBaseConfig(cfg), nil
 		},
 	}
 
@@ -68,9 +68,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "tcp_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseTcpConfig(cfgTree), nil
+			return config.NewBaseTcpConfig(cfg), nil
 		},
 	}
 
@@ -78,9 +78,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "udp_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseUdpConfig(cfgTree), nil
+			return config.NewBaseUdpConfig(cfg), nil
 		},
 	}
 
@@ -88,9 +88,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "v4_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV4Config(cfgTree), nil
+			return config.NewBaseSocksV4Config(cfg), nil
 		},
 	}
 
@@ -98,9 +98,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "v4a_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV4aConfig(cfgTree), nil
+			return config.NewBaseSocksV4aConfig(cfg), nil
 		},
 	}
 
@@ -108,9 +108,19 @@ func registerConfig(builder di.Builder) {
 		Name:  "v5_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV5Config(cfgTree), nil
+			return config.NewBaseSocksV5Config(cfg), nil
+		},
+	}
+
+	serverLoggerConfigDef := di.Def{
+		Name:  "server_logger_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return config.NewBaseServerLoggerConfig(cfg)
 		},
 	}
 
@@ -118,9 +128,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "tcp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseTcpLoggerConfig(cfgTree)
+			return config.NewBaseTcpLoggerConfig(cfg)
 		},
 	}
 
@@ -128,9 +138,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "udp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseUdpLoggerConfig(cfgTree)
+			return config.NewBaseUdpLoggerConfig(cfg)
 		},
 	}
 
@@ -138,9 +148,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "v4_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV4LoggerConfig(cfgTree)
+			return config.NewBaseSocksV4LoggerConfig(cfg)
 		},
 	}
 
@@ -148,9 +158,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "v4a_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV4aLoggerConfig(cfgTree)
+			return config.NewBaseSocksV4aLoggerConfig(cfg)
 		},
 	}
 
@@ -158,25 +168,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "v5_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseSocksV5LoggerConfig(cfgTree)
-		},
-	}
-
-	unixLoggerConfigDef := di.Def{
-		Name:  "unix_logger_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			panic("should not be used. ")
-		},
-	}
-
-	errorsLoggerConfigDef := di.Def{
-		Name:  "errors_logger_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			panic("should not be used. ")
+			return config.NewBaseSocksV5LoggerConfig(cfg)
 		},
 	}
 
@@ -184,9 +178,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "whitelist_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseWhitelistConfig(cfgTree), nil
+			return config.NewBaseWhitelistConfig(cfg), nil
 		},
 	}
 
@@ -194,17 +188,9 @@ func registerConfig(builder di.Builder) {
 		Name:  "blacklist_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfgTree := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_tree").(tree.Config)
 
-			return config.NewBaseBlacklistConfig(cfgTree), nil
-		},
-	}
-
-	unixConfigDef := di.Def{
-		Name:  "unix_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			panic("should not be used. ")
+			return config.NewBaseBlacklistConfig(cfg), nil
 		},
 	}
 
@@ -216,11 +202,22 @@ func registerConfig(builder di.Builder) {
 		},
 	}
 
+	usersConfigDef := di.Def{
+		Name:  "users_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return config.NewBaseUsersConfig(cfg)
+		},
+	}
+
 	err := builder.Add(
 		configPathDef,
 		validatorDef,
 		configTreeDef,
 		configDef,
+		serverLoggerConfigDef,
 		tcpConfigDef,
 		udpConfigDef,
 		v4ConfigDef,
@@ -231,11 +228,9 @@ func registerConfig(builder di.Builder) {
 		v4LoggerConfigDef,
 		v4aLoggerConfigDef,
 		v5LoggerConfigDef,
-		unixLoggerConfigDef,
-		errorsLoggerConfigDef,
 		whitelistConfigDef,
 		blacklistConfigDef,
-		unixConfigDef,
+		usersConfigDef,
 	)
 
 	if err != nil {
@@ -254,6 +249,49 @@ func registerZeroLog(builder di.Builder) {
 			Timestamp().
 			Logger().
 			Level(zerolog.Level(level)), nil
+	}
+
+	serverZeroLoggerDef := di.Def{
+		Name:  "server_zero_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("server_logger_config").(config.ServerLoggerConfig)
+
+			level, err := cfg.GetLevel()
+
+			var loggers []io.Writer
+
+			if err != nil {
+				return buildLogger(126, loggers)
+			}
+
+			if output, err := cfg.GetConsoleOutput(); err == nil {
+				loggers = append(loggers, zerolog.ConsoleWriter{
+					Out:        os.Stdout,
+					TimeFormat: output.TimeFormat,
+				})
+			} else {
+				if err == config.ServerLoggerDisabledError {
+					return buildLogger(126, loggers)
+				}
+			}
+
+			if output, err := cfg.GetFileOutput(); err == nil {
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+
+				if err != nil {
+					return nil, err
+				}
+
+				loggers = append(loggers, file)
+			} else {
+				if err == config.ServerLoggerDisabledError {
+					return buildLogger(126, loggers)
+				}
+			}
+
+			return buildLogger(level, loggers)
+		},
 	}
 
 	tcpZeroLoggerDef := di.Def{
@@ -291,6 +329,49 @@ func registerZeroLog(builder di.Builder) {
 				loggers = append(loggers, file)
 			} else {
 				if err == config.TcpLoggerDisabledError {
+					return buildLogger(126, loggers)
+				}
+			}
+
+			return buildLogger(level, loggers)
+		},
+	}
+
+	udpZeroLoggerDef := di.Def{
+		Name:  "udp_zero_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("udp_logger_config").(config.UdpLoggerConfig)
+
+			level, err := cfg.GetLevel()
+
+			var loggers []io.Writer
+
+			if err != nil {
+				return buildLogger(126, loggers)
+			}
+
+			if output, err := cfg.GetConsoleOutput(); err == nil {
+				loggers = append(loggers, zerolog.ConsoleWriter{
+					Out:        os.Stdout,
+					TimeFormat: output.TimeFormat,
+				})
+			} else {
+				if err == config.UdpLoggerDisabledError {
+					return buildLogger(126, loggers)
+				}
+			}
+
+			if output, err := cfg.GetFileOutput(); err == nil {
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+
+				if err != nil {
+					return nil, err
+				}
+
+				loggers = append(loggers, file)
+			} else {
+				if err == config.UdpLoggerDisabledError {
 					return buildLogger(126, loggers)
 				}
 			}
@@ -429,7 +510,9 @@ func registerZeroLog(builder di.Builder) {
 	}
 
 	err := builder.Add(
+		serverZeroLoggerDef,
 		tcpZeroLoggerDef,
+		udpZeroLoggerDef,
 		v4ZeroLoggerDef,
 		v4aZeroLoggerDef,
 		v5ZeroLoggerDef,
@@ -443,7 +526,15 @@ func registerZeroLog(builder di.Builder) {
 }
 
 func registerLogger(builder di.Builder) {
-	//errorsLoggerDef := di.Def{}
+	serverLoggerDef := di.Def{
+		Name:  "server_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			zero := ctn.Get("server_zero_logger").(zerolog.Logger)
+
+			return logger.NewBaseServerLogger(zero)
+		},
+	}
 
 	tcpLoggerDef := di.Def{
 		Name:  "tcp_logger",
@@ -455,7 +546,15 @@ func registerLogger(builder di.Builder) {
 		},
 	}
 
-	//udpLoggerDef := di.Def{}
+	udpLoggerDef := di.Def{
+		Name:  "udp_logger",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			zero := ctn.Get("udp_zero_logger").(zerolog.Logger)
+
+			return logger.NewBaseUdpLogger(zero)
+		},
+	}
 
 	v4LoggerDef := di.Def{
 		Name:  "v4_logger",
@@ -488,9 +587,9 @@ func registerLogger(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		//errorsLoggerDef,
+		serverLoggerDef,
 		tcpLoggerDef,
-		//udpLoggerDef,
+		udpLoggerDef,
 		v4LoggerDef,
 		v4aLoggerDef,
 		v5LoggerDef,
@@ -641,11 +740,12 @@ func registerServer(builder di.Builder) {
 		Name:  "authentication_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
 			passwd := ctn.Get("auth_password").(password.Password)
 			protocol := ctn.Get("v5").(v5.Protocol)
+			cfg := ctn.Get("v5_config").(config.SocksV5Config)
+			users := ctn.Get("users_config").(config.UsersConfig)
 
-			return server.NewBaseAuthenticationHandler(cfg, passwd, protocol), nil
+			return server.NewBaseAuthenticationHandler(passwd, protocol, cfg, users), nil
 		},
 	}
 
@@ -653,7 +753,6 @@ func registerServer(builder di.Builder) {
 		Name:  "connection_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			authenticationHandler := ctn.Get("authentication_handler").(server.AuthenticationHandler)
 			streamHandler := ctn.Get("stream_handler").(server.StreamHandler)
 			v4Handler := ctn.Get("v4_handler").(server.V4Handler)
 			v4aHandler := ctn.Get("v4a_handler").(server.V4aHandler)
@@ -664,7 +763,6 @@ func registerServer(builder di.Builder) {
 			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 
 			return server.NewBaseConnectionHandler(
-				authenticationHandler,
 				streamHandler,
 				v4Handler,
 				v4aHandler,
@@ -969,7 +1067,7 @@ func registerServer(builder di.Builder) {
 			protocol := ctn.Get("v5").(v5.Protocol)
 			parser := ctn.Get("v5_parser").(v5.Parser)
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
-			authenticationHandler := ctn.Get("authentication_handler").(server.AuthenticationHandler)
+			authenticationHandler := ctn.Get("authentication_handler").(server.V5AuthenticationHandler)
 			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
 			connectHandler := ctn.Get("v5_connect_handler").(server.V5ConnectHandler)
 			bindHandler := ctn.Get("v5_bind_handler").(server.V5BindHandler)
@@ -1032,12 +1130,21 @@ func registerServer(builder di.Builder) {
 		Name:  "server",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
 			connectionHandler := ctn.Get("connection_handler").(server.ConnectionHandler)
 			packetHandler := ctn.Get("packet_handler").(server.PacketHandler)
+			tcpConfig := ctn.Get("tcp_config").(config.TcpConfig)
 			tcpLogger := ctn.Get("tcp_logger").(logger.TcpLogger)
+			udpConfig := ctn.Get("udp_config").(config.UdpConfig)
+			udpLogger := ctn.Get("udp_logger").(logger.UdpLogger)
 
-			return server.NewServer(cfg, connectionHandler, packetHandler, tcpLogger), nil
+			return server.NewServer(
+				connectionHandler,
+				packetHandler,
+				tcpLogger,
+				tcpConfig,
+				udpLogger,
+				udpConfig,
+			)
 		},
 	}
 
@@ -1046,8 +1153,9 @@ func registerServer(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("whitelist_config").(config.WhitelistConfig)
+			serverLogger := ctn.Get("server_logger").(logger.ServerLogger)
 
-			return server.NewBaseWhitelistManager(cfg)
+			return server.NewBaseWhitelistManager(cfg, serverLogger)
 		},
 	}
 
@@ -1056,8 +1164,9 @@ func registerServer(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("blacklist_config").(config.BlacklistConfig)
+			serverLogger := ctn.Get("server_logger").(logger.ServerLogger)
 
-			return server.NewBaseBlacklistManager(cfg)
+			return server.NewBaseBlacklistManager(cfg, serverLogger)
 		},
 	}
 

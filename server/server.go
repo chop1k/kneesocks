@@ -3,114 +3,99 @@ package server
 import (
 	"fmt"
 	"net"
-	config2 "socks/config/tree"
+	"socks/config"
 	"socks/logger"
 )
 
 type Server struct {
-	config            config2.Config
 	connectionHandler ConnectionHandler
 	packetHandler     PacketHandler
 	tcpLogger         logger.TcpLogger
+	tcpConfig         config.TcpConfig
+	udpLogger         logger.UdpLogger
+	udpConfig         config.UdpConfig
 }
 
 func NewServer(
-	config config2.Config,
 	connectionHandler ConnectionHandler,
 	packetHandler PacketHandler,
 	tcpLogger logger.TcpLogger,
-) Server {
+	tcpConfig config.TcpConfig,
+	udpLogger logger.UdpLogger,
+	udpConfig config.UdpConfig,
+) (Server, error) {
 	return Server{
-		config:            config,
 		connectionHandler: connectionHandler,
 		packetHandler:     packetHandler,
 		tcpLogger:         tcpLogger,
-	}
+		tcpConfig:         tcpConfig,
+		udpLogger:         udpLogger,
+		udpConfig:         udpConfig,
+	}, nil
 }
 
 func (s Server) listenTcp() {
-	addr := &net.TCPAddr{
-		IP:   net.ParseIP(s.config.Tcp.BindIp),
-		Port: int(s.config.Tcp.BindPort),
-		Zone: s.config.Tcp.BindZone,
+	address := &net.TCPAddr{
+		IP:   net.ParseIP(s.tcpConfig.GetBindIP()),
+		Port: s.tcpConfig.GetBindPort(),
+		Zone: s.tcpConfig.GetBindZone(),
 	}
 
-	listener, err := net.ListenTCP("tcp", addr)
+	listener, err := net.ListenTCP("tcp", address)
 
 	if err != nil {
+		s.tcpLogger.ListenError(address.String(), err)
+
 		panic(err)
 	}
 
-	go s.tcpLogger.Listen(addr.String())
+	s.tcpLogger.Listen(address.String())
 
 	for {
-		conn, acceptErr := listener.AcceptTCP()
+		conn, err := listener.AcceptTCP()
 
-		if acceptErr != nil {
+		if err != nil {
 			continue
 		}
 
-		//keepAliveErr := conn.SetKeepAlive(true)
-		//
-		//if keepAliveErr != nil {
-		//	go s.errorHandler.HandleError(keepAliveErr)
-		//
-		//	continue
-		//}
-
-		/*writeBuffErr := conn.SetWriteBuffer(4090)
-
-		if writeBuffErr != nil {
-			go s.errorHandler.HandleError(writeBuffErr)
-
-			continue
-		}*/
-
-		//readBuffErr := conn.SetReadBuffer(4090)
-		//
-		//if readBuffErr != nil {
-		//	go s.errorHandler.HandleError(readBuffErr)
-		//
-		//	continue
-		//}
-
-		remoteAddr := conn.RemoteAddr()
-
-		go s.tcpLogger.ConnectionAccepted(remoteAddr.String())
+		s.tcpLogger.ConnectionAccepted(conn.RemoteAddr().String())
 
 		go s.connectionHandler.HandleConnection(conn)
 	}
 }
 
 func (s Server) listenUdp() {
-	addr := fmt.Sprintf("%s:%d", s.config.Udp.BindIp, s.config.Udp.BindPort)
+	address := fmt.Sprintf("%s:%d", s.udpConfig.GetBindIp(), s.udpConfig.GetBindPort())
 
-	packet, err := net.ListenPacket("udp", addr)
+	packet, err := net.ListenPacket("udp", address)
 
 	if err != nil {
-		panic(packet)
+		s.udpLogger.ListenError(address, err)
+
+		panic(err)
 	}
 
+	s.udpLogger.Listen(address)
+
 	for {
-		payload := make([]byte, 65535)
+		payload := make([]byte, s.udpConfig.GetBufferSize())
 
-		i, address, readErr := packet.ReadFrom(payload)
+		i, address, err := packet.ReadFrom(payload)
 
-		if readErr != nil {
-			panic(readErr)
+		if err != nil {
+			s.udpLogger.AcceptError(err)
+
+			continue
 		}
+
+		s.udpLogger.PacketAccepted(address.String())
 
 		go s.packetHandler.HandlePacket(payload[:i], address, packet)
 	}
 }
 
-func (s Server) listenUnix() {
-	select {}
-}
-
 func (s Server) Start() {
-	go s.listenTcp()
 	go s.listenUdp()
 
-	s.listenUnix()
+	s.listenTcp()
 }

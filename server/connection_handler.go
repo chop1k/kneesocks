@@ -14,19 +14,17 @@ type ConnectionHandler interface {
 }
 
 type BaseConnectionHandler struct {
-	authenticationHandler AuthenticationHandler
-	streamHandler         StreamHandler
-	v4Handler             V4Handler
-	v4aHandler            V4aHandler
-	v5Handler             V5Handler
-	bindManager           BindManager
-	utils                 utils.AddressUtils
-	logger                logger.TcpLogger
-	config                config.TcpConfig
+	streamHandler StreamHandler
+	v4Handler     V4Handler
+	v4aHandler    V4aHandler
+	v5Handler     V5Handler
+	bindManager   BindManager
+	utils         utils.AddressUtils
+	logger        logger.TcpLogger
+	config        config.TcpConfig
 }
 
 func NewBaseConnectionHandler(
-	authenticationHandler AuthenticationHandler,
 	streamHandler StreamHandler,
 	v4Handler V4Handler,
 	v4aHandler V4aHandler,
@@ -37,15 +35,14 @@ func NewBaseConnectionHandler(
 	config config.TcpConfig,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
-		authenticationHandler: authenticationHandler,
-		streamHandler:         streamHandler,
-		v5Handler:             v5Handler,
-		v4aHandler:            v4aHandler,
-		v4Handler:             v4Handler,
-		bindManager:           bindManager,
-		utils:                 utils,
-		logger:                logger,
-		config:                config,
+		streamHandler: streamHandler,
+		v5Handler:     v5Handler,
+		v4aHandler:    v4aHandler,
+		v4Handler:     v4Handler,
+		bindManager:   bindManager,
+		utils:         utils,
+		logger:        logger,
+		config:        config,
 	}, nil
 }
 

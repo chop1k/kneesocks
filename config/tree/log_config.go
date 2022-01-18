@@ -6,7 +6,7 @@ type LogConfig struct {
 	SocksV4  *SocksV4LoggerConfig
 	SocksV4a *SocksV4aLoggerConfig
 	SocksV5  *SocksV5LoggerConfig
-	Errors   *ErrorsLoggerConfig
+	Server   *ServerLoggerConfig
 }
 
 type ConsoleOutputConfig struct {
@@ -47,7 +47,7 @@ type SocksV5LoggerConfig struct {
 	File    *FileOutputConfig
 }
 
-type ErrorsLoggerConfig struct {
+type ServerLoggerConfig struct {
 	Level   int
 	Console *ConsoleOutputConfig
 	File    *FileOutputConfig
