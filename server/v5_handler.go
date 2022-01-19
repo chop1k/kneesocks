@@ -77,10 +77,12 @@ func (b BaseV5Handler) handleAuthentication(methods v5.MethodsChunk, client net.
 }
 
 func (b BaseV5Handler) handleCommand(client net.Conn) {
-	chunk, parseErr := b.protocol.ReceiveRequest(client)
+	chunk, err := b.protocol.ReceiveRequest(client)
 
-	if parseErr != nil {
+	if err != nil {
 		_ = client.Close()
+
+		b.logger.ParseError(client.RemoteAddr().String(), err)
 
 		return
 	}

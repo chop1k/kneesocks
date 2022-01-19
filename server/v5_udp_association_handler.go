@@ -17,6 +17,7 @@ type BaseV5UdpAssociationHandler struct {
 	udpAssociationManager UdpAssociationManager
 	logger                logger.SocksV5Logger
 	sender                V5Sender
+	errorHandler          V5ErrorHandler
 }
 
 func NewBaseV5UdpAssociationHandler(
@@ -25,6 +26,7 @@ func NewBaseV5UdpAssociationHandler(
 	udpAssociationManager UdpAssociationManager,
 	logger logger.SocksV5Logger,
 	sender V5Sender,
+	errorHandler V5ErrorHandler,
 ) (BaseV5UdpAssociationHandler, error) {
 	return BaseV5UdpAssociationHandler{
 		config:                config,
@@ -32,6 +34,7 @@ func NewBaseV5UdpAssociationHandler(
 		udpAssociationManager: udpAssociationManager,
 		logger:                logger,
 		sender:                sender,
+		errorHandler:          errorHandler,
 	}, nil
 }
 
@@ -55,9 +58,7 @@ func (b BaseV5UdpAssociationHandler) udpSendResponse(address string, client net.
 	err := b.sender.SendSuccessWithUdpPort(client)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.UdpAssociationFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5UdpAssociationError(err, address, client)
 
 		return
 	}
@@ -68,19 +69,11 @@ func (b BaseV5UdpAssociationHandler) udpSendResponse(address string, client net.
 }
 
 func (b BaseV5UdpAssociationHandler) udpWaitForClose(address string, client net.Conn) {
-	for {
-		buffer := make([]byte, 512)
+	buffer := make([]byte, 512)
 
-		_, err := client.Read(buffer)
+	_, _ = client.Read(buffer)
 
-		_ = buffer
-
-		if err != nil {
-			_ = client.Close()
-
-			break
-		}
-	}
+	_ = client.Close()
 
 	b.udpAssociationManager.Remove(address)
 }

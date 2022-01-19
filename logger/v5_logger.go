@@ -30,6 +30,8 @@ type SocksV5Logger interface {
 	AuthenticationSuccessful(client string)
 	AuthenticationFailed(client string)
 	TransferFinished(client string, host string)
+	ParseError(client string, err error)
+	UnknownError(client string, address string, err error)
 }
 
 type BaseSocksV5Logger struct {
@@ -361,4 +363,31 @@ func (b BaseSocksV5Logger) TransferFinished(client string, host string) {
 		Str("client", client).
 		Str("host", host).
 		Msg("Transfer finished. ")
+}
+
+func (b BaseSocksV5Logger) ParseError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Cannot parse v5 request due to error. ")
+}
+
+func (b BaseSocksV5Logger) UnknownError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Err(err).
+		Msg("Cannot handle v5 request due to error. ")
 }

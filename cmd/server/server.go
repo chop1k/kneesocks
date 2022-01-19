@@ -1054,6 +1054,7 @@ func registerServer(builder di.Builder) {
 			sender := ctn.Get("v5_sender").(server.V5Sender)
 			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
 			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
+			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
 
 			return server.NewBaseV5BindHandler(
 				bindManager,
@@ -1064,6 +1065,7 @@ func registerServer(builder di.Builder) {
 				sender,
 				whitelist,
 				blacklist,
+				errorHandler,
 			)
 		},
 	}
@@ -1077,6 +1079,7 @@ func registerServer(builder di.Builder) {
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			udpAssociationManager := ctn.Get("udp_association_manager").(server.UdpAssociationManager)
 			sender := ctn.Get("v5_sender").(server.V5Sender)
+			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
 
 			return server.NewBaseV5UdpAssociationHandler(
 				cfg,
@@ -1084,6 +1087,7 @@ func registerServer(builder di.Builder) {
 				udpAssociationManager,
 				v5Logger,
 				sender,
+				errorHandler,
 			)
 		},
 	}
@@ -1138,10 +1142,12 @@ func registerServer(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			sender := ctn.Get("v5_sender").(server.V5Sender)
 			v5Logger := ctn.Get("v5_logger").(logger.SocksV5Logger)
+			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
 			return server.NewBaseV5ErrorHandler(
 				v5Logger,
 				sender,
+				errorUtils,
 			)
 		},
 	}

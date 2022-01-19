@@ -309,5 +309,5 @@ func (b BaseSocksV4Logger) UnknownError(client string, address string, err error
 		Str("client", client).
 		Str("host", address).
 		Err(err).
-		Msg("Cannot handle v4 request due to errorf. ")
+		Msg("Cannot handle v4 request due to error. ")
 }

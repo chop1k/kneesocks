@@ -21,6 +21,7 @@ type BaseV5BindHandler struct {
 	sender        V5Sender
 	whitelist     WhitelistManager
 	blacklist     BlacklistManager
+	errorHandler  V5ErrorHandler
 }
 
 func NewBaseV5BindHandler(
@@ -32,6 +33,7 @@ func NewBaseV5BindHandler(
 	sender V5Sender,
 	whitelist WhitelistManager,
 	blacklist BlacklistManager,
+	errorHandler V5ErrorHandler,
 ) (BaseV5BindHandler, error) {
 	return BaseV5BindHandler{
 		bindManager:   bindManager,
@@ -42,6 +44,7 @@ func NewBaseV5BindHandler(
 		sender:        sender,
 		whitelist:     whitelist,
 		blacklist:     blacklist,
+		errorHandler:  errorHandler,
 	}, nil
 }
 
@@ -89,9 +92,7 @@ func (b BaseV5BindHandler) bindSendFirstResponse(address string, client net.Conn
 	err := b.sender.SendSuccessWithTcpPort(client)
 
 	if err != nil {
-		_ = client.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5BindIOError(err, address, client)
 
 		return
 	}
@@ -149,11 +150,7 @@ func (b BaseV5BindHandler) sendSecondResponse(address string, addrType byte, hos
 	err := b.sender.SendSuccessWithParameters(addrType, hostAddress, hostPort, client)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5BindIOErrorWithHost(err, address, client, host)
 
 		return
 	}

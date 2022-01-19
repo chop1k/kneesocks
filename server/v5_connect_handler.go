@@ -75,15 +75,15 @@ func (b BaseV5ConnectHandler) connect(address string, client net.Conn) {
 	host, err := net.DialTimeout("tcp", address, deadline)
 
 	if err != nil {
-		b.errorHandler.HandleV5NetworkError(err, address, client)
+		b.errorHandler.HandleV5DialError(err, address, client)
 
 		return
 	}
 
-	b.connectSendResponse(host, client)
+	b.connectSendResponse(address, host, client)
 }
 
-func (b BaseV5ConnectHandler) connectSendResponse(host, client net.Conn) {
+func (b BaseV5ConnectHandler) connectSendResponse(address string, host, client net.Conn) {
 	addr, port, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
@@ -111,9 +111,7 @@ func (b BaseV5ConnectHandler) connectSendResponse(host, client net.Conn) {
 	responseErr := b.sender.SendSuccessWithParameters(addrType, addr, uint16(port), client)
 
 	if responseErr != nil {
-		b.errorHandler.HandleV5NetworkError(responseErr, host.RemoteAddr().String(), client)
-
-		_ = host.Close()
+		b.errorHandler.HandleV5ConnectIOErrorWithHost(responseErr, address, client, host)
 
 		return
 	}
