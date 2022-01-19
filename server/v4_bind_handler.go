@@ -21,6 +21,7 @@ type BaseV4BindHandler struct {
 	sender        V4Sender
 	whitelist     WhitelistManager
 	blacklist     BlacklistManager
+	errorHandler  V4ErrorHandler
 }
 
 func NewBaseV4BindHandler(
@@ -32,6 +33,7 @@ func NewBaseV4BindHandler(
 	sender V4Sender,
 	whitelist WhitelistManager,
 	blacklist BlacklistManager,
+	errorHandler V4ErrorHandler,
 ) (BaseV4BindHandler, error) {
 	return BaseV4BindHandler{
 		config:        config,
@@ -42,6 +44,7 @@ func NewBaseV4BindHandler(
 		sender:        sender,
 		whitelist:     whitelist,
 		blacklist:     blacklist,
+		errorHandler:  errorHandler,
 	}, nil
 }
 
@@ -89,9 +92,7 @@ func (b BaseV4BindHandler) bindSendFirstResponse(address string, client net.Conn
 	err := b.sender.SendSuccess(client)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4BindIOError(err, address, client)
 
 		return
 	}
@@ -165,11 +166,7 @@ func (b BaseV4BindHandler) bindSendSecondResponse(address string, hostAddr strin
 	err := b.sender.SendSuccessWithParameters(ip, hostPort, client)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4BindIOErrorWithHost(err, address, client, host)
 
 		return
 	}

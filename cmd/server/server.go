@@ -277,7 +277,7 @@ func registerZeroLog(builder di.Builder) {
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 
 				if err != nil {
 					return nil, err
@@ -320,7 +320,7 @@ func registerZeroLog(builder di.Builder) {
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 
 				if err != nil {
 					return nil, err
@@ -363,7 +363,7 @@ func registerZeroLog(builder di.Builder) {
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 
 				if err != nil {
 					return nil, err
@@ -406,7 +406,7 @@ func registerZeroLog(builder di.Builder) {
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 
 				if err != nil {
 					return nil, err
@@ -449,7 +449,7 @@ func registerZeroLog(builder di.Builder) {
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 
 				if err != nil {
 					return nil, err
@@ -492,7 +492,7 @@ func registerZeroLog(builder di.Builder) {
 			}
 
 			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 600)
+				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 
 				if err != nil {
 					return nil, err
@@ -845,6 +845,7 @@ func registerServer(builder di.Builder) {
 			sender := ctn.Get("v4_sender").(server.V4Sender)
 			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
 			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
+			errorHandler := ctn.Get("v4_error_handler").(server.V4ErrorHandler)
 
 			return server.NewBaseV4BindHandler(
 				cfg,
@@ -855,6 +856,7 @@ func registerServer(builder di.Builder) {
 				sender,
 				whitelist,
 				blacklist,
+				errorHandler,
 			)
 		},
 	}
@@ -901,10 +903,12 @@ func registerServer(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			sender := ctn.Get("v4_sender").(server.V4Sender)
 			v4Logger := ctn.Get("v4_logger").(logger.SocksV4Logger)
+			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
 			return server.NewBaseV4ErrorHandler(
 				v4Logger,
 				sender,
+				errorUtils,
 			)
 		},
 	}
@@ -1230,12 +1234,21 @@ func registerUtils(builder di.Builder) {
 		Name:  "address_utils",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return utils.NewUtils(), nil
+			return utils.NewUtils()
+		},
+	}
+
+	errorUtils := di.Def{
+		Name:  "error_utils",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return utils.NewErrorUtils()
 		},
 	}
 
 	err := builder.Add(
 		addressUtilsDef,
+		errorUtils,
 	)
 
 	if err != nil {

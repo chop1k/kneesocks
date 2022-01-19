@@ -41,7 +41,9 @@ func TestAddressUtils_DetermineAddressType(t *testing.T) {
 		},
 	}
 
-	addrUtils := NewUtils()
+	addrUtils, err := NewUtils()
+
+	require.NoError(t, err)
 
 	for i, test := range tests {
 		result, err := addrUtils.DetermineAddressType(test.address)
@@ -85,7 +87,9 @@ func TestAddressUtils_ParseAddress(t *testing.T) {
 		},
 	}
 
-	addrUtils := NewUtils()
+	addrUtils, err := NewUtils()
+
+	require.NoError(t, err)
 
 	for i, test := range tests {
 		host, port, err := addrUtils.ParseAddress(test.address)
@@ -124,7 +128,9 @@ func TestAddressUtils_ConvertAddress(t *testing.T) {
 		},
 	}
 
-	addrUtils := NewUtils()
+	addrUtils, err := NewUtils()
+
+	require.NoError(t, err)
 
 	for i, test := range tests {
 		ip, err := addrUtils.ConvertAddress(test.addrType, test.bytes)
