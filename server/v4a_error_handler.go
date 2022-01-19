@@ -2,74 +2,79 @@ package server
 
 import (
 	"net"
-	"os"
 	"socks/logger"
-	"syscall"
+	"socks/utils"
 )
 
 type V4aErrorHandler interface {
-	HandleV4aNetworkError(err error, address string, client net.Conn)
+	HandleV4aDialError(err error, address string, client net.Conn)
+	HandleV4aConnectIOError(err error, address string, client net.Conn)
+	HandleV4aConnectIOErrorWithHost(err error, address string, client net.Conn, host net.Conn)
+	HandleV4aBindIOError(err error, address string, client net.Conn)
+	HandleV4aBindIOErrorWithHost(err error, address string, client net.Conn, host net.Conn)
 }
 
 type BaseV4aErrorHandler struct {
 	logger logger.SocksV4aLogger
 	sender V4aSender
+	errors utils.ErrorUtils
 }
 
-func NewBaseV4aErrorHandler(logger logger.SocksV4aLogger, sender V4aSender) (BaseV4aErrorHandler, error) {
+func NewBaseV4aErrorHandler(
+	logger logger.SocksV4aLogger,
+	sender V4aSender,
+	errors utils.ErrorUtils,
+) (BaseV4aErrorHandler, error) {
 	return BaseV4aErrorHandler{
 		logger: logger,
 		sender: sender,
+		errors: errors,
 	}, nil
 }
 
-func (b BaseV4aErrorHandler) HandleV4aNetworkError(err error, address string, client net.Conn) {
-	if b.checkConnectionRefusedError(err) {
+func (b BaseV4aErrorHandler) HandleV4aDialError(err error, address string, client net.Conn) {
+	if b.errors.IsConnectionRefusedError(err) {
 		b.logger.ConnectRefused(client.RemoteAddr().String(), address)
-	} else if b.checkNetworkUnreachableError(err) {
+	} else if b.errors.IsNetworkUnreachableError(err) {
 		b.logger.ConnectNetworkUnreachable(client.RemoteAddr().String(), address)
-	} else if b.checkHostUnreachableError(err) {
+	} else if b.errors.IsHostUnreachableError(err) {
 		b.logger.ConnectHostUnreachable(client.RemoteAddr().String(), address)
 	}
 
 	b.sender.SendFailAndClose(client)
 
-	//b.errors.UnknownConnectError(client.RemoteAddr().String(), err)
+	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
 	b.logger.ConnectFailed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseV4aErrorHandler) errorToErrno(err error) int {
-	opErr, ok := err.(*net.OpError)
+func (b BaseV4aErrorHandler) HandleV4aConnectIOError(err error, address string, client net.Conn) {
+	b.sender.SendFailAndClose(client)
 
-	if !ok {
-		return -1
-	}
-
-	sysErr, ko := opErr.Err.(*os.SyscallError)
-
-	if !ko {
-		return -1
-	}
-
-	errno, oo := sysErr.Err.(syscall.Errno)
-
-	if !oo {
-		return -1
-	}
-
-	return int(errno)
+	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.ConnectFailed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseV4aErrorHandler) checkConnectionRefusedError(err error) bool {
-	return b.errorToErrno(err) == 111
+func (b BaseV4aErrorHandler) HandleV4aConnectIOErrorWithHost(err error, address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	_ = host.Close()
+
+	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.ConnectFailed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseV4aErrorHandler) checkNetworkUnreachableError(err error) bool {
-	return b.errorToErrno(err) == 101
+func (b BaseV4aErrorHandler) HandleV4aBindIOError(err error, address string, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.BindFailed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseV4aErrorHandler) checkHostUnreachableError(err error) bool {
-	errno := b.errorToErrno(err)
+func (b BaseV4aErrorHandler) HandleV4aBindIOErrorWithHost(err error, address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
 
-	return errno == 113 || errno == 112
+	_ = host.Close()
+
+	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.BindFailed(client.RemoteAddr().String(), address)
 }

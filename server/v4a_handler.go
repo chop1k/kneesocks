@@ -45,6 +45,8 @@ func (b BaseV4aHandler) HandleV4a(request []byte, client net.Conn) {
 	if err != nil {
 		b.sender.SendFailAndClose(client)
 
+		b.logger.ParseError(client.RemoteAddr().String(), err)
+
 		return
 	}
 

@@ -71,7 +71,7 @@ func (b BaseV4aConnectHandler) connect(address string, client net.Conn) {
 	host, err := net.DialTimeout("tcp", address, deadline)
 
 	if err != nil {
-		b.errorHandler.HandleV4aNetworkError(err, address, client)
+		b.errorHandler.HandleV4aDialError(err, address, client)
 
 		return
 	}
@@ -83,11 +83,7 @@ func (b BaseV4aConnectHandler) connectSendSuccess(address string, host net.Conn,
 	err := b.sender.SendSuccess(client)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.ConnectFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aConnectIOErrorWithHost(err, address, client, host)
 
 		return
 	}

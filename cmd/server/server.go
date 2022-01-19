@@ -949,6 +949,7 @@ func registerServer(builder di.Builder) {
 			sender := ctn.Get("v4a_sender").(server.V4aSender)
 			whitelist := ctn.Get("whitelist_manager").(server.WhitelistManager)
 			blacklist := ctn.Get("blacklist_manager").(server.BlacklistManager)
+			errorHandler := ctn.Get("v4a_error_handler").(server.V4aErrorHandler)
 
 			return server.NewBaseV4aBindHandler(
 				cfg,
@@ -959,6 +960,7 @@ func registerServer(builder di.Builder) {
 				sender,
 				whitelist,
 				blacklist,
+				errorHandler,
 			)
 		},
 	}
@@ -1005,10 +1007,12 @@ func registerServer(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			sender := ctn.Get("v4a_sender").(server.V4aSender)
 			v4Logger := ctn.Get("v4a_logger").(logger.SocksV4aLogger)
+			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
 			return server.NewBaseV4aErrorHandler(
 				v4Logger,
 				sender,
+				errorUtils,
 			)
 		},
 	}

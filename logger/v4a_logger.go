@@ -24,6 +24,8 @@ type SocksV4aLogger interface {
 	BindTimeout(client string, address string)
 	Bound(client string, host string)
 	TransferFinished(client string, host string)
+	ParseError(client string, err error)
+	UnknownError(client string, address string, err error)
 }
 
 type BaseSocksV4aLogger struct {
@@ -280,4 +282,31 @@ func (b BaseSocksV4aLogger) TransferFinished(client string, host string) {
 		Str("client", client).
 		Str("host", host).
 		Msg("Transfer finished. ")
+}
+
+func (b BaseSocksV4aLogger) ParseError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Cannot parse v4a request due to error. ")
+}
+
+func (b BaseSocksV4aLogger) UnknownError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Err(err).
+		Msg("Cannot handle v4a request due to errorf. ")
 }
