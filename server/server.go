@@ -37,7 +37,7 @@ func NewServer(
 func (s Server) listenTcp() {
 	address := &net.TCPAddr{
 		IP:   net.ParseIP(s.tcpConfig.GetBindIP()),
-		Port: s.tcpConfig.GetBindPort(),
+		Port: int(s.tcpConfig.GetBindPort()),
 		Zone: s.tcpConfig.GetBindZone(),
 	}
 

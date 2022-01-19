@@ -4,7 +4,7 @@ import "socks/config/tree"
 
 type UdpConfig interface {
 	GetBindIp() string
-	GetBindPort() int
+	GetBindPort() uint16
 	GetBindZone() string
 	GetBufferSize() uint
 }
@@ -23,8 +23,8 @@ func (b BaseUdpConfig) GetBindIp() string {
 	return b.config.Udp.BindIp
 }
 
-func (b BaseUdpConfig) GetBindPort() int {
-	return int(b.config.Udp.BindPort)
+func (b BaseUdpConfig) GetBindPort() uint16 {
+	return b.config.Udp.BindPort
 }
 
 func (b BaseUdpConfig) GetBindZone() string {

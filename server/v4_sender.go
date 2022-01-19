@@ -25,12 +25,12 @@ func NewBaseV4Sender(protocol v4.Protocol, tcpConfig config.TcpConfig) (BaseV4Se
 }
 
 func (b BaseV4Sender) SendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
+	_ = b.protocol.ResponseWithFail(b.tcpConfig.GetBindPort(), net.IP{0, 0, 0, 0}, client)
 	_ = client.Close()
 }
 
 func (b BaseV4Sender) SendSuccess(client net.Conn) error {
-	return b.protocol.ResponseWithSuccess(uint16(b.tcpConfig.GetBindPort()), net.IP{0, 0, 0, 0}, client)
+	return b.protocol.ResponseWithSuccess(b.tcpConfig.GetBindPort(), net.IP{0, 0, 0, 0}, client)
 }
 
 func (b BaseV4Sender) SendSuccessWithParameters(ip net.IP, port uint16, client net.Conn) error {

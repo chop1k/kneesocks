@@ -4,7 +4,7 @@ import "socks/config/tree"
 
 type TcpConfig interface {
 	GetBindIP() string
-	GetBindPort() int
+	GetBindPort() uint16
 	GetBindZone() string
 	GetClientBufferSize() uint
 	GetHostBufferSize() uint
@@ -23,8 +23,8 @@ func (b BaseTcpConfig) GetBindIP() string {
 	return b.config.Tcp.BindIp
 }
 
-func (b BaseTcpConfig) GetBindPort() int {
-	return int(b.config.Tcp.BindPort)
+func (b BaseTcpConfig) GetBindPort() uint16 {
+	return b.config.Tcp.BindPort
 }
 
 func (b BaseTcpConfig) GetBindZone() string {

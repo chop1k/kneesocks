@@ -38,46 +38,46 @@ func NewBaseV5Sender(
 }
 
 func (b BaseV5Sender) SendConnectionRefusedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithConnectionRefused(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	_ = b.protocol.ResponseWithConnectionRefused(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Sender) SendNetworkUnreachableAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithNetworkUnreachable(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	_ = b.protocol.ResponseWithNetworkUnreachable(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Sender) SendHostUnreachableAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithHostUnreachable(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	_ = b.protocol.ResponseWithHostUnreachable(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Sender) SendFailAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithFail(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	_ = b.protocol.ResponseWithFail(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Sender) SendCommandNotSupportedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithCommandNotSupported(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	_ = b.protocol.ResponseWithCommandNotSupported(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Sender) SendConnectionNotAllowedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithNotAllowed(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	_ = b.protocol.ResponseWithNotAllowed(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Sender) SendAddressNotSupportedAndClose(client net.Conn) {
-	_ = b.protocol.ResponseWithAddressNotSupported(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	_ = b.protocol.ResponseWithAddressNotSupported(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 
 func (b BaseV5Sender) SendSuccessWithTcpPort(client net.Conn) error {
-	return b.protocol.ResponseWithSuccess(1, "0.0.0.0", uint16(b.tcpConfig.GetBindPort()), client)
+	return b.protocol.ResponseWithSuccess(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 }
 
 func (b BaseV5Sender) SendSuccessWithUdpPort(client net.Conn) error {
-	return b.protocol.ResponseWithSuccess(1, "0.0.0.0", uint16(b.udpConfig.GetBindPort()), client)
+	return b.protocol.ResponseWithSuccess(1, "0.0.0.0", b.udpConfig.GetBindPort(), client)
 }
 
 func (b BaseV5Sender) SendSuccessWithParameters(addressType byte, address string, port uint16, client net.Conn) error {
