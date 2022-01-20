@@ -76,9 +76,7 @@ func (b BaseV4BindHandler) bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4BindManagerBindError(err, address, client)
 
 		return
 	}
@@ -108,13 +106,7 @@ func (b BaseV4BindHandler) bindWait(address string, client net.Conn) {
 	host, err := b.bindManager.ReceiveHost(address, deadline)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		if err == TimeoutError {
-			b.logger.BindTimeout(client.RemoteAddr().String(), address)
-		} else {
-			b.logger.BindFailed(client.RemoteAddr().String(), address)
-		}
+		b.errorHandler.HandleV4BindManagerReceiveHostError(err, address, client)
 
 		return
 	}
@@ -126,11 +118,7 @@ func (b BaseV4BindHandler) bindCheckAddress(address string, host net.Conn, clien
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4AddressParsingError(parseErr, address, client, host)
 
 		return
 	}
@@ -138,21 +126,13 @@ func (b BaseV4BindHandler) bindCheckAddress(address string, host net.Conn, clien
 	addrType, determineErr := b.utils.DetermineAddressType(hostAddr)
 
 	if determineErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4AddressDeterminationError(determineErr, address, client, host)
 
 		return
 	}
 
 	if addrType != 1 {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4InvalidAddressTypeError(address, client, host)
 
 		return
 	}
@@ -174,10 +154,7 @@ func (b BaseV4BindHandler) bindSendSecondResponse(address string, hostAddr strin
 	err = b.bindManager.SendClient(address, client)
 
 	if err != nil {
-		_ = client.Close()
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4BindManagerSendClientError(err, address, client, host)
 
 		return
 	}

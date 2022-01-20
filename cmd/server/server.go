@@ -871,6 +871,7 @@ func registerServer(builder di.Builder) {
 			connectHandler := ctn.Get("v4_connect_handler").(server.V4ConnectHandler)
 			bindHandler := ctn.Get("v4_bind_handler").(server.V4BindHandler)
 			sender := ctn.Get("v4_sender").(server.V4Sender)
+			errorHandler := ctn.Get("v4_error_handler").(server.V4ErrorHandler)
 
 			return server.NewBaseV4Handler(
 				parser,
@@ -879,6 +880,7 @@ func registerServer(builder di.Builder) {
 				connectHandler,
 				bindHandler,
 				sender,
+				errorHandler,
 			)
 		},
 	}

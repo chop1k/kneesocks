@@ -26,6 +26,12 @@ type SocksV4Logger interface {
 	TransferFinished(client string, host string)
 	ParseError(client string, err error)
 	UnknownError(client string, address string, err error)
+	AddressParsingError(client string, host string, address string, err error)
+	AddressDeterminationError(client string, host string, address string, err error)
+	InvalidAddressTypeError(client string, host string, address string)
+	BindError(client string, address string, err error)
+	ReceiveHostError(client string, address string, err error)
+	SendClientError(client string, host string, address string, err error)
 }
 
 type BaseSocksV4Logger struct {
@@ -48,7 +54,7 @@ func (b BaseSocksV4Logger) ConnectRequest(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Received connect request. ")
+		Msg("Received connect request.")
 }
 
 func (b BaseSocksV4Logger) ConnectFailed(client string, address string) {
@@ -61,7 +67,7 @@ func (b BaseSocksV4Logger) ConnectFailed(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect failed. ")
+		Msg("Connect failed.")
 }
 
 func (b BaseSocksV4Logger) ConnectSuccessful(client string, address string) {
@@ -74,7 +80,7 @@ func (b BaseSocksV4Logger) ConnectSuccessful(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect successful. ")
+		Msg("Connect successful.")
 }
 
 func (b BaseSocksV4Logger) ConnectNotAllowed(client string, address string) {
@@ -87,7 +93,7 @@ func (b BaseSocksV4Logger) ConnectNotAllowed(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect not allowed due to ruleset. ")
+		Msg("Connect not allowed due to ruleset.")
 }
 
 func (b BaseSocksV4Logger) ConnectNotAllowedByWhitelist(client string, address string) {
@@ -126,7 +132,7 @@ func (b BaseSocksV4Logger) ConnectHostUnreachable(client string, address string)
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Host unreachable. ")
+		Msg("Host unreachable.")
 }
 
 func (b BaseSocksV4Logger) ConnectNetworkUnreachable(client string, address string) {
@@ -139,7 +145,7 @@ func (b BaseSocksV4Logger) ConnectNetworkUnreachable(client string, address stri
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Network unreachable. ")
+		Msg("Network unreachable.")
 }
 
 func (b BaseSocksV4Logger) ConnectRefused(client string, address string) {
@@ -152,7 +158,7 @@ func (b BaseSocksV4Logger) ConnectRefused(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect refused by host. ")
+		Msg("Connect refused by host.")
 }
 
 func (b BaseSocksV4Logger) ConnectTimeout(client string, address string) {
@@ -165,7 +171,7 @@ func (b BaseSocksV4Logger) ConnectTimeout(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect failed due to timeout. ")
+		Msg("Connect failed due to timeout.")
 }
 
 func (b BaseSocksV4Logger) BindRequest(client string, address string) {
@@ -178,7 +184,7 @@ func (b BaseSocksV4Logger) BindRequest(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Received bind request. ")
+		Msg("Received bind request.")
 }
 
 func (b BaseSocksV4Logger) BindFailed(client string, address string) {
@@ -191,7 +197,7 @@ func (b BaseSocksV4Logger) BindFailed(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Bind failed. ")
+		Msg("Bind failed.")
 }
 
 func (b BaseSocksV4Logger) BindSuccessful(client string, address string) {
@@ -204,7 +210,7 @@ func (b BaseSocksV4Logger) BindSuccessful(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Bind successful. ")
+		Msg("Bind successful.")
 }
 
 func (b BaseSocksV4Logger) BindNotAllowed(client string, address string) {
@@ -217,7 +223,7 @@ func (b BaseSocksV4Logger) BindNotAllowed(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Bind failed due to ruleset. ")
+		Msg("Bind failed due to ruleset.")
 }
 
 func (b BaseSocksV4Logger) BindNotAllowedByWhitelist(client string, address string) {
@@ -247,7 +253,7 @@ func (b BaseSocksV4Logger) BindNotAllowedByBlacklist(client string, address stri
 }
 
 func (b BaseSocksV4Logger) BindTimeout(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Error()
 
 	if !e.Enabled() {
 		return
@@ -256,7 +262,7 @@ func (b BaseSocksV4Logger) BindTimeout(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Bind failed due to timeout. ")
+		Msg("Bind failed due to timeout.")
 }
 
 func (b BaseSocksV4Logger) Bound(client string, host string) {
@@ -269,7 +275,7 @@ func (b BaseSocksV4Logger) Bound(client string, host string) {
 	e.
 		Str("client", client).
 		Str("host", host).
-		Msg("Bound successfully. ")
+		Msg("Bound successfully.")
 }
 
 func (b BaseSocksV4Logger) TransferFinished(client string, host string) {
@@ -282,7 +288,7 @@ func (b BaseSocksV4Logger) TransferFinished(client string, host string) {
 	e.
 		Str("client", client).
 		Str("host", host).
-		Msg("Transfer finished. ")
+		Msg("Transfer finished.")
 }
 
 func (b BaseSocksV4Logger) ParseError(client string, err error) {
@@ -295,7 +301,7 @@ func (b BaseSocksV4Logger) ParseError(client string, err error) {
 	e.
 		Str("client", client).
 		Err(err).
-		Msg("Cannot parse v4 request due to error. ")
+		Msg("Cannot parse v4 request due to error.")
 }
 
 func (b BaseSocksV4Logger) UnknownError(client string, address string, err error) {
@@ -309,5 +315,92 @@ func (b BaseSocksV4Logger) UnknownError(client string, address string, err error
 		Str("client", client).
 		Str("host", address).
 		Err(err).
-		Msg("Cannot handle v4 request due to error. ")
+		Msg("Cannot handle v4 request due to error.")
+}
+
+func (b BaseSocksV4Logger) AddressParsingError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v4 request due to address parsing error.")
+}
+
+func (b BaseSocksV4Logger) AddressDeterminationError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v4 request due to address determination error.")
+}
+
+func (b BaseSocksV4Logger) InvalidAddressTypeError(client string, host string, address string) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Msg("Cannot handle v4 request due to invalid address type.")
+}
+
+func (b BaseSocksV4Logger) BindError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Err(err).
+		Msg("Cannot handle v4 request due to bind error in bind manager.")
+}
+
+func (b BaseSocksV4Logger) ReceiveHostError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Err(err).
+		Msg("Cannot handle v4 request due to bind error in bind manager.")
+}
+
+func (b BaseSocksV4Logger) SendClientError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v4 request due to bind error in bind manager.")
 }

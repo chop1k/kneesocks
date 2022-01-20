@@ -12,6 +12,13 @@ type V4ErrorHandler interface {
 	HandleV4ConnectIOErrorWithHost(err error, address string, client net.Conn, host net.Conn)
 	HandleV4BindIOError(err error, address string, client net.Conn)
 	HandleV4BindIOErrorWithHost(err error, address string, client net.Conn, host net.Conn)
+	HandleV4AddressParsingError(err error, address string, client net.Conn, host net.Conn)
+	HandleV4AddressDeterminationError(err error, address string, client net.Conn, host net.Conn)
+	HandleV4InvalidAddressTypeError(address string, client net.Conn, host net.Conn)
+	HandleV4BindManagerBindError(err error, address string, client net.Conn)
+	HandleV4BindManagerReceiveHostError(err error, address string, client net.Conn)
+	HandleV4BindManagerSendClientError(err error, address string, client net.Conn, host net.Conn)
+	HandleV4ChunkParseError(err error, client net.Conn)
 }
 
 type BaseV4ErrorHandler struct {
@@ -77,4 +84,57 @@ func (b BaseV4ErrorHandler) HandleV4BindIOErrorWithHost(err error, address strin
 
 	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
 	b.logger.BindFailed(client.RemoteAddr().String(), address)
+}
+
+func (b BaseV4ErrorHandler) HandleV4AddressParsingError(err error, address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	_ = host.Close()
+
+	b.logger.AddressParsingError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV4ErrorHandler) HandleV4AddressDeterminationError(err error, address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	_ = host.Close()
+
+	b.logger.AddressDeterminationError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV4ErrorHandler) HandleV4InvalidAddressTypeError(address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	_ = host.Close()
+
+	b.logger.InvalidAddressTypeError(client.RemoteAddr().String(), host.RemoteAddr().String(), address)
+}
+
+func (b BaseV4ErrorHandler) HandleV4BindManagerBindError(err error, address string, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.BindError(client.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV4ErrorHandler) HandleV4BindManagerReceiveHostError(err error, address string, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	if err == TimeoutError {
+		b.logger.BindTimeout(client.RemoteAddr().String(), address)
+	} else {
+		b.logger.ReceiveHostError(client.RemoteAddr().String(), address, err)
+	}
+}
+
+func (b BaseV4ErrorHandler) HandleV4BindManagerSendClientError(err error, address string, client net.Conn, host net.Conn) {
+	_ = client.Close()
+	_ = host.Close()
+
+	b.logger.SendClientError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV4ErrorHandler) HandleV4ChunkParseError(err error, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.ParseError(client.RemoteAddr().String(), err)
 }
