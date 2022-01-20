@@ -26,6 +26,12 @@ type SocksV4aLogger interface {
 	TransferFinished(client string, host string)
 	ParseError(client string, err error)
 	UnknownError(client string, address string, err error)
+	AddressParsingError(client string, host string, address string, err error)
+	AddressDeterminationError(client string, host string, address string, err error)
+	InvalidAddressTypeError(client string, host string, address string)
+	BindError(client string, address string, err error)
+	ReceiveHostError(client string, address string, err error)
+	SendClientError(client string, host string, address string, err error)
 }
 
 type BaseSocksV4aLogger struct {
@@ -309,4 +315,91 @@ func (b BaseSocksV4aLogger) UnknownError(client string, address string, err erro
 		Str("host", address).
 		Err(err).
 		Msg("Cannot handle v4a request due to error. ")
+}
+
+func (b BaseSocksV4aLogger) AddressParsingError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v4a request due to address parsing error.")
+}
+
+func (b BaseSocksV4aLogger) AddressDeterminationError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v4a request due to address determination error.")
+}
+
+func (b BaseSocksV4aLogger) InvalidAddressTypeError(client string, host string, address string) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Msg("Cannot handle v4a request due to invalid address type.")
+}
+
+func (b BaseSocksV4aLogger) BindError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Err(err).
+		Msg("Cannot handle v4a request due to bind error in bind manager.")
+}
+
+func (b BaseSocksV4aLogger) ReceiveHostError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Err(err).
+		Msg("Cannot handle v4a request due to bind error in bind manager.")
+}
+
+func (b BaseSocksV4aLogger) SendClientError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v4a request due to bind error in bind manager.")
 }

@@ -76,9 +76,7 @@ func (b BaseV4aBindHandler) bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aBindManagerBindError(err, address, client)
 
 		return
 	}
@@ -108,9 +106,7 @@ func (b BaseV4aBindHandler) bindWait(address string, client net.Conn) {
 	host, err := b.bindManager.ReceiveHost(address, deadline)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aBindManagerReceiveHostError(err, address, client)
 
 		return
 	}
@@ -122,11 +118,7 @@ func (b BaseV4aBindHandler) bindCheckAddress(address string, host net.Conn, clie
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aAddressParsingError(parseErr, address, client, host)
 
 		return
 	}
@@ -134,21 +126,13 @@ func (b BaseV4aBindHandler) bindCheckAddress(address string, host net.Conn, clie
 	addrType, determineErr := b.utils.DetermineAddressType(hostAddr)
 
 	if determineErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aAddressDeterminationError(determineErr, address, client, host)
 
 		return
 	}
 
 	if addrType != 1 {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aInvalidAddressTypeError(address, client, host)
 
 		return
 	}
@@ -170,10 +154,7 @@ func (b BaseV4aBindHandler) bindSendSecondResponse(address string, hostAddr stri
 	err = b.bindManager.SendClient(address, client)
 
 	if err != nil {
-		_ = client.Close()
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV4aBindManagerSendClientError(err, address, client, host)
 
 		return
 	}

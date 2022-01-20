@@ -19,6 +19,7 @@ type BaseV4aHandler struct {
 	connectHandler V4aConnectHandler
 	bindHandler    V4aBindHandler
 	sender         V4aSender
+	errorHandler   V4aErrorHandler
 }
 
 func NewBaseV4aHandler(
@@ -28,6 +29,7 @@ func NewBaseV4aHandler(
 	connectHandler V4aConnectHandler,
 	bindHandler V4aBindHandler,
 	sender V4aSender,
+	errorHandler V4aErrorHandler,
 ) (BaseV4aHandler, error) {
 	return BaseV4aHandler{
 		parser:         parser,
@@ -36,6 +38,7 @@ func NewBaseV4aHandler(
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
 		sender:         sender,
+		errorHandler:   errorHandler,
 	}, nil
 }
 
@@ -43,9 +46,7 @@ func (b BaseV4aHandler) HandleV4a(request []byte, client net.Conn) {
 	chunk, err := b.parser.ParseRequest(request)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.ParseError(client.RemoteAddr().String(), err)
+		b.errorHandler.HandleV4aChunkParseError(err, client)
 
 		return
 	}
