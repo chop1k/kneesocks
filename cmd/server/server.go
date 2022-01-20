@@ -744,8 +744,15 @@ func registerServer(builder di.Builder) {
 			protocol := ctn.Get("v5").(v5.Protocol)
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
 			users := ctn.Get("users_config").(config.UsersConfig)
+			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
 
-			return server.NewBaseAuthenticationHandler(passwd, protocol, cfg, users), nil
+			return server.NewBaseAuthenticationHandler(
+				passwd,
+				protocol,
+				cfg,
+				users,
+				errorHandler,
+			), nil
 		},
 	}
 
@@ -1109,6 +1116,7 @@ func registerServer(builder di.Builder) {
 			bindHandler := ctn.Get("v5_bind_handler").(server.V5BindHandler)
 			associationHandler := ctn.Get("v5_udp_association_handler").(server.V5UdpAssociationHandler)
 			sender := ctn.Get("v5_sender").(server.V5Sender)
+			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
 
 			return server.NewBaseV5Handler(
 				protocol,
@@ -1120,6 +1128,7 @@ func registerServer(builder di.Builder) {
 				bindHandler,
 				associationHandler,
 				sender,
+				errorHandler,
 			)
 		},
 	}

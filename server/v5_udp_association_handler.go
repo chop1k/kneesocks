@@ -42,9 +42,7 @@ func (b BaseV5UdpAssociationHandler) HandleV5UdpAssociation(client net.Conn) {
 	address, _, err := b.utils.ParseAddress(client.RemoteAddr().String())
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.UdpAssociationFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5UdpAddressParsingError(err, client)
 
 		return
 	}

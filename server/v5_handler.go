@@ -22,6 +22,7 @@ type BaseV5Handler struct {
 	bindHandler           V5BindHandler
 	udpAssociationHandler V5UdpAssociationHandler
 	sender                V5Sender
+	errorHandler          V5ErrorHandler
 }
 
 func NewBaseV5Handler(
@@ -34,6 +35,7 @@ func NewBaseV5Handler(
 	bindHandler V5BindHandler,
 	udpAssociationHandler V5UdpAssociationHandler,
 	sender V5Sender,
+	errorHandler V5ErrorHandler,
 ) (BaseV5Handler, error) {
 	return BaseV5Handler{
 		protocol:              protocol,
@@ -45,6 +47,7 @@ func NewBaseV5Handler(
 		bindHandler:           bindHandler,
 		udpAssociationHandler: udpAssociationHandler,
 		sender:                sender,
+		errorHandler:          errorHandler,
 	}, nil
 }
 
@@ -52,7 +55,7 @@ func (b BaseV5Handler) HandleV5(request []byte, client net.Conn) {
 	methods, err := b.parser.ParseMethods(request)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
+		b.errorHandler.HandleV5ParseMethodsError(err, client)
 
 		return
 	}
@@ -80,9 +83,7 @@ func (b BaseV5Handler) handleCommand(client net.Conn) {
 	chunk, err := b.protocol.ReceiveRequest(client)
 
 	if err != nil {
-		_ = client.Close()
-
-		b.logger.ParseError(client.RemoteAddr().String(), err)
+		b.errorHandler.HandleV5ReceiveRequestError(err, client)
 
 		return
 	}
@@ -96,7 +97,7 @@ func (b BaseV5Handler) handleCommand(client net.Conn) {
 	} else if chunk.AddressType == 4 {
 		address = fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
 	} else {
-		b.sender.SendAddressNotSupportedAndClose(client)
+		b.errorHandler.HandleV5InvalidAddressTypeError(chunk.AddressType, chunk.Address, client)
 
 		return
 	}
@@ -108,7 +109,7 @@ func (b BaseV5Handler) handleCommand(client net.Conn) {
 	} else if chunk.CommandCode == 3 {
 		b.handleUdpAssociate(client)
 	} else {
-		b.sender.SendCommandNotSupportedAndClose(client)
+		b.errorHandler.HandleV5UnknownCommandError(chunk.CommandCode, address, client)
 
 		return
 	}

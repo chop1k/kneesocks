@@ -13,6 +13,19 @@ type V5ErrorHandler interface {
 	HandleV5BindIOError(err error, address string, client net.Conn)
 	HandleV5BindIOErrorWithHost(err error, address string, client net.Conn, host net.Conn)
 	HandleV5UdpAssociationError(err error, address string, client net.Conn)
+	HandleV5AddressParsingError(err error, address string, client net.Conn, host net.Conn)
+	HandleV5AddressDeterminationError(err error, address string, client net.Conn, host net.Conn)
+	HandleV5InvalidAddressTypeError(addressType byte, address string, client net.Conn)
+	HandleV5BindManagerBindError(err error, address string, client net.Conn)
+	HandleV5BindManagerReceiveHostError(err error, address string, client net.Conn)
+	HandleV5BindManagerSendClientError(err error, address string, client net.Conn, host net.Conn)
+	HandleV5ReceiveRequestError(err error, client net.Conn)
+	HandleV5PasswordReceiveRequestError(err error, client net.Conn)
+	HandleV5UnknownCommandError(command byte, address string, client net.Conn)
+	HandleV5ParseMethodsError(err error, client net.Conn)
+	HandleV5SelectMethodsError(err error, client net.Conn)
+	HandleV5PasswordResponseError(err error, user string, client net.Conn)
+	HandleV5UdpAddressParsingError(err error, client net.Conn)
 }
 
 type BaseV5ErrorHandler struct {
@@ -101,4 +114,86 @@ func (b BaseV5ErrorHandler) HandleV5UdpAssociationError(err error, address strin
 
 	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
 	b.logger.UdpAssociationFailed(client.RemoteAddr().String(), address)
+}
+
+func (b BaseV5ErrorHandler) HandleV5AddressParsingError(err error, address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	_ = host.Close()
+
+	b.logger.AddressParsingError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5AddressDeterminationError(err error, address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	_ = host.Close()
+
+	b.logger.AddressDeterminationError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5InvalidAddressTypeError(addressType byte, address string, client net.Conn) {
+	b.sender.SendAddressNotSupportedAndClose(client)
+
+	b.logger.InvalidAddressTypeError(client.RemoteAddr().String(), addressType, address)
+}
+
+func (b BaseV5ErrorHandler) HandleV5BindManagerBindError(err error, address string, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.BindError(client.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5BindManagerReceiveHostError(err error, address string, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.ReceiveHostError(client.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5BindManagerSendClientError(err error, address string, client net.Conn, host net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.SendClientError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5ReceiveRequestError(err error, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.ReceiveRequestError(client.RemoteAddr().String(), err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5PasswordReceiveRequestError(err error, client net.Conn) {
+	_ = client.Close()
+
+	b.logger.ReceiveRequestError(client.RemoteAddr().String(), err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5UnknownCommandError(command byte, address string, client net.Conn) {
+	b.sender.SendCommandNotSupportedAndClose(client)
+
+	b.logger.UnknownCommandError(client.RemoteAddr().String(), command, address)
+}
+
+func (b BaseV5ErrorHandler) HandleV5ParseMethodsError(err error, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.ParseMethodsError(client.RemoteAddr().String(), err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5SelectMethodsError(err error, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.SelectMethodsError(client.RemoteAddr().String(), err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5PasswordResponseError(err error, user string, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.PasswordResponseError(client.RemoteAddr().String(), user, err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5UdpAddressParsingError(err error, client net.Conn) {
+	b.sender.SendFailAndClose(client)
+
+	b.logger.UdpAddressParsingError(client.RemoteAddr().String(), err)
 }

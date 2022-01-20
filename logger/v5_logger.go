@@ -32,6 +32,18 @@ type SocksV5Logger interface {
 	TransferFinished(client string, host string)
 	ParseError(client string, err error)
 	UnknownError(client string, address string, err error)
+	AddressParsingError(client string, host string, address string, err error)
+	UdpAddressParsingError(client string, err error)
+	AddressDeterminationError(client string, host string, address string, err error)
+	InvalidAddressTypeError(client string, addressType byte, address string)
+	UnknownCommandError(client string, command byte, address string)
+	SelectMethodsError(client string, err error)
+	ReceiveRequestError(client string, err error)
+	PasswordResponseError(client string, user string, err error)
+	ParseMethodsError(client string, err error)
+	ReceiveHostError(client string, address string, err error)
+	SendClientError(client string, host string, address string, err error)
+	BindError(client string, address string, err error)
 }
 
 type BaseSocksV5Logger struct {
@@ -390,4 +402,171 @@ func (b BaseSocksV5Logger) UnknownError(client string, address string, err error
 		Str("host", address).
 		Err(err).
 		Msg("Cannot handle v5 request due to error. ")
+}
+
+func (b BaseSocksV5Logger) AddressParsingError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v5 request due to address parsing error. ")
+}
+
+func (b BaseSocksV5Logger) UdpAddressParsingError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Cannot handle v5 request due to address parsing error. ")
+}
+
+func (b BaseSocksV5Logger) AddressDeterminationError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v5 request due to address determination error. ")
+}
+
+func (b BaseSocksV5Logger) InvalidAddressTypeError(client string, addressType byte, address string) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Uint8("addressType", addressType).
+		Str("address", address).
+		Msg("Cannot handle v5 request due to invalid address type. ")
+}
+
+func (b BaseSocksV5Logger) UnknownCommandError(client string, command byte, address string) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Uint8("command", command).
+		Str("address", address).
+		Msg("Cannot handle v5 request due to invalid command. ")
+}
+
+func (b BaseSocksV5Logger) SelectMethodsError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Cannot handle v5 request due to methods selection error. ")
+}
+
+func (b BaseSocksV5Logger) ReceiveRequestError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Cannot handle v5 request due to receive request error. ")
+}
+
+func (b BaseSocksV5Logger) PasswordResponseError(client string, user string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("user", user).
+		Err(err).
+		Msg("Cannot handle v5 request due to password response error. ")
+}
+
+func (b BaseSocksV5Logger) ParseMethodsError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Cannot handle v5 request due to parse methods error. ")
+}
+
+func (b BaseSocksV5Logger) ReceiveHostError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v5 request due to receive host error in bind manager. ")
+}
+
+func (b BaseSocksV5Logger) SendClientError(client string, host string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v5 request due to send client error in bind manager. ")
+}
+
+func (b BaseSocksV5Logger) BindError(client string, address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("address", address).
+		Err(err).
+		Msg("Cannot handle v5 request due to bind error. ")
 }

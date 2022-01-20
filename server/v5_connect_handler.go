@@ -87,11 +87,7 @@ func (b BaseV5ConnectHandler) connectSendResponse(address string, host, client n
 	addr, port, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		//b.errors.ParseAddressError(client.RemoteAddr().String(), host.RemoteAddr().String())
+		b.errorHandler.HandleV5AddressParsingError(parseErr, address, client, host)
 
 		return
 	}
@@ -99,11 +95,7 @@ func (b BaseV5ConnectHandler) connectSendResponse(address string, host, client n
 	addrType, determineErr := b.utils.DetermineAddressType(addr)
 
 	if determineErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		//b.errors.DetermineAddressError(client.RemoteAddr().String(), addr)
+		b.errorHandler.HandleV5AddressDeterminationError(determineErr, address, client, host)
 
 		return
 	}

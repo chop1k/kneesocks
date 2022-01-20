@@ -76,9 +76,7 @@ func (b BaseV5BindHandler) bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
-		b.sender.SendConnectionNotAllowedAndClose(client)
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5BindManagerBindError(err, address, client)
 
 		return
 	}
@@ -108,9 +106,7 @@ func (b BaseV5BindHandler) bindWait(address string, client net.Conn) {
 	host, err := b.bindManager.ReceiveHost(address, deadline)
 
 	if err != nil {
-		_ = client.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5BindManagerReceiveHostError(err, address, client)
 
 		return
 	}
@@ -122,11 +118,7 @@ func (b BaseV5BindHandler) bindCheckAddress(address string, host, client net.Con
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5AddressParsingError(parseErr, address, client, host)
 
 		return
 	}
@@ -134,11 +126,7 @@ func (b BaseV5BindHandler) bindCheckAddress(address string, host, client net.Con
 	addrType, determineErr := b.utils.DetermineAddressType(hostAddr)
 
 	if determineErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5AddressDeterminationError(determineErr, address, client, host)
 
 		return
 	}
@@ -158,11 +146,7 @@ func (b BaseV5BindHandler) sendSecondResponse(address string, addrType byte, hos
 	err = b.bindManager.SendClient(address, client)
 
 	if err != nil {
-		b.sender.SendFailAndClose(client)
-
-		_ = host.Close()
-
-		b.logger.BindFailed(client.RemoteAddr().String(), address)
+		b.errorHandler.HandleV5BindManagerSendClientError(err, address, client, host)
 
 		return
 	}

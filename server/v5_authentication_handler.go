@@ -12,10 +12,11 @@ type V5AuthenticationHandler interface {
 }
 
 type BaseV5AuthenticationHandler struct {
-	password password.Password
-	protocol v5.Protocol
-	config   config.SocksV5Config
-	users    config.UsersConfig
+	password     password.Password
+	protocol     v5.Protocol
+	config       config.SocksV5Config
+	users        config.UsersConfig
+	errorHandler V5ErrorHandler
 }
 
 func NewBaseAuthenticationHandler(
@@ -23,12 +24,14 @@ func NewBaseAuthenticationHandler(
 	protocol v5.Protocol,
 	config config.SocksV5Config,
 	users config.UsersConfig,
+	errorHandler V5ErrorHandler,
 ) BaseV5AuthenticationHandler {
 	return BaseV5AuthenticationHandler{
-		password: password,
-		protocol: protocol,
-		config:   config,
-		users:    users,
+		password:     password,
+		protocol:     protocol,
+		config:       config,
+		users:        users,
+		errorHandler: errorHandler,
 	}
 }
 
@@ -52,6 +55,8 @@ func (b BaseV5AuthenticationHandler) HandleAuthentication(methods v5.MethodsChun
 			err := b.protocol.SelectMethod(code, client)
 
 			if err != nil {
+				b.errorHandler.HandleV5SelectMethodsError(err, client)
+
 				return false
 			}
 
@@ -78,6 +83,8 @@ func (b BaseV5AuthenticationHandler) handlePassword(client net.Conn) bool {
 	request, err := b.password.ReceiveRequest(client)
 
 	if err != nil {
+		b.errorHandler.HandleV5PasswordReceiveRequestError(err, client)
+
 		return false
 	}
 
@@ -86,6 +93,8 @@ func (b BaseV5AuthenticationHandler) handlePassword(client net.Conn) bool {
 			err := b.password.ResponseWith(0, client)
 
 			if err != nil {
+				b.errorHandler.HandleV5PasswordResponseError(err, user.Name, client)
+
 				return false
 			}
 
