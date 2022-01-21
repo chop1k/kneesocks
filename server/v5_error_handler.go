@@ -26,6 +26,9 @@ type V5ErrorHandler interface {
 	HandleV5SelectMethodsError(err error, client net.Conn)
 	HandleV5PasswordResponseError(err error, user string, client net.Conn)
 	HandleV5UdpAddressParsingError(err error, client net.Conn)
+	HandleV5IPv4AddressNotAllowed(address string, client net.Conn)
+	HandleV5DomainAddressNotAllowed(address string, client net.Conn)
+	HandleV5IPv6AddressNotAllowed(address string, client net.Conn)
 }
 
 type BaseV5ErrorHandler struct {
@@ -196,4 +199,22 @@ func (b BaseV5ErrorHandler) HandleV5UdpAddressParsingError(err error, client net
 	b.sender.SendFailAndClose(client)
 
 	b.logger.UdpAddressParsingError(client.RemoteAddr().String(), err)
+}
+
+func (b BaseV5ErrorHandler) HandleV5IPv4AddressNotAllowed(address string, client net.Conn) {
+	b.sender.SendAddressNotSupportedAndClose(client)
+
+	b.logger.IPv4AddressNotAllowed(client.RemoteAddr().String(), address)
+}
+
+func (b BaseV5ErrorHandler) HandleV5DomainAddressNotAllowed(address string, client net.Conn) {
+	b.sender.SendAddressNotSupportedAndClose(client)
+
+	b.logger.DomainAddressNotAllowed(client.RemoteAddr().String(), address)
+}
+
+func (b BaseV5ErrorHandler) HandleV5IPv6AddressNotAllowed(address string, client net.Conn) {
+	b.sender.SendAddressNotSupportedAndClose(client)
+
+	b.logger.IPv6AddressNotAllowed(client.RemoteAddr().String(), address)
 }

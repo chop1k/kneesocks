@@ -44,6 +44,9 @@ type SocksV5Logger interface {
 	ReceiveHostError(client string, address string, err error)
 	SendClientError(client string, host string, address string, err error)
 	BindError(client string, address string, err error)
+	IPv4AddressNotAllowed(client string, address string)
+	DomainAddressNotAllowed(client string, address string)
+	IPv6AddressNotAllowed(client string, address string)
 }
 
 type BaseSocksV5Logger struct {
@@ -569,4 +572,43 @@ func (b BaseSocksV5Logger) BindError(client string, address string, err error) {
 		Str("address", address).
 		Err(err).
 		Msg("Cannot handle v5 request due to bind error. ")
+}
+
+func (b BaseSocksV5Logger) IPv4AddressNotAllowed(client string, address string) {
+	e := b.logger.Warn()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("address", address).
+		Msg("IPv4 address not allowed by ruleset. ")
+}
+
+func (b BaseSocksV5Logger) DomainAddressNotAllowed(client string, address string) {
+	e := b.logger.Warn()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("address", address).
+		Msg("Domain address not allowed by ruleset. ")
+}
+
+func (b BaseSocksV5Logger) IPv6AddressNotAllowed(client string, address string) {
+	e := b.logger.Warn()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("address", address).
+		Msg("IPv6 address not allowed by ruleset. ")
 }

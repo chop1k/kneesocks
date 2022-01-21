@@ -76,10 +76,10 @@ func (b BaseV5Handler) handleAuthentication(methods v5.MethodsChunk, client net.
 
 	b.logger.AuthenticationSuccessful(client.RemoteAddr().String())
 
-	b.handleCommand(client)
+	b.handleChunk(client)
 }
 
-func (b BaseV5Handler) handleCommand(client net.Conn) {
+func (b BaseV5Handler) handleChunk(client net.Conn) {
 	chunk, err := b.protocol.ReceiveRequest(client)
 
 	if err != nil {
@@ -88,28 +88,68 @@ func (b BaseV5Handler) handleCommand(client net.Conn) {
 		return
 	}
 
-	var address string
+	b.handleAddress(chunk, client)
+}
 
+func (b BaseV5Handler) handleAddress(chunk v5.RequestChunk, client net.Conn) {
 	if chunk.AddressType == 1 {
-		address = fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
+		b.handleIPv4(chunk, client)
 	} else if chunk.AddressType == 3 {
-		address = fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
+		b.handleDomain(chunk, client)
 	} else if chunk.AddressType == 4 {
-		address = fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
+		b.handleIPv6(chunk, client)
 	} else {
 		b.errorHandler.HandleV5InvalidAddressTypeError(chunk.AddressType, chunk.Address, client)
 
 		return
 	}
+}
 
-	if chunk.CommandCode == 1 {
+func (b BaseV5Handler) handleIPv4(chunk v5.RequestChunk, client net.Conn) {
+	address := fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
+
+	if !b.config.IsIPv4Allowed() {
+		b.errorHandler.HandleV5IPv4AddressNotAllowed(address, client)
+
+		return
+	}
+
+	b.handleCommand(chunk.CommandCode, address, client)
+}
+
+func (b BaseV5Handler) handleDomain(chunk v5.RequestChunk, client net.Conn) {
+	address := fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
+
+	if !b.config.IsDomainAllowed() {
+		b.errorHandler.HandleV5DomainAddressNotAllowed(address, client)
+
+		return
+	}
+
+	b.handleCommand(chunk.CommandCode, address, client)
+}
+
+func (b BaseV5Handler) handleIPv6(chunk v5.RequestChunk, client net.Conn) {
+	address := fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
+
+	if !b.config.IsIPv6Allowed() {
+		b.errorHandler.HandleV5IPv6AddressNotAllowed(address, client)
+
+		return
+	}
+
+	b.handleCommand(chunk.CommandCode, address, client)
+}
+
+func (b BaseV5Handler) handleCommand(command byte, address string, client net.Conn) {
+	if command == 1 {
 		b.handleConnect(address, client)
-	} else if chunk.CommandCode == 2 {
+	} else if command == 2 {
 		b.handleBind(address, client)
-	} else if chunk.CommandCode == 3 {
+	} else if command == 3 {
 		b.handleUdpAssociate(client)
 	} else {
-		b.errorHandler.HandleV5UnknownCommandError(chunk.CommandCode, address, client)
+		b.errorHandler.HandleV5UnknownCommandError(command, address, client)
 
 		return
 	}
