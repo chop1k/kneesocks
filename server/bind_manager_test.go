@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net"
 	"testing"
+	"time"
 )
 
 func TestNewBindManager(t *testing.T) {
@@ -29,7 +30,9 @@ func TestBindManager_Bind(t *testing.T) {
 
 	require.False(t, ok)
 
-	bindManager.Bind("test")
+	err := bindManager.Bind("test")
+
+	require.NoError(t, err)
 
 	_, ok = bindManager.addresses["test"]
 
@@ -85,7 +88,9 @@ func TestBindManager_SendHost(t *testing.T) {
 	}
 
 	go func() {
-		_ = bindManager.SendHost("test", nil)
+		err := bindManager.SendHost("test", nil)
+
+		require.NoError(t, err)
 	}()
 
 	conn := <-hostChan
@@ -117,7 +122,9 @@ func TestBindManager_SendClient(t *testing.T) {
 	}
 
 	go func() {
-		_ = bindManager.SendClient("test", nil)
+		err := bindManager.SendClient("test", nil)
+
+		require.NoError(t, err)
 	}()
 
 	conn := <-clientChan
@@ -152,9 +159,24 @@ func TestBindManager_ReceiveClient(t *testing.T) {
 		clientChan <- nil
 	}()
 
-	client, err := bindManager.ReceiveClient("test")
+	client, err := bindManager.ReceiveClient("test", time.Second)
 
 	require.NoError(t, err)
+
+	require.Nil(t, client)
+}
+
+func TestBindManager_ReceiveClientReturnsTimeoutError(t *testing.T) {
+	bindManager := NewBindManager()
+
+	bindManager.addresses["test"] = bundle{
+		client: make(chan net.Conn),
+		host:   make(chan net.Conn),
+	}
+
+	client, err := bindManager.ReceiveClient("test", time.Second)
+
+	require.ErrorIs(t, err, TimeoutError)
 
 	require.Nil(t, client)
 }
@@ -166,7 +188,7 @@ func TestBindManager_ReceiveClientReturnsNotExistsError(t *testing.T) {
 
 	require.False(t, ok)
 
-	_, err := bindManager.ReceiveClient("test")
+	_, err := bindManager.ReceiveClient("test", time.Second)
 
 	require.ErrorIs(t, err, AddressNotExistsError)
 }
@@ -185,7 +207,7 @@ func TestBindManager_ReceiveClientReturnsClosedChannelError(t *testing.T) {
 	close(clientChan)
 	close(hostChan)
 
-	_, err := bindManager.ReceiveClient("test")
+	_, err := bindManager.ReceiveClient("test", time.Second)
 
 	require.ErrorIs(t, err, ClientChannelClosedError)
 }
@@ -205,11 +227,26 @@ func TestBindManager_ReceiveHost(t *testing.T) {
 		hostChan <- nil
 	}()
 
-	host, err := bindManager.ReceiveHost("test")
+	host, err := bindManager.ReceiveHost("test", time.Second)
 
 	require.NoError(t, err)
 
 	require.Nil(t, host)
+}
+
+func TestBindManager_ReceiveHostReturnsTimeoutError(t *testing.T) {
+	bindManager := NewBindManager()
+
+	bindManager.addresses["test"] = bundle{
+		client: make(chan net.Conn),
+		host:   make(chan net.Conn),
+	}
+
+	client, err := bindManager.ReceiveHost("test", time.Second)
+
+	require.ErrorIs(t, err, TimeoutError)
+
+	require.Nil(t, client)
 }
 
 func TestBindManager_ReceiveHostReturnsNotExistsError(t *testing.T) {
@@ -219,7 +256,7 @@ func TestBindManager_ReceiveHostReturnsNotExistsError(t *testing.T) {
 
 	require.False(t, ok)
 
-	_, err := bindManager.ReceiveHost("test")
+	_, err := bindManager.ReceiveHost("test", time.Second)
 
 	require.ErrorIs(t, err, AddressNotExistsError)
 }
@@ -238,7 +275,7 @@ func TestBindManager_ReceiveHostReturnsClosedChannelError(t *testing.T) {
 	close(clientChan)
 	close(hostChan)
 
-	_, err := bindManager.ReceiveHost("test")
+	_, err := bindManager.ReceiveHost("test", time.Second)
 
 	require.ErrorIs(t, err, HostChannelClosedError)
 }

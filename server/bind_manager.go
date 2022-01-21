@@ -38,7 +38,7 @@ func (m BindManager) IsBound(addr string) bool {
 func (m BindManager) Bind(addr string) error {
 	_, ok := m.addresses[addr]
 
-	if !ok {
+	if ok {
 		return AddressAlreadyBoundError
 	}
 
@@ -64,7 +64,7 @@ func (m BindManager) Remove(addr string) {
 	delete(m.addresses, addr)
 }
 
-func (m BindManager) SendHost(addr string, host net.Conn) error {
+func (m BindManager) SendHost(addr string, host net.Conn) error { // TODO: add deadline
 	channel, ok := m.addresses[addr]
 
 	if !ok {
@@ -76,7 +76,7 @@ func (m BindManager) SendHost(addr string, host net.Conn) error {
 	return nil
 }
 
-func (m BindManager) SendClient(addr string, client net.Conn) error {
+func (m BindManager) SendClient(addr string, client net.Conn) error { // TODO: add deadline
 	channel, ok := m.addresses[addr]
 
 	if !ok {
