@@ -64,9 +64,9 @@ func (b BaseV5Handler) HandleV5(request []byte, client net.Conn) {
 }
 
 func (b BaseV5Handler) handleAuthentication(methods v5.MethodsChunk, client net.Conn) {
-	authenticated := b.authenticationHandler.HandleAuthentication(methods, client)
+	name, err := b.authenticationHandler.HandleAuthentication(methods, client)
 
-	if !authenticated {
+	if err != nil {
 		_ = client.Close()
 
 		b.logger.AuthenticationFailed(client.RemoteAddr().String())
@@ -74,7 +74,7 @@ func (b BaseV5Handler) handleAuthentication(methods v5.MethodsChunk, client net.
 		return
 	}
 
-	b.logger.AuthenticationSuccessful(client.RemoteAddr().String())
+	b.logger.AuthenticationSuccessful(client.RemoteAddr().String(), name)
 
 	b.handleChunk(client)
 }

@@ -27,7 +27,7 @@ type SocksV5Logger interface {
 	UdpAssociationSuccessful(client string, address string)
 	UdpAssociationFailed(client string, address string)
 	UdpAssociationNotAllowed(client string)
-	AuthenticationSuccessful(client string)
+	AuthenticationSuccessful(client string, name string)
 	AuthenticationFailed(client string)
 	TransferFinished(client string, host string)
 	ParseError(client string, err error)
@@ -343,7 +343,7 @@ func (b BaseSocksV5Logger) UdpAssociationNotAllowed(client string) {
 		Msg("Udp associate not allowed due to ruleset. ")
 }
 
-func (b BaseSocksV5Logger) AuthenticationSuccessful(client string) {
+func (b BaseSocksV5Logger) AuthenticationSuccessful(client string, name string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -352,6 +352,7 @@ func (b BaseSocksV5Logger) AuthenticationSuccessful(client string) {
 
 	e.
 		Str("client", client).
+		Str("name", name).
 		Msg("Authentication successful. ")
 }
 

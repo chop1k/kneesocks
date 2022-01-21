@@ -735,23 +735,46 @@ func registerProtocol(builder di.Builder) {
 }
 
 func registerServer(builder di.Builder) {
+	passwordAuthenticatorDef := di.Def{
+		Name:  "password_authenticator",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			passwd := ctn.Get("auth_password").(password.Password)
+			users := ctn.Get("users_config").(config.UsersConfig)
+			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
+
+			return server.NewBaseV5PasswordAuthenticator(
+				passwd,
+				users,
+				errorHandler,
+			)
+		},
+	}
+
+	noAuthAuthenticatorDef := di.Def{
+		Name:  "no_auth_authenticator",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return server.NewBaseNoAuthAuthenticator()
+		},
+	}
 
 	authenticationHandlerDef := di.Def{
 		Name:  "authentication_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			passwd := ctn.Get("auth_password").(password.Password)
 			protocol := ctn.Get("v5").(v5.Protocol)
 			cfg := ctn.Get("v5_config").(config.SocksV5Config)
-			users := ctn.Get("users_config").(config.UsersConfig)
 			errorHandler := ctn.Get("v5_error_handler").(server.V5ErrorHandler)
+			passwordAuthenticator := ctn.Get("password_authenticator").(server.Authenticator)
+			noAuthAuthenticator := ctn.Get("no_auth_authenticator").(server.Authenticator)
 
 			return server.NewBaseAuthenticationHandler(
-				passwd,
 				protocol,
 				cfg,
-				users,
 				errorHandler,
+				passwordAuthenticator,
+				noAuthAuthenticator,
 			), nil
 		},
 	}
@@ -1218,6 +1241,8 @@ func registerServer(builder di.Builder) {
 	}
 
 	err := builder.Add(
+		passwordAuthenticatorDef,
+		noAuthAuthenticatorDef,
 		authenticationHandlerDef,
 		connectionHandlerDef,
 		streamHandlerDef,
