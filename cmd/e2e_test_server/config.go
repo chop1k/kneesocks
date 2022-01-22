@@ -7,17 +7,40 @@ import (
 )
 
 type Config struct {
-	SocksIPv4         string `validate:"required,ipv4"`
-	SocksIPv6         string `validate:"required,ipv6"`
-	SocksPort         uint16 `validate:"required"`
-	SocksZone         string
-	BindIP            string `validate:"required,ip"`
-	BindPort          uint16 `validate:"required"`
-	BindZone          string
+	Socks   SocksConfig
+	Tcp     TcpConfig
+	Udp     UdpConfig
+	Picture PictureConfig
+	Log     LogConfig
+}
+
+type SocksConfig struct {
+	IPv4 string `validate:"required,ipv4"`
+	IPv6 string `validate:"required,ipv6"`
+	Port uint16 `validate:"required"`
+	Zone string
+}
+
+type TcpConfig struct {
+	BindIP   string `validate:"required,ip"`
+	BindPort uint16 `validate:"required"`
+	BindZone string
+}
+
+type UdpConfig struct {
+	BindIP   string `validate:"required,ip"`
+	BindPort uint16 `validate:"required"`
+	BindZone string
+}
+
+type PictureConfig struct {
 	BigPicturePath    string `validate:"required,uri"`
 	MiddlePicturePath string `validate:"required,uri"`
 	SmallPicturePath  string `validate:"required,uri"`
-	LogPath           string `validate:"required"`
+}
+
+type LogConfig struct {
+	Path string `validate:"required"`
 }
 
 func NewConfig(validate validator.Validate, path string) (Config, error) {

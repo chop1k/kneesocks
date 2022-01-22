@@ -1,0 +1,26 @@
+{
+  "Socks": {
+    "IPv4": "127.0.0.1",
+    "IPv6": "::1",
+    "Port": 1080,
+    "Zone": ""
+  },
+  "Tcp": {
+    "BindIP": "127.0.0.1",
+    "BindPort": 9999,
+    "BindZone": ""
+  },
+  "Udp": {
+    "BindIP": "127.0.0.1",
+    "BindPort": 9999,
+    "BindZone": ""
+  },
+  "Picture": {
+    "BigPicturePath": "/home/chop1k/Pictures/Memes/Durka/Межгалактический-портал-в-дурку.gif",
+    "MiddlePicturePath": "/home/chop1k/Pictures/Memes/memes_29/5eA-dD3iZEE.jpg",
+    "SmallPicturePath": "/home/chop1k/Pictures/Memes/memes_21/mZAEUhyKciE.jpg"
+  },
+  "Log": {
+    "Path": "/tmp/test-server.log"
+  }
+}
