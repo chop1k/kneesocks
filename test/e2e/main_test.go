@@ -1,6 +1,13 @@
 package e2e
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
+	"fmt"
+	"github.com/stretchr/testify/require"
+	"io"
+	"io/ioutil"
+	"net"
 	"os"
 	"strconv"
 	"testing"
@@ -235,4 +242,272 @@ func testMainSetPicturesHashEnv() {
 	bigPictureHash = bigPicture
 	middlePictureHash = middlePicture
 	smallPictureHash = smallPicture
+}
+
+func getLittleEndianPort(port uint16) []byte {
+	portBinary := make([]byte, 2)
+
+	binary.LittleEndian.PutUint16(portBinary, port)
+
+	return portBinary
+}
+
+func getBigEndianPort(port uint16) []byte {
+	portBinary := make([]byte, 2)
+
+	binary.BigEndian.PutUint16(portBinary, port)
+
+	return portBinary
+}
+
+func connectToServer(t *testing.T) net.Conn {
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", socksTcpHost, socksTcpPort))
+
+	require.NoError(t, err)
+
+	return conn
+}
+
+func constructV4Request(command byte, ip string, port uint16, t *testing.T) []byte {
+	ipv4 := net.ParseIP(ip)
+
+	require.NotNil(t, ipv4)
+
+	ipv4 = ipv4.To4()
+
+	require.NotNil(t, ipv4)
+
+	request := []byte{4, command}
+
+	request = append(request, getBigEndianPort(port)...)
+	request = append(request, ipv4...)
+	request = append(request, 0)
+
+	return request
+}
+
+func constructV4aRequest(command byte, address string, port uint16) []byte {
+	request := []byte{4, command}
+
+	request = append(request, getBigEndianPort(port)...)
+	request = append(request, []byte{0, 0, 0, 255}...)
+	request = append(request, []byte(address)...)
+	request = append(request, 0)
+
+	return request
+}
+
+func constructV5Request(command byte, addressType byte, address string, port uint16, t *testing.T) []byte {
+	request := []byte{5, command, 0, addressType}
+
+	if addressType == 1 {
+		ipv4 := net.ParseIP(address)
+
+		require.NotNil(t, ipv4)
+
+		ipv4 = ipv4.To4()
+
+		require.NotNil(t, ipv4)
+
+		request = append(request, ipv4...)
+	} else if addressType == 3 {
+		request = append(request, []byte{byte(len(address))}...)
+		request = append(request, []byte(address)...)
+	} else if addressType == 4 {
+		ipv6 := net.ParseIP(address)
+
+		require.NotNil(t, ipv6)
+
+		ipv6 = ipv6.To16()
+
+		require.NotNil(t, ipv6)
+
+		request = append(request, ipv6...)
+	} else {
+		t.Fatalf("Unknown address type %d.", addressType)
+	}
+
+	request = append(request, getBigEndianPort(port)...)
+
+	return request
+}
+
+func sendV4Request(conn net.Conn, command byte, ip string, port uint16, t *testing.T) {
+	_, err := conn.Write(constructV4Request(command, ip, port, t))
+
+	require.NoError(t, err)
+}
+
+func sendV4aRequest(conn net.Conn, command byte, address string, port uint16, t *testing.T) {
+	_, err := conn.Write(constructV4aRequest(command, address, port))
+
+	require.NoError(t, err)
+}
+
+func sendV5Welcome(conn net.Conn, methods []byte, t *testing.T) {
+	chunk := []byte{5, byte(len(methods))}
+
+	chunk = append(chunk, methods...)
+
+	_, err := conn.Write(chunk)
+
+	require.NoError(t, err)
+}
+
+func compareV5Selection(conn net.Conn, method byte, t *testing.T) {
+	response := make([]byte, 2)
+
+	i, err := conn.Read(response)
+
+	require.NoError(t, err)
+	require.Equal(t, 2, i)
+
+	require.Equal(t, []byte{5, method}, response)
+}
+
+func sendV5Password(conn net.Conn, name string, password string, t *testing.T) {
+	sendV5Welcome(conn, []byte{2}, t)
+	compareV5Selection(conn, 2, t)
+
+	chunk := []byte{1, byte(len(name))}
+
+	chunk = append(chunk, []byte(name)...)
+
+	chunk = append(chunk, byte(len(password)))
+	chunk = append(chunk, []byte(password)...)
+
+	_, err := conn.Write(chunk)
+
+	require.NoError(t, err)
+}
+
+func compareV5Password(conn net.Conn, t *testing.T) {
+	expected := []byte{1, 0}
+
+	response := make([]byte, 2)
+
+	i, err := conn.Read(response)
+
+	require.NoError(t, err)
+	require.Equal(t, 2, i)
+
+	require.Equal(t, expected, response)
+}
+
+func sendV5Request(conn net.Conn, command byte, addressType byte, address string, port uint16, t *testing.T) {
+	sendV5Welcome(conn, []byte{0}, t)
+	compareV5Selection(conn, 0, t)
+
+	_, err := conn.Write(constructV5Request(command, addressType, address, port, t))
+
+	require.NoError(t, err)
+}
+
+func compareV4Reply(conn net.Conn, port uint16, t *testing.T) {
+	response := make([]byte, 8)
+
+	i, err := conn.Read(response)
+
+	require.NoError(t, err)
+	require.Equal(t, 8, i)
+
+	expected := []byte{0, 90}
+
+	expected = append(expected, getLittleEndianPort(port)...)
+	expected = append(expected, []byte{0, 0, 0, 0}...)
+
+	require.Equal(t, expected, response)
+}
+
+func compareV5Reply(conn net.Conn, addressType byte, address string, port uint16, t *testing.T) {
+	expected := []byte{5, 0, 0, addressType}
+
+	if addressType == 1 {
+		ipv4 := net.ParseIP(address)
+
+		require.NotNil(t, ipv4)
+
+		ipv4 = ipv4.To4()
+
+		require.NotNil(t, ipv4)
+
+		expected = append(expected, ipv4...)
+	} else if addressType == 3 {
+		expected = append(expected, []byte(address)...)
+	} else if addressType == 4 {
+		ipv6 := net.ParseIP(address)
+
+		require.NotNil(t, ipv6)
+
+		ipv6 = ipv6.To16()
+
+		require.NotNil(t, ipv6)
+
+		expected = append(expected, ipv6...)
+	} else {
+		t.Fatalf("Unknown address type %d.", addressType)
+	}
+
+	expected = append(expected, getLittleEndianPort(port)...)
+
+	response := make([]byte, 512)
+
+	i, err := conn.Read(response)
+
+	require.NoError(t, err)
+
+	require.Equal(t, expected, response[:i])
+}
+
+func sendPictureRequest(conn net.Conn, picture byte, t *testing.T) {
+	_, err := conn.Write([]byte{picture})
+
+	require.NoError(t, err)
+}
+
+func comparePictures(conn net.Conn, prefix string, command string, picture byte, t *testing.T) {
+	var file *os.File
+	var err error
+
+	if picture == 1 || picture == 4 {
+		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s", prefix, command, "big-picture"))
+	} else if picture == 2 || picture == 5 {
+		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s", prefix, command, "middle-picture"))
+	} else if picture == 3 || picture == 6 {
+		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s", prefix, command, "small-picture"))
+	} else {
+		t.Fatalf("Unknown picture %d. ", picture)
+	}
+
+	require.NoError(t, err)
+
+	h := sha256.New()
+
+	writers := io.MultiWriter(file, h)
+
+	for {
+		buffer := make([]byte, 512)
+
+		i, err := conn.Read(buffer)
+
+		if err != nil {
+			break
+		}
+
+		_, err = writers.Write(buffer[:i])
+
+		require.NoError(t, err)
+	}
+
+	if picture == 1 || picture == 4 {
+		require.Equal(t, bigPictureHash, fmt.Sprintf("%x", h.Sum(nil)))
+	} else if picture == 2 || picture == 5 {
+		require.Equal(t, middlePictureHash, fmt.Sprintf("%x", h.Sum(nil)))
+	} else if picture == 3 || picture == 6 {
+		require.Equal(t, smallPictureHash, fmt.Sprintf("%x", h.Sum(nil)))
+	}
+
+	h.Reset()
+
+	require.NoError(t, file.Close())
 }

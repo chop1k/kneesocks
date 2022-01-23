@@ -100,12 +100,9 @@ func testV4BindReceiveFirstReply(picture byte, reader io.Reader, t *testing.T) {
 }
 
 func testV4BindConnectToServer(picture byte, reader io.Reader, t *testing.T) {
-	print('h')
 	host, err := net.Dial("tcp", fmt.Sprintf("%s:%d", tcpServerHost, tcpServerPort))
 
 	require.NoError(t, err)
-
-	print('t')
 
 	testV4BindSendPictureRequest(picture, *bufio.NewWriter(host), reader, t)
 }
