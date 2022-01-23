@@ -134,6 +134,8 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 	if parseErr != nil {
 		_ = client.Close()
 
+		b.logger.AddressParseError(addr, parseErr)
+
 		return
 	}
 
@@ -141,6 +143,8 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 
 	if err != nil {
 		_ = client.Close()
+
+		b.logger.LookupError(hostAddr, err)
 
 		return
 	}
@@ -155,9 +159,9 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 		}
 	}
 
-	b.logger.ConnectionDenied(addr)
-
 	_ = client.Close()
+
+	b.logger.ConnectionDenied(addr)
 }
 
 func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.Conn) {
@@ -165,6 +169,8 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 
 	if err != nil {
 		_ = client.Close()
+
+		b.logger.SendHostError(addr, err)
 
 		return
 	}
@@ -176,6 +182,8 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 	if receiveErr != nil {
 		_ = client.Close()
 
+		b.logger.ReceiveClientError(addr, receiveErr)
+
 		return
 	}
 
@@ -186,6 +194,8 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 	if err != nil {
 		_ = client.Close()
 		_ = host.Close()
+
+		b.logger.WriteRequestError(client.RemoteAddr().String(), host.RemoteAddr().String(), err)
 
 		return
 	}

@@ -10,6 +10,11 @@ type TcpLogger interface {
 	ConnectionProtocolDetermined(client string, protocol string)
 	ConnectionBound(client string, host string)
 	ConnectionExchangeTimeout(client string)
+	AddressParseError(address string, err error)
+	LookupError(address string, err error)
+	ReceiveClientError(address string, err error)
+	SendHostError(address string, err error)
+	WriteRequestError(client string, host string, err error)
 	Listen(address string)
 	ListenError(address string, err error)
 	AcceptError(err error)
@@ -122,4 +127,70 @@ func (b BaseTcpLogger) AcceptError(err error) {
 	e.
 		Err(err).
 		Msg("Got accept error.")
+}
+
+func (b BaseTcpLogger) AddressParseError(address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Err(err).
+		Msg("Cannot parse address.")
+}
+
+func (b BaseTcpLogger) LookupError(address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Err(err).
+		Msg("Got lookup error.")
+}
+
+func (b BaseTcpLogger) ReceiveClientError(address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Err(err).
+		Msg("Cannot receive client because of error.")
+}
+
+func (b BaseTcpLogger) SendHostError(address string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Err(err).
+		Msg("Cannot send host because of error.")
+}
+
+func (b BaseTcpLogger) WriteRequestError(client string, host string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", host).
+		Err(err).
+		Msg("Cannot send first packet because of error.")
 }
