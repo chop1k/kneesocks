@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 )
 
@@ -26,13 +25,7 @@ func NewServer(
 	}, nil
 }
 
-func (s Server) listenTcp() {
-	address := &net.TCPAddr{
-		IP:   net.ParseIP(s.config.Tcp.BindIP),
-		Port: int(s.config.Tcp.BindPort),
-		Zone: s.config.Tcp.BindZone,
-	}
-
+func (s Server) listenTcp(address *net.TCPAddr) {
 	listener, err := net.ListenTCP("tcp", address)
 
 	if err != nil {
@@ -50,22 +43,20 @@ func (s Server) listenTcp() {
 			continue
 		}
 
-		s.logger.Connection(conn.RemoteAddr().String())
+		s.logger.Connection(conn.RemoteAddr().String(), address.String())
 
 		go s.connectionHandler.HandleConnection(conn)
 	}
 }
 
-func (s Server) listenUdp() {
-	address := fmt.Sprintf("%s:%d", s.config.Udp.BindIP, s.config.Udp.BindPort)
-
-	listener, err := net.ListenPacket("udp", address)
+func (s Server) listenUdp(address *net.UDPAddr) {
+	listener, err := net.ListenUDP("udp", address)
 
 	if err != nil {
 		panic(err)
 	}
 
-	s.logger.ListenUdp(address)
+	s.logger.ListenUdp(address.String())
 
 	for {
 		buf := make([]byte, 1024)
@@ -73,17 +64,47 @@ func (s Server) listenUdp() {
 		_, addr, err := listener.ReadFrom(buf)
 
 		if err != nil {
-			s.logger.AcceptPacketError(address, err)
+			s.logger.AcceptPacketError(address.String(), err)
 
 			continue
 		}
+
+		s.logger.PacketAccepted(addr.String(), address.String())
 
 		go s.packetHandler.HandlePacket(buf[0], addr, listener)
 	}
 }
 
 func (s Server) Start() {
-	go s.listenUdp()
+	udpAddressV4 := &net.UDPAddr{
+		IP:   net.ParseIP(s.config.Udp.BindIPv4),
+		Port: int(s.config.Tcp.BindPort),
+		Zone: s.config.Tcp.BindZone,
+	}
 
-	s.listenTcp()
+	go s.listenUdp(udpAddressV4)
+
+	udpAddressV6 := &net.UDPAddr{
+		IP:   net.ParseIP(s.config.Udp.BindIPv6),
+		Port: int(s.config.Tcp.BindPort),
+		Zone: s.config.Tcp.BindZone,
+	}
+
+	go s.listenUdp(udpAddressV6)
+
+	tcpAddressV4 := &net.TCPAddr{
+		IP:   net.ParseIP(s.config.Tcp.BindIPv4),
+		Port: int(s.config.Tcp.BindPort),
+		Zone: s.config.Tcp.BindZone,
+	}
+
+	go s.listenTcp(tcpAddressV4)
+
+	tcpAddressV6 := &net.TCPAddr{
+		IP:   net.ParseIP(s.config.Tcp.BindIPv6),
+		Port: int(s.config.Tcp.BindPort),
+		Zone: s.config.Tcp.BindZone,
+	}
+
+	s.listenTcp(tcpAddressV6)
 }

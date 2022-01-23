@@ -22,13 +22,15 @@ type SocksConfig struct {
 }
 
 type TcpConfig struct {
-	BindIP   string `validate:"required,ip"`
+	BindIPv4 string `validate:"required,ipv4"`
+	BindIPv6 string `validate:"required,ipv6"`
 	BindPort uint16 `validate:"required"`
 	BindZone string
 }
 
 type UdpConfig struct {
-	BindIP   string `validate:"required,ip"`
+	BindIPv4 string `validate:"required,ipv4"`
+	BindIPv6 string `validate:"required,ipv6"`
 	BindPort uint16 `validate:"required"`
 	BindZone string
 }

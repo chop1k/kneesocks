@@ -6,12 +6,14 @@
     "Zone": ""
   },
   "Tcp": {
-    "BindIP": "127.0.0.1",
+    "BindIPv4": "127.0.0.1",
+    "BindIPv6": "::1",
     "BindPort": 9999,
     "BindZone": ""
   },
   "Udp": {
-    "BindIP": "127.0.0.1",
+    "BindIPv4": "127.0.0.1",
+    "BindIPv6": "::1",
     "BindPort": 9999,
     "BindZone": ""
   },

@@ -33,10 +33,10 @@ func (l Logger) ListenUdp(address string) {
 
 	e.
 		Str("address", address).
-		Msg("Udp server listening. ")
+		Msg("Udp server listening.")
 }
 
-func (l Logger) Connection(address string) {
+func (l Logger) Connection(address string, bindAddress string) {
 	e := l.logger.Info()
 
 	if !e.Enabled() {
@@ -45,7 +45,8 @@ func (l Logger) Connection(address string) {
 
 	e.
 		Str("address", address).
-		Msg("New connection. ")
+		Str("bind_address", bindAddress).
+		Msg("New connection.")
 }
 
 func (l Logger) AcceptError(address string, err error) {
@@ -58,7 +59,7 @@ func (l Logger) AcceptError(address string, err error) {
 	e.
 		Str("address", address).
 		Err(err).
-		Msg("Cannot accept connection because of error. ")
+		Msg("Cannot accept connection because of error.")
 }
 
 func (l Logger) AcceptPacketError(address string, err error) {
@@ -71,7 +72,7 @@ func (l Logger) AcceptPacketError(address string, err error) {
 	e.
 		Str("address", address).
 		Err(err).
-		Msg("Cannot accept packet because of error. ")
+		Msg("Cannot accept packet because of error.")
 }
 
 func (l Logger) PictureRequest(address string, picture byte) {
@@ -84,7 +85,7 @@ func (l Logger) PictureRequest(address string, picture byte) {
 	e.
 		Str("address", address).
 		Uint8("picture", picture).
-		Msg("Received picture request. ")
+		Msg("Received picture request.")
 }
 
 func (l Logger) DialError(address string, err error) {
@@ -97,7 +98,7 @@ func (l Logger) DialError(address string, err error) {
 	e.
 		Str("address", address).
 		Err(err).
-		Msg("Cannot dial because of error. ")
+		Msg("Cannot dial because of error.")
 }
 
 func (l Logger) FileError(err error) {
@@ -109,7 +110,7 @@ func (l Logger) FileError(err error) {
 
 	e.
 		Err(err).
-		Msg("Cannot open file because of error. ")
+		Msg("Cannot open file because of error.")
 }
 
 func (l Logger) IOError(address string, err error) {
@@ -122,7 +123,7 @@ func (l Logger) IOError(address string, err error) {
 	e.
 		Str("address", address).
 		Err(err).
-		Msg("Data transfer failed because of error. ")
+		Msg("Data transfer failed because of error.")
 }
 
 func (l Logger) InvalidPicture(address string, picture byte) {
@@ -135,5 +136,18 @@ func (l Logger) InvalidPicture(address string, picture byte) {
 	e.
 		Str("address", address).
 		Uint8("picture", picture).
-		Msg("Data transfer failed because of error. ")
+		Msg("Data transfer failed because of error.")
+}
+
+func (l Logger) PacketAccepted(address string, bindAddress string) {
+	e := l.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Str("bind_address", bindAddress).
+		Msg("New packet accepted.")
 }
