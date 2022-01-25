@@ -200,5 +200,5 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 		return
 	}
 
-	b.streamHandler.HostToClient(client, host)
+	b.streamHandler.ClientToHost(client, host)
 }
