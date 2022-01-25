@@ -151,3 +151,16 @@ func (l Logger) PacketAccepted(address string, bindAddress string) {
 		Str("bind_address", bindAddress).
 		Msg("New packet accepted.")
 }
+
+func (l Logger) ResolveError(address string, err error) {
+	e := l.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Err(err).
+		Msg("Cannot resolve address because of error.")
+}

@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/sarulabs/di"
 	"os"
+	"socks/cmd/e2e_test_server/protocol"
 )
 
 func main() {
@@ -92,8 +93,10 @@ func register(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
+			sender := ctn.Get("picture_sender").(PictureSender)
+			proto := ctn.Get("protocol").(protocol.Protocol)
 
-			return NewConnectionHandler(cfg, logger)
+			return NewConnectionHandler(cfg, logger, sender, proto)
 		},
 	}
 
@@ -121,6 +124,44 @@ func register(builder di.Builder) {
 		},
 	}
 
+	builderDef := di.Def{
+		Name:  "builder",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return protocol.NewBuilder()
+		},
+	}
+
+	parserDef := di.Def{
+		Name:  "parser",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return protocol.NewParser()
+		},
+	}
+
+	protocolDef := di.Def{
+		Name:  "protocol",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			parser := ctn.Get("parser").(protocol.Parser)
+			builder := ctn.Get("builder").(protocol.Builder)
+
+			return protocol.NewProtocol(parser, builder)
+		},
+	}
+
+	pictureSenderDef := di.Def{
+		Name:  "picture_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config").(Config)
+			logger := ctn.Get("logger").(Logger)
+
+			return NewPictureSender(logger, cfg)
+		},
+	}
+
 	err := builder.Add(
 		configPathDef,
 		validatorDef,
@@ -130,6 +171,10 @@ func register(builder di.Builder) {
 		connectionHandlerDef,
 		packetHandlerDef,
 		serverDef,
+		builderDef,
+		parserDef,
+		protocolDef,
+		pictureSenderDef,
 	)
 
 	if err != nil {

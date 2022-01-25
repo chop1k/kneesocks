@@ -2,144 +2,153 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"net"
-	"os"
+	"socks/cmd/e2e_test_server/protocol"
 )
 
 type ConnectionHandler struct {
-	config Config
-	logger Logger
+	config   Config
+	logger   Logger
+	sender   PictureSender
+	protocol protocol.Protocol
 }
 
-func NewConnectionHandler(config Config, logger Logger) (ConnectionHandler, error) {
+func NewConnectionHandler(
+	config Config,
+	logger Logger,
+	sender PictureSender,
+	protocol protocol.Protocol,
+) (ConnectionHandler, error) {
 	return ConnectionHandler{
-		config: config,
-		logger: logger,
+		config:   config,
+		logger:   logger,
+		sender:   sender,
+		protocol: protocol,
 	}, nil
 }
 
 func (h ConnectionHandler) HandleConnection(conn net.Conn) {
-	buffer := make([]byte, 1)
-
-	i, err := conn.Read(buffer)
+	request, err := h.protocol.ReceiveRequest(conn)
 
 	if err != nil {
+
+	}
+
+	h.handleRequest(request, conn)
+}
+
+func (h ConnectionHandler) handleRequest(request protocol.RequestChunk, conn net.Conn) {
+	h.logger.PictureRequest(conn.RemoteAddr().String(), request.Picture)
+
+	if request.Picture > 3 || request.Picture < 1 {
+		h.logger.InvalidPicture(conn.RemoteAddr().String(), request.Picture)
+
+		err := h.protocol.SendResponse(conn, 254)
+
+		if err != nil {
+			h.logger.IOError(conn.RemoteAddr().String(), err)
+
+			_ = conn.Close()
+
+			return
+		}
+
 		_ = conn.Close()
 
-		h.logger.IOError(conn.RemoteAddr().String(), err)
-
 		return
 	}
 
-	if i != 1 {
+	if request.Command == 1 {
+		h.handleConnect(request.Picture, conn)
+	} else if request.Command == 2 {
+		h.handleBind(request.Picture, request.AddressType, request.Address, request.Port, conn)
+	} else {
+
+	}
+}
+
+func (h ConnectionHandler) handleConnect(picture byte, conn net.Conn) {
+	err := h.protocol.SendResponse(conn, 0)
+
+	if err != nil {
+		h.logger.IOError(conn.RemoteAddr().String(), err)
+
 		_ = conn.Close()
 
-		h.logger.IOError(conn.RemoteAddr().String(), err)
-
 		return
 	}
 
-	h.handleRequest(buffer[0], conn)
+	h.sender.Send(conn.RemoteAddr().String(), picture, conn)
 }
 
-func (h ConnectionHandler) handleRequest(picture byte, conn net.Conn) {
-	h.logger.PictureRequest(conn.RemoteAddr().String(), picture)
+func (h ConnectionHandler) handleBind(picture byte, addressType byte, address net.IP, port uint16, conn net.Conn) {
+	lAddr, lErr := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", address.String(), port))
 
-	if picture == 1 {
-		h.sendPicture(1, conn)
-	} else if picture == 2 {
-		h.sendPicture(2, conn)
-	} else if picture == 3 {
-		h.sendPicture(3, conn)
-	} else if picture == 4 {
-		h.connectAndSendPicture(conn.RemoteAddr().String(), 4)
-	} else if picture == 5 {
-		h.connectAndSendPicture(conn.RemoteAddr().String(), 5)
-	} else if picture == 6 {
-		h.connectAndSendPicture(conn.RemoteAddr().String(), 6)
-	} else if picture == 7 {
-		h.connectAndSendPicture(conn.RemoteAddr().String(), 7)
-	} else if picture == 8 {
-		h.connectAndSendPicture(conn.RemoteAddr().String(), 8)
-	} else if picture == 9 {
-		h.connectAndSendPicture(conn.RemoteAddr().String(), 9)
+	if lErr != nil {
+		h.logger.ResolveError(conn.RemoteAddr().String(), lErr)
+
+		err := h.protocol.SendResponse(conn, 255)
+
+		if err != nil {
+			h.logger.IOError(conn.RemoteAddr().String(), err)
+
+			_ = conn.Close()
+
+			return
+		}
+
+		_ = conn.Close()
+
+		return
 	}
 
-	_ = conn.Close()
-}
+	var socksAddress string
 
-func (h ConnectionHandler) sendPicture(picture byte, conn net.Conn) {
-	var file *os.File
-	var err error
-
-	if picture == 1 {
-		file, err = os.Open(h.config.Picture.BigPicturePath)
-	} else if picture == 2 {
-		file, err = os.Open(h.config.Picture.MiddlePicturePath)
-	} else if picture == 3 {
-		file, err = os.Open(h.config.Picture.SmallPicturePath)
+	if addressType == 2 {
+		socksAddress = fmt.Sprintf("%s:%d", h.config.Socks.IPv6, h.config.Socks.Port)
 	} else {
-		h.logger.InvalidPicture(conn.RemoteAddr().String(), picture)
+		socksAddress = fmt.Sprintf("%s:%d", h.config.Socks.IPv4, h.config.Socks.Port)
+	}
+
+	rAddr, rErr := net.ResolveTCPAddr("tcp", socksAddress)
+
+	if rErr != nil {
+		h.logger.ResolveError(conn.RemoteAddr().String(), rErr)
+
+		err := h.protocol.SendResponse(conn, 255)
+
+		if err != nil {
+			h.logger.IOError(conn.RemoteAddr().String(), err)
+
+			_ = conn.Close()
+
+			return
+		}
+
+		_ = conn.Close()
 
 		return
 	}
 
-	if err != nil {
-		h.logger.FileError(err)
-
-		return
-	}
-
-	_, _ = io.Copy(conn, file)
-
-	_ = file.Close()
-}
-
-func (h ConnectionHandler) connectAndSendPicture(address string, picture byte) {
-	var file *os.File
-	var err error
-
-	if picture == 4 || picture == 7 {
-		file, err = os.Open(h.config.Picture.BigPicturePath)
-	} else if picture == 5 || picture == 8 {
-		file, err = os.Open(h.config.Picture.MiddlePicturePath)
-	} else if picture == 6 || picture == 9 {
-		file, err = os.Open(h.config.Picture.SmallPicturePath)
-	} else {
-		h.logger.InvalidPicture(address, picture)
-
-		return
-	}
-
-	if err != nil {
-		h.logger.FileError(err)
-
-		return
-	}
-
-	var addr string
-
-	if picture == 7 || picture == 8 || picture == 9 {
-		addr = fmt.Sprintf("[%s]:%d", h.config.Socks.IPv6, h.config.Socks.Port)
-	} else {
-		addr = fmt.Sprintf("%s:%d", h.config.Socks.IPv4, h.config.Socks.Port)
-	}
-
-	host, dialErr := net.Dial("tcp", addr)
+	host, dialErr := net.DialTCP("tcp", lAddr, rAddr)
 
 	if dialErr != nil {
-		_ = file.Close()
+		return
+	}
 
-		h.logger.DialError(addr, dialErr)
+	h.bindSendResponse(picture, host, conn)
+}
+
+func (h ConnectionHandler) bindSendResponse(picture byte, host net.Conn, conn net.Conn) {
+	err := h.protocol.SendResponse(conn, 0)
+
+	if err != nil {
+		h.logger.IOError(conn.RemoteAddr().String(), err)
+
+		_ = conn.Close()
 
 		return
 	}
 
-	_, copyError := io.Copy(host, file)
-
-	h.logger.IOError(addr, copyError)
-
-	_ = host.Close()
-	_ = file.Close()
+	h.sender.Send(conn.RemoteAddr().String(), picture, host)
 }
