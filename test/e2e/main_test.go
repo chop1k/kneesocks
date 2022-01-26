@@ -403,7 +403,7 @@ func sendV5Request(conn net.Conn, command byte, addressType byte, address string
 	require.NoError(t, err)
 }
 
-func compareV4Reply(conn net.Conn, port uint16, t *testing.T) {
+func compareV4Reply(conn net.Conn, ip string, port uint16, t *testing.T) {
 	response := make([]byte, 8)
 
 	i, err := conn.Read(response)
@@ -413,8 +413,16 @@ func compareV4Reply(conn net.Conn, port uint16, t *testing.T) {
 
 	expected := []byte{0, 90}
 
+	ipv4 := net.ParseIP(ip)
+
+	require.NotNil(t, ipv4)
+
+	ipv4 = ipv4.To4()
+
+	require.NotNil(t, ipv4)
+
 	expected = append(expected, getLittleEndianPort(port)...)
-	expected = append(expected, []byte{0, 0, 0, 0}...)
+	expected = append(expected, ipv4...)
 
 	require.Equal(t, expected, response)
 }
@@ -459,10 +467,48 @@ func compareV5Reply(conn net.Conn, addressType byte, address string, port uint16
 	require.Equal(t, expected, response[:i])
 }
 
-func sendPictureRequest(conn net.Conn, picture byte, t *testing.T) {
-	_, err := conn.Write([]byte{picture})
+func sendPictureRequest(conn net.Conn, command byte, addressType byte, address string, port uint16, picture byte, t *testing.T) {
+	request := []byte{command, picture, addressType}
+
+	ip := net.ParseIP(address)
+
+	require.NotNil(t, ip)
+
+	if addressType == 1 {
+		ip = ip.To4()
+
+		require.NotNil(t, ip)
+	} else if addressType == 2 {
+		ip = ip.To16()
+
+		require.NotNil(t, ip)
+	}
+
+	request = append(request, ip...)
+	request = append(request, getBigEndianPort(port)...)
+
+	_, err := conn.Write(request)
 
 	require.NoError(t, err)
+}
+
+func comparePictureResponse(conn net.Conn, t *testing.T) {
+	buffer := make([]byte, 6)
+
+	i, err := conn.Read(buffer)
+
+	require.NoError(t, err)
+
+	require.Equal(t, 1, i)
+	require.Equal(t, byte(0), buffer[0])
+}
+
+func connectToHost(address string, port uint16, t *testing.T) net.Conn {
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", address, port))
+
+	require.NoError(t, err)
+
+	return conn
 }
 
 func comparePictures(conn net.Conn, prefix string, command string, picture byte, t *testing.T) {
@@ -470,11 +516,11 @@ func comparePictures(conn net.Conn, prefix string, command string, picture byte,
 	var err error
 
 	if picture == 1 || picture == 4 {
-		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s", prefix, command, "big-picture"))
+		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s.png", prefix, command, "big-picture"))
 	} else if picture == 2 || picture == 5 {
-		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s", prefix, command, "middle-picture"))
+		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s.png", prefix, command, "middle-picture"))
 	} else if picture == 3 || picture == 6 {
-		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s", prefix, command, "small-picture"))
+		file, err = ioutil.TempFile("", fmt.Sprintf("%s-%s-%s.png", prefix, command, "small-picture"))
 	} else {
 		t.Fatalf("Unknown picture %d. ", picture)
 	}

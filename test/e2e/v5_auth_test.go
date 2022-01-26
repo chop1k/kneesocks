@@ -10,8 +10,8 @@ func TestV5NoAuthentication(t *testing.T) {
 
 	sendV5Request(conn, 1, 3, tcpServerHost, tcpServerPort, t)
 	compareV5Reply(conn, 4, tcpServerIPv6, tcpServerPort, t)
-	sendPictureRequest(conn, 1, t)
-	comparePictures(conn, "v5", "auth", 1, t)
+	sendPictureRequest(conn, 1, 1, "0.0.0.0", 0, 1, t)
+	comparePictures(conn, "v5", "no-auth", 1, t)
 }
 
 func TestV5PasswordAuthentication(t *testing.T) {
@@ -27,6 +27,6 @@ func TestV5PasswordAuthentication(t *testing.T) {
 	require.NoError(t, err)
 
 	compareV5Reply(conn, 4, tcpServerIPv6, tcpServerPort, t)
-	sendPictureRequest(conn, 1, t)
-	comparePictures(conn, "v5", "auth", 1, t)
+	sendPictureRequest(conn, 1, 1, "0.0.0.0", 0, 1, t)
+	comparePictures(conn, "v5", "password-auth", 1, t)
 }
