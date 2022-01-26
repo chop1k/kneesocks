@@ -75,7 +75,7 @@ func (l Logger) AcceptPacketError(address string, err error) {
 		Msg("Cannot accept packet because of error.")
 }
 
-func (l Logger) PictureRequest(address string, picture byte) {
+func (l Logger) PictureRequest(address string, picture byte, command byte) {
 	e := l.logger.Info()
 
 	if !e.Enabled() {
@@ -85,6 +85,7 @@ func (l Logger) PictureRequest(address string, picture byte) {
 	e.
 		Str("address", address).
 		Uint8("picture", picture).
+		Uint8("command", command).
 		Msg("Received picture request.")
 }
 
@@ -163,4 +164,56 @@ func (l Logger) ResolveError(address string, err error) {
 		Str("address", address).
 		Err(err).
 		Msg("Cannot resolve address because of error.")
+}
+
+func (l Logger) ReceiveRequestError(address string, err error) {
+	e := l.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Err(err).
+		Msg("Cannot receive request because of error.")
+}
+
+func (l Logger) InvalidCommand(address string, command byte) {
+	e := l.logger.Warn()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Uint8("command", command).
+		Msg("Received invalid command.")
+}
+
+func (l Logger) PictureOpened(address string, picture byte) {
+	e := l.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Uint8("picture", picture).
+		Msg("Reading picture...")
+}
+
+func (l Logger) PictureSent(address string, picture byte) {
+	e := l.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Uint8("picture", picture).
+		Msg("Picture sent.")
 }

@@ -37,7 +37,13 @@ func (s PictureSender) Send(address string, picture byte, conn net.Conn) {
 		return
 	}
 
+	s.logger.PictureOpened(address, picture)
+
 	_, _ = io.Copy(conn, file)
 
+	_ = conn.Close()
+
 	_ = file.Close()
+
+	s.logger.PictureSent(address, picture)
 }

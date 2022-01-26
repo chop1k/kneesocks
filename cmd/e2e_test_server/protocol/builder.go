@@ -8,5 +8,5 @@ func NewBuilder() (Builder, error) {
 }
 
 func (b Builder) BuildResponse(response ResponseChunk) ([]byte, error) {
-	return []byte{response.Status}, nil
+	return []byte{response.Status, 0, 0, 0, 0, 0, 0}, nil
 }

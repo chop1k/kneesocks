@@ -23,11 +23,11 @@ func (p Parser) ParseRequest(data []byte) (RequestChunk, error) {
 	}
 
 	if data[2] == 1 {
-		if len(data) < 9 {
+		if len(data) != 9 {
 			return RequestChunk{}, InvalidChunkSizeError
 		}
 	} else if data[2] == 4 {
-		if len(data) < 21 {
+		if len(data) != 21 {
 			return RequestChunk{}, InvalidChunkSizeError
 		}
 	} else {
