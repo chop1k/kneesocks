@@ -83,12 +83,6 @@ func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
 		return
 	}
 
-	if request[len(request)-1] != 0 {
-		b.checkBound(request, client)
-
-		return
-	}
-
 	if request[4] == 0 && request[5] == 0 && request[6] == 0 && request[7] != 0 {
 		b.logger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
 
