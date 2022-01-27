@@ -12,6 +12,7 @@ var (
 
 type Builder interface {
 	BuildResponse(chunk ResponseChunk) ([]byte, error)
+	BuildRequest(chunk RequestChunk) ([]byte, error)
 }
 
 type BaseBuilder struct {
@@ -38,6 +39,31 @@ func (b BaseBuilder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	}
 
 	buffer.Write(chunk.DestinationIp)
+
+	return buffer.Bytes(), nil
+}
+
+func (b BaseBuilder) BuildRequest(chunk RequestChunk) ([]byte, error) {
+	if chunk.DestinationIp == nil {
+		return nil, DestinationIpIsNullError
+	}
+
+	buffer := bytes.Buffer{}
+
+	buffer.WriteByte(chunk.SocksVersion)
+	buffer.WriteByte(chunk.CommandCode)
+
+	err := binary.Write(&buffer, binary.BigEndian, chunk.DestinationPort)
+
+	if err != nil {
+		return nil, err
+	}
+
+	buffer.Write(chunk.DestinationIp)
+
+	buffer.Write([]byte(chunk.Domain))
+
+	buffer.WriteByte(0)
 
 	return buffer.Bytes(), nil
 }

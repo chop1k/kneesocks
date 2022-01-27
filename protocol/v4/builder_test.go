@@ -85,3 +85,7 @@ func TestBaseBuilder_BuildResponse(t *testing.T) {
 		}
 	}
 }
+
+func TestBaseBuilder_BuildRequest(t *testing.T) {
+	t.Skip("Not implemented.")
+}
