@@ -1,2 +1,40 @@
 {
+  "V4": {
+    "Bind": [],
+    "Connect": []
+  },
+  "V4a": {
+    "Bind": [],
+    "Connect": []
+  },
+  "V5": {
+    "Bind": [],
+    "Connect": [],
+    "Auth": [],
+    "Associate": []
+  },
+  "Socks": {
+    "IPv4": "127.0.0.1",
+    "Domain": "localhost",
+    "IPv6": "::1",
+    "TcpPort": 1080,
+    "UdpPort": 1080
+  },
+  "Server": {
+    "IPv4": "127.0.0.1",
+    "Domain": "localhost",
+    "IPv6": "::1",
+    "TcpPort": 9999,
+    "UdpPort": 9999
+  },
+  "Picture": {
+    "BigPictureHash": "f170d55c41c713edc2282404d2502cf0921f1ea3e78cdfc6839dde0a79c4bb8c",
+    "MiddlePictureHash": "87dee88fa63c5fd541bb5b4998b05c24bc76fb9c95b4789a5ddb309eece2b83a",
+    "SmallPictureHash": "0f7850cac7e4e82d8c34e54cfaf406f9eebc66d7c8a1dc20f7a854e606d67b07"
+  },
+  "Misc": {
+    "TempDirPath": "/tmp",
+    "TempFileNamePattern": "%s/%s.%s.png",
+    "RandomSuffixLength": 16
+  }
 }
