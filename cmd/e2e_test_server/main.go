@@ -41,6 +41,7 @@ func register(builder di.Builder) {
 			return *validator.New(), nil
 		},
 	}
+
 	configDef := di.Def{
 		Name:  "config",
 		Scope: di.App,
