@@ -19,6 +19,7 @@ type Config struct {
 	Server  ServerConfig  `validate:"required"`
 	Picture PictureConfig `validate:"required"`
 	Misc    MiscConfig    `validate:"required"`
+	User    UserConfig    `validate:"required"`
 }
 
 type SocksConfig struct {
@@ -47,6 +48,11 @@ type MiscConfig struct {
 	TempDirPath         string `validate:"required,uri"`
 	TempFileNamePattern string `validate:"required"`
 	RandomSuffixLength  uint   `validate:"required"`
+}
+
+type UserConfig struct {
+	Name     string `validate:"required"`
+	Password string `validate:"required"`
 }
 
 func NewConfig(validate validator.Validate, path string, t *testing.T) Config {

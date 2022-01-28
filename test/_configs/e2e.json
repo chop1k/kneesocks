@@ -36,5 +36,9 @@
     "TempDirPath": "/tmp",
     "TempFileNamePattern": "%s/%s.%s.png",
     "RandomSuffixLength": 16
+  },
+  "User": {
+    "Name": "test",
+    "Password": "test"
   }
 }

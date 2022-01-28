@@ -6,10 +6,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"os"
 	"socks/cmd/e2e_test_server/protocol"
+	"socks/protocol/auth/password"
 	v42 "socks/protocol/v4"
 	v4a2 "socks/protocol/v4a"
+	v52 "socks/protocol/v5"
 	"socks/test/stand/config"
 	"socks/test/stand/picture"
+	"socks/test/stand/server"
 	v4 "socks/test/stand/v4"
 	"socks/test/stand/v4a"
 	v5 "socks/test/stand/v5"
@@ -150,8 +153,22 @@ func (s Stand) registerServer(builder di.Builder, t *testing.T) {
 		},
 	}
 
+	serverDef := di.Def{
+		Name:  "server",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			builder := ctn.Get("server_builder").(protocol.Builder)
+			pic := ctn.Get("picture").(picture.Picture)
+
+			return server.NewServer(t, cfg, builder, pic)
+		},
+	}
+
 	err := builder.Add(
 		builderDef,
+		serverDef,
 	)
 
 	require.NoError(t, err)
@@ -189,10 +206,9 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v4_builder").(v42.Builder)
-			serverBuilder := ctn.Get("server_builder").(protocol.Builder)
-			pic := ctn.Get("picture").(picture.Picture)
+			srv := ctn.Get("server").(server.Server)
 
-			return v4.NewConnectTester(cfg, t, builder, serverBuilder, pic)
+			return v4.NewConnectTester(cfg, t, builder, srv)
 		},
 	}
 
@@ -250,10 +266,9 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v4a_builder").(v4a2.Builder)
-			serverBuilder := ctn.Get("server_builder").(protocol.Builder)
-			pic := ctn.Get("picture").(picture.Picture)
+			srv := ctn.Get("server").(server.Server)
 
-			return v4a.NewConnectTester(cfg, t, builder, serverBuilder, pic)
+			return v4a.NewConnectTester(cfg, t, builder, srv)
 		},
 	}
 
@@ -283,18 +298,96 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 }
 
 func (s Stand) registerV5(builder di.Builder, t *testing.T) {
+	passwordBuilderDef := di.Def{
+		Name:  "v5_password_builder",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return password.NewBaseBuilder()
+		},
+	}
+
+	builderDef := di.Def{
+		Name:  "v5_builder",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return v52.NewBaseBuilder()
+		},
+	}
+
+	senderDef := di.Def{
+		Name:  "v5_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			builder := ctn.Get("v5_builder").(v52.Builder)
+			passwordBuilder := ctn.Get("v5_password_builder").(password.Builder)
+
+			return v5.NewSender(t, cfg, builder, passwordBuilder)
+		},
+	}
+
+	comparatorDef := di.Def{
+		Name:  "v5_comparator",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			builder := ctn.Get("v5_builder").(v52.Builder)
+			passwordBuilder := ctn.Get("v5_password_builder").(password.Builder)
+
+			return v5.NewComparator(t, cfg, builder, passwordBuilder)
+		},
+	}
+
+	authTesterDef := di.Def{
+		Name:  "v5_auth_tester",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			srv := ctn.Get("server").(server.Server)
+			sender := ctn.Get("v5_sender").(v5.Sender)
+			compare := ctn.Get("v5_comparator").(v5.Comparator)
+
+			return v5.NewAuthTester(t, cfg, srv, sender, compare)
+		},
+	}
+
+	connectTesterDef := di.Def{
+		Name:  "v5_connect_tester",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			srv := ctn.Get("server").(server.Server)
+			sender := ctn.Get("v5_sender").(v5.Sender)
+			compare := ctn.Get("v5_comparator").(v5.Comparator)
+
+			return v5.NewConnectTester(t, cfg, sender, compare, srv)
+		},
+	}
+
 	testDef := di.Def{
 		Name:  "v5_test",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
+			auth := ctn.Get("v5_auth_tester").(v5.AuthTester)
+			connect := ctn.Get("v5_connect_tester").(v5.ConnectTester)
 
-			return v5.NewTest(_case, t)
+			return v5.NewTest(_case, t, auth, connect)
 		},
 	}
 
 	err := builder.Add(
+		passwordBuilderDef,
+		builderDef,
+		senderDef,
+		comparatorDef,
+		authTesterDef,
+		connectTesterDef,
 		testDef,
 	)
 

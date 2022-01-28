@@ -38,7 +38,7 @@ func (t Test) Start() {
 		t.v4.Start()
 	} else if t._case.Protocol == "v4a" {
 		t.v4a.Start()
-	} else if t._case.Protocol == "v4a" {
+	} else if t._case.Protocol == "v5" {
 		t.v5.Start()
 	} else {
 		require.Fail(t.t, "Unsupported protocol \"%s\".", t._case.Protocol)

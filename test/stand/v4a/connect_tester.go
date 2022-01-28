@@ -4,34 +4,30 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"net"
-	"socks/cmd/e2e_test_server/protocol"
 	"socks/protocol/v4a"
 	"socks/test/stand/config"
-	"socks/test/stand/picture"
+	"socks/test/stand/server"
 	"testing"
 )
 
 type ConnectTester struct {
-	config        config.Config
-	t             *testing.T
-	builder       v4a.Builder
-	serverBuilder protocol.Builder
-	picture       picture.Picture
+	config  config.Config
+	t       *testing.T
+	builder v4a.Builder
+	server  server.Server
 }
 
 func NewConnectTester(
 	config config.Config,
 	t *testing.T,
 	builder v4a.Builder,
-	serverBuilder protocol.Builder,
-	picture picture.Picture,
+	server server.Server,
 ) (ConnectTester, error) {
 	return ConnectTester{
-		config:        config,
-		t:             t,
-		builder:       builder,
-		serverBuilder: serverBuilder,
-		picture:       picture,
+		config:  config,
+		t:       t,
+		builder: builder,
+		server:  server,
 	}, nil
 }
 
@@ -91,23 +87,5 @@ func (t ConnectTester) compareResponse(picture byte, conn net.Conn) {
 
 	require.Equal(t.t, expected, actual[:i])
 
-	t.sendPictureRequest(picture, conn)
-}
-
-func (t ConnectTester) sendPictureRequest(picture byte, conn net.Conn) {
-	request, err := t.serverBuilder.BuildRequest(protocol.RequestChunk{
-		Command:     1,
-		Picture:     picture,
-		AddressType: 1,
-		Address:     net.IP{127, 0, 0, 1},
-		Port:        0,
-	})
-
-	require.NoError(t.t, err)
-
-	_, err = conn.Write(request)
-
-	require.NoError(t.t, err)
-
-	t.picture.Compare(picture, conn)
+	t.server.SendPictureRequest(picture, conn)
 }
