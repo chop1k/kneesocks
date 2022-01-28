@@ -40,7 +40,9 @@ func TestBaseBuilder_BuildResponse(t *testing.T) {
 		},
 	}
 
-	builder := NewBaseBuilder()
+	builder, err := NewBaseBuilder()
+
+	require.NoError(t, err)
 
 	for i, test := range tests {
 		result, err := builder.BuildResponse(test.chunk)
@@ -51,4 +53,8 @@ func TestBaseBuilder_BuildResponse(t *testing.T) {
 			require.Equalf(t, result, test.result, "Bytes not equal (%d), expected `%+v` to equal `%+v`. ", i, result, test.result)
 		}
 	}
+}
+
+func TestBaseBuilder_BuildRequest(t *testing.T) {
+	t.Skip("Not implemented.")
 }

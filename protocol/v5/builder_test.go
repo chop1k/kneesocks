@@ -40,7 +40,9 @@ func TestBaseBuilder_BuildMethodSelection(t *testing.T) {
 		},
 	}
 
-	builder := NewBaseBuilder()
+	builder, err := NewBaseBuilder()
+
+	require.NoError(t, err)
 
 	for i, test := range tests {
 		result, err := builder.BuildMethodSelection(test.chunk)
@@ -114,7 +116,9 @@ func TestBaseBuilder_BuildResponse(t *testing.T) {
 		},
 	}
 
-	builder := NewBaseBuilder()
+	builder, err := NewBaseBuilder()
+
+	require.NoError(t, err)
 
 	for i, test := range tests {
 		result, err := builder.BuildResponse(test.chunk)
@@ -123,4 +127,12 @@ func TestBaseBuilder_BuildResponse(t *testing.T) {
 
 		require.Equalf(t, result, test.result, "Bytes not equals (%d). ", i)
 	}
+}
+
+func TestBaseBuilder_BuildMethods(t *testing.T) {
+	t.Skip("Not implemented.")
+}
+
+func TestBaseBuilder_BuildRequest(t *testing.T) {
+	t.Skip("Not implemented.")
 }
