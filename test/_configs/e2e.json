@@ -1,16 +1,173 @@
 {
   "V4": {
-    "Bind": [],
-    "Connect": []
+    "Bind": [
+      {
+        "Port": 10001,
+        "Picture": 1
+      },
+      {
+        "Port": 10002,
+        "Picture": 2
+      },
+      {
+        "Port": 10003,
+        "Picture": 3
+      }
+    ],
+    "Connect": [
+      {
+        "Picture": 1
+      },
+      {
+        "Picture": 2
+      },
+      {
+        "Picture": 3
+      }
+    ]
   },
   "V4a": {
-    "Bind": [],
-    "Connect": []
+    "Bind": [
+      {
+        "Port": 10004,
+        "Picture": 1
+      },
+      {
+        "Port": 10005,
+        "Picture": 2
+      },
+      {
+        "Port": 10006,
+        "Picture": 3
+      }
+    ],
+    "Connect": [
+      {
+        "Picture": 1
+      },
+      {
+        "Picture": 2
+      },
+      {
+        "Picture": 3
+      }
+    ]
   },
   "V5": {
-    "Bind": [],
-    "Connect": [],
-    "Auth": [],
+    "Bind": [
+    ],
+    "Connect": [
+      {
+        "Picture": 1,
+        "AddressType": 1
+      },
+      {
+        "Picture": 1,
+        "AddressType": 3
+      },
+      {
+        "Picture": 1,
+        "AddressType": 4
+      },
+      {
+        "Picture": 2,
+        "AddressType": 1
+      },
+      {
+        "Picture": 2,
+        "AddressType": 3
+      },
+      {
+        "Picture": 2,
+        "AddressType": 4
+      },
+      {
+        "Picture": 3,
+        "AddressType": 1
+      },
+      {
+        "Picture": 3,
+        "AddressType": 3
+      },
+      {
+        "Picture": 3,
+        "AddressType": 4
+      }
+    ],
+    "Auth": [
+      {
+        "Picture": 1,
+        "AddressType": 1
+      },
+      {
+        "Picture": 1,
+        "AddressType": 3
+      },
+      {
+        "Picture": 1,
+        "AddressType": 4
+      },
+      {
+        "Picture": 2,
+        "AddressType": 1
+      },
+      {
+        "Picture": 2,
+        "AddressType": 3
+      },
+      {
+        "Picture": 2,
+        "AddressType": 4
+      },
+      {
+        "Picture": 3,
+        "AddressType": 1
+      },
+      {
+        "Picture": 3,
+        "AddressType": 3
+      },
+      {
+        "Picture": 3,
+        "AddressType": 4
+      },
+      {
+        "Picture": 1,
+        "AddressType": 1
+      },
+      {
+        "Picture": 1,
+        "AddressType": 3
+      },
+      {
+        "Picture": 1,
+        "AddressType": 4
+      },
+      {
+        "Picture": 2,
+        "AddressType": 1
+      },
+      {
+        "Picture": 2,
+        "AddressType": 3
+      },
+      {
+        "Picture": 2,
+        "AddressType": 4
+      },
+      {
+        "Picture": 3,
+        "AddressType": 1
+      },
+      {
+        "Picture": 3,
+        "AddressType": 3
+      },
+      {
+        "Picture": 3,
+        "AddressType": 4
+      }
+    ],
     "Associate": []
   },
   "Socks": {
@@ -25,7 +182,9 @@
     "Domain": "localhost",
     "IPv6": "::1",
     "TcpPort": 9999,
-    "UdpPort": 9999
+    "UdpPort": 9999,
+    "HttpPort": 9000,
+    "HttpUri": "test"
   },
   "Picture": {
     "BigPictureHash": "f170d55c41c713edc2282404d2502cf0921f1ea3e78cdfc6839dde0a79c4bb8c",

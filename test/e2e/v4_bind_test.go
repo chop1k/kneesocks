@@ -1,20 +1,12 @@
 package e2e
 
 import (
+	"socks/test/stand"
 	"testing"
 )
 
 func TestV4BindWithBigPicture(t *testing.T) {
-	//conn := connectToServer(t)
-	//
-	//sendV4Request(conn, 2, tcpServerBindIPv4, 10010, t)
-	//compareV4Reply(conn, "0.0.0.0", socksTcpPort, t)
-	//
-	//host := connectToHost(tcpServerIPv4, tcpServerPort, t)
-	//
-	//sendPictureRequest(host, 2, 1, tcpServerBindIPv4, 10010, 1, t)
-	//compareV4Reply(conn, tcpServerBindIPv4, 10010, t)
-	//comparePictures(conn, "v4", "bind", 1, t)
+	stand.New().Execute("v4", "bind", 0, t)
 }
 
 func TestV4BindWithMiddlePicture(t *testing.T) {

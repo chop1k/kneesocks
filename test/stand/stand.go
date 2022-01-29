@@ -5,7 +5,6 @@ import (
 	"github.com/sarulabs/di"
 	"github.com/stretchr/testify/require"
 	"os"
-	"socks/cmd/e2e_test_server/protocol"
 	"socks/protocol/auth/password"
 	v42 "socks/protocol/v4"
 	v4a2 "socks/protocol/v4a"
@@ -110,10 +109,22 @@ func (s Stand) registerConfig(protocol string, command string, number int, build
 		},
 	}
 
+	scopeDef := di.Def{
+		Name:  "scope",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+
+			return config.NewScope(t, cfg)
+		},
+	}
+
 	err := builder.Add(
 		configPathDef,
 		validatorDef,
 		configDef,
+		scopeDef,
 		caseDef,
 	)
 
@@ -145,29 +156,19 @@ func (s Stand) registerPicture(builder di.Builder, t *testing.T) {
 }
 
 func (s Stand) registerServer(builder di.Builder, t *testing.T) {
-	builderDef := di.Def{
-		Name:  "server_builder",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return protocol.NewBuilder()
-		},
-	}
-
 	serverDef := di.Def{
 		Name:  "server",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("server_builder").(protocol.Builder)
 			pic := ctn.Get("picture").(picture.Picture)
 
-			return server.NewServer(t, cfg, builder, pic)
+			return server.NewServer(t, cfg, pic)
 		},
 	}
 
 	err := builder.Add(
-		builderDef,
 		serverDef,
 	)
 
@@ -185,17 +186,43 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 		},
 	}
 
-	bindTesterDef := di.Def{
-		Name:  "v4_bind_tester",
+	senderDef := di.Def{
+		Name:  "v4_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v4_builder").(v42.Builder)
 
-			pic := ctn.Get("picture").(picture.Picture)
+			return v4.NewSender(t, cfg, builder)
+		},
+	}
 
-			return v4.NewBindTester(cfg, t, builder, pic)
+	comparatorDef := di.Def{
+		Name:  "v4_comparator",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			builder := ctn.Get("v4_builder").(v42.Builder)
+
+			return v4.NewComparator(t, cfg, builder)
+		},
+	}
+
+	bindTesterDef := di.Def{
+		Name:  "v4_bind_tester",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			pic := ctn.Get("picture").(picture.Picture)
+			sender := ctn.Get("v4_sender").(v4.Sender)
+			comparator := ctn.Get("v4_comparator").(v4.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
+			srv := ctn.Get("server").(server.Server)
+
+			return v4.NewBindTester(cfg, t, pic, sender, comparator, scope, srv)
 		},
 	}
 
@@ -205,10 +232,12 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v4_builder").(v42.Builder)
 			srv := ctn.Get("server").(server.Server)
+			sender := ctn.Get("v4_sender").(v4.Sender)
+			comparator := ctn.Get("v4_comparator").(v4.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
 
-			return v4.NewConnectTester(cfg, t, builder, srv)
+			return v4.NewConnectTester(cfg, t, srv, sender, comparator, scope)
 		},
 	}
 
@@ -227,6 +256,8 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 
 	err := builder.Add(
 		builderDef,
+		senderDef,
+		comparatorDef,
 		bindTesterDef,
 		connectTesterDef,
 		testDef,

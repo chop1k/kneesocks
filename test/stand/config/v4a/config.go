@@ -6,7 +6,10 @@ type Config struct {
 }
 
 type ConnectScope struct {
+	Picture byte `validate:"required"`
 }
 
 type BindScope struct {
+	Port    uint16 `validate:"required"`
+	Picture byte   `validate:"required"`
 }

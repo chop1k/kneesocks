@@ -31,11 +31,13 @@ type SocksConfig struct {
 }
 
 type ServerConfig struct {
-	IPv4    string `validate:"required,ipv4"`
-	Domain  string `validate:"required,hostname"`
-	IPv6    string `validate:"required,ipv6"`
-	TcpPort uint16 `validate:"required"`
-	UdpPort uint16 `validate:"required"`
+	IPv4     string `validate:"required,ipv4"`
+	Domain   string `validate:"required,hostname"`
+	IPv6     string `validate:"required,ipv6"`
+	TcpPort  uint16 `validate:"required"`
+	UdpPort  uint16 `validate:"required"`
+	HttpPort uint16 `validate:"required"`
+	HttpUri  string `validate:"required"`
 }
 
 type PictureConfig struct {

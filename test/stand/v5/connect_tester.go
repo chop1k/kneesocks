@@ -34,23 +34,23 @@ func NewConnectTester(
 }
 
 func (t ConnectTester) Test(number int) {
-	if number == 18 {
+	if number == 1 {
 		t.connect(1, 1)
-	} else if number == 19 {
+	} else if number == 2 {
 		t.connect(1, 3)
-	} else if number == 20 {
+	} else if number == 3 {
 		t.connect(1, 4)
-	} else if number == 21 {
+	} else if number == 4 {
 		t.connect(2, 1)
-	} else if number == 22 {
+	} else if number == 5 {
 		t.connect(2, 3)
-	} else if number == 23 {
+	} else if number == 6 {
 		t.connect(2, 4)
-	} else if number == 24 {
+	} else if number == 7 {
 		t.connect(3, 1)
-	} else if number == 25 {
+	} else if number == 8 {
 		t.connect(3, 3)
-	} else if number == 26 {
+	} else if number == 9 {
 		t.connect(3, 4)
 	} else {
 		require.Fail(t.t, "Unsupported test number \"%d\".", number)
@@ -66,5 +66,6 @@ func (t ConnectTester) connect(picture byte, addressType byte) {
 	t.comparator.CompareSelection(0, conn)
 	t.sender.SendRequest(1, addressType, conn)
 	t.comparator.CompareResponse(0, addressType, conn)
+
 	t.server.SendPictureRequest(picture, conn)
 }

@@ -84,6 +84,7 @@ func (t AuthTester) handleNoAuth(picture byte, addressType byte) {
 	t.comparator.CompareSelection(0, conn)
 	t.sender.SendRequest(1, addressType, conn)
 	t.comparator.CompareResponse(0, addressType, conn)
+
 	t.server.SendPictureRequest(picture, conn)
 }
 
@@ -98,5 +99,6 @@ func (t AuthTester) handlePasswordAuth(picture byte, addressType byte) {
 	t.comparator.ComparePassword(conn)
 	t.sender.SendRequest(1, addressType, conn)
 	t.comparator.CompareResponse(0, addressType, conn)
+
 	t.server.SendPictureRequest(picture, conn)
 }
