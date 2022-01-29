@@ -36,6 +36,18 @@ func (l Logger) ListenUdp(address string) {
 		Msg("Udp server listening.")
 }
 
+func (l Logger) ListenHttp(address string) {
+	e := l.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Msg("Http server listening.")
+}
+
 func (l Logger) Connection(address string, bindAddress string) {
 	e := l.logger.Info()
 
@@ -47,6 +59,19 @@ func (l Logger) Connection(address string, bindAddress string) {
 		Str("address", address).
 		Str("bind_address", bindAddress).
 		Msg("New connection.")
+}
+
+func (l Logger) Request(address string, picture byte) {
+	e := l.logger.Info()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("address", address).
+		Uint8("picture", picture).
+		Msg("New request.")
 }
 
 func (l Logger) AcceptError(address string, err error) {

@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/sarulabs/di"
 	"os"
-	"socks/cmd/e2e_test_server/protocol"
 )
 
 func main() {
@@ -95,9 +94,8 @@ func register(builder di.Builder) {
 			cfg := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
 			sender := ctn.Get("picture_sender").(PictureSender)
-			proto := ctn.Get("protocol").(protocol.Protocol)
 
-			return NewConnectionHandler(cfg, logger, sender, proto)
+			return NewConnectionHandler(cfg, logger, sender)
 		},
 	}
 
@@ -112,6 +110,18 @@ func register(builder di.Builder) {
 		},
 	}
 
+	requestHandlerDef := di.Def{
+		Name:  "request_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config").(Config)
+			logger := ctn.Get("logger").(Logger)
+			picture := ctn.Get("picture_sender").(PictureSender)
+
+			return NewRequestHandler(cfg, logger, picture)
+		},
+	}
+
 	serverDef := di.Def{
 		Name:  "server",
 		Scope: di.App,
@@ -120,35 +130,9 @@ func register(builder di.Builder) {
 			logger := ctn.Get("logger").(Logger)
 			connectionHandler := ctn.Get("connection_handler").(ConnectionHandler)
 			packetHandler := ctn.Get("packet_handler").(PacketHandler)
+			requestHandler := ctn.Get("request_handler").(RequestHandler)
 
-			return NewServer(cfg, connectionHandler, packetHandler, logger)
-		},
-	}
-
-	builderDef := di.Def{
-		Name:  "builder",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return protocol.NewBuilder()
-		},
-	}
-
-	parserDef := di.Def{
-		Name:  "parser",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return protocol.NewParser()
-		},
-	}
-
-	protocolDef := di.Def{
-		Name:  "protocol",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			parser := ctn.Get("parser").(protocol.Parser)
-			builder := ctn.Get("builder").(protocol.Builder)
-
-			return protocol.NewProtocol(parser, builder)
+			return NewServer(cfg, connectionHandler, packetHandler, logger, requestHandler)
 		},
 	}
 
@@ -171,10 +155,8 @@ func register(builder di.Builder) {
 		loggerDef,
 		connectionHandlerDef,
 		packetHandlerDef,
+		requestHandlerDef,
 		serverDef,
-		builderDef,
-		parserDef,
-		protocolDef,
 		pictureSenderDef,
 	)
 

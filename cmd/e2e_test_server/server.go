@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net"
+	"net/http"
 )
 
 type Server struct {
@@ -9,6 +11,7 @@ type Server struct {
 	connectionHandler ConnectionHandler
 	packetHandler     PacketHandler
 	logger            Logger
+	requestHandler    RequestHandler
 }
 
 func NewServer(
@@ -16,12 +19,14 @@ func NewServer(
 	connectionHandler ConnectionHandler,
 	packetHandler PacketHandler,
 	logger Logger,
+	requestHandler RequestHandler,
 ) (Server, error) {
 	return Server{
 		config:            config,
 		connectionHandler: connectionHandler,
 		packetHandler:     packetHandler,
 		logger:            logger,
+		requestHandler:    requestHandler,
 	}, nil
 }
 
@@ -75,6 +80,14 @@ func (s Server) listenUdp(address *net.UDPAddr) {
 	}
 }
 
+func (s Server) listenHttp(address string) {
+	http.HandleFunc("/test", s.requestHandler.HandleRequest)
+
+	s.logger.ListenHttp(address)
+
+	_ = http.ListenAndServe(address, nil)
+}
+
 func (s Server) Start() {
 	udpAddressV4 := &net.UDPAddr{
 		IP:   net.ParseIP(s.config.Udp.BindIPv4),
@@ -106,5 +119,7 @@ func (s Server) Start() {
 		Zone: s.config.Tcp.BindZone,
 	}
 
-	s.listenTcp(tcpAddressV6)
+	go s.listenTcp(tcpAddressV6)
+
+	s.listenHttp(fmt.Sprintf("%s:%d", s.config.Http.Address, s.config.Http.Port))
 }

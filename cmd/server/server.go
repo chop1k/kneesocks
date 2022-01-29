@@ -616,7 +616,7 @@ func registerProtocol(builder di.Builder) {
 		Name:  "auth_password_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return password.NewBaseBuilder(), nil
+			return password.NewBaseBuilder()
 		},
 	}
 
@@ -697,7 +697,7 @@ func registerProtocol(builder di.Builder) {
 		Name:  "v5_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v5.NewBaseBuilder(), nil
+			return v5.NewBaseBuilder()
 		},
 	}
 

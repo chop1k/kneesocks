@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	Socks   SocksConfig
-	Tcp     TcpConfig
-	Udp     UdpConfig
-	Picture PictureConfig
-	Log     LogConfig
+	Socks   SocksConfig   `validate:"required"`
+	Tcp     TcpConfig     `validate:"required"`
+	Udp     UdpConfig     `validate:"required"`
+	Picture PictureConfig `validate:"required"`
+	Log     LogConfig     `validate:"required"`
+	Http    HttpConfig    `validate:"required"`
 }
 
 type SocksConfig struct {
@@ -39,6 +40,11 @@ type PictureConfig struct {
 	BigPicturePath    string `validate:"required,uri"`
 	MiddlePicturePath string `validate:"required,uri"`
 	SmallPicturePath  string `validate:"required,uri"`
+}
+
+type HttpConfig struct {
+	Address string `validate:"required"`
+	Port    uint16 `validate:"required"`
 }
 
 type LogConfig struct {
