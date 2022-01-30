@@ -12,7 +12,6 @@ type Config struct {
 	Udp     UdpConfig     `validate:"required"`
 	Picture PictureConfig `validate:"required"`
 	Log     LogConfig     `validate:"required"`
-	Http    HttpConfig    `validate:"required"`
 }
 
 type SocksConfig struct {
@@ -23,10 +22,11 @@ type SocksConfig struct {
 }
 
 type TcpConfig struct {
-	BindIPv4 string `validate:"required,ipv4"`
-	BindIPv6 string `validate:"required,ipv6"`
-	BindPort uint16 `validate:"required"`
-	BindZone string
+	BindIPv4    string `validate:"required,ipv4"`
+	BindIPv6    string `validate:"required,ipv6"`
+	BindPort    uint16 `validate:"required"`
+	BindZone    string
+	ConnectPort uint16 `validate:"required"`
 }
 
 type UdpConfig struct {
@@ -40,11 +40,6 @@ type PictureConfig struct {
 	BigPicturePath    string `validate:"required,uri"`
 	MiddlePicturePath string `validate:"required,uri"`
 	SmallPicturePath  string `validate:"required,uri"`
-}
-
-type HttpConfig struct {
-	Address string `validate:"required"`
-	Port    uint16 `validate:"required"`
 }
 
 type LogConfig struct {

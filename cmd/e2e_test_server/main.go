@@ -95,7 +95,7 @@ func register(builder di.Builder) {
 			logger := ctn.Get("logger").(Logger)
 			sender := ctn.Get("picture_sender").(PictureSender)
 
-			return NewConnectionHandler(cfg, logger, sender)
+			return NewConnectHandler(cfg, logger, sender)
 		},
 	}
 
@@ -110,15 +110,15 @@ func register(builder di.Builder) {
 		},
 	}
 
-	requestHandlerDef := di.Def{
-		Name:  "request_handler",
+	bindHandlerDef := di.Def{
+		Name:  "bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
 			picture := ctn.Get("picture_sender").(PictureSender)
 
-			return NewRequestHandler(cfg, logger, picture)
+			return NewBindHandler(cfg, logger, picture)
 		},
 	}
 
@@ -128,11 +128,11 @@ func register(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
-			connectionHandler := ctn.Get("connection_handler").(ConnectionHandler)
+			connectionHandler := ctn.Get("connection_handler").(ConnectHandler)
 			packetHandler := ctn.Get("packet_handler").(PacketHandler)
-			requestHandler := ctn.Get("request_handler").(RequestHandler)
+			bindHandler := ctn.Get("bind_handler").(BindHandler)
 
-			return NewServer(cfg, connectionHandler, packetHandler, logger, requestHandler)
+			return NewServer(cfg, connectionHandler, packetHandler, logger, bindHandler)
 		},
 	}
 
@@ -155,7 +155,7 @@ func register(builder di.Builder) {
 		loggerDef,
 		connectionHandlerDef,
 		packetHandlerDef,
-		requestHandlerDef,
+		bindHandlerDef,
 		serverDef,
 		pictureSenderDef,
 	)

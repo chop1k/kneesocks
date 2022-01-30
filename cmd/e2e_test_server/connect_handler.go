@@ -4,25 +4,25 @@ import (
 	"net"
 )
 
-type ConnectionHandler struct {
+type ConnectHandler struct {
 	config Config
 	logger Logger
 	sender PictureSender
 }
 
-func NewConnectionHandler(
+func NewConnectHandler(
 	config Config,
 	logger Logger,
 	sender PictureSender,
-) (ConnectionHandler, error) {
-	return ConnectionHandler{
+) (ConnectHandler, error) {
+	return ConnectHandler{
 		config: config,
 		logger: logger,
 		sender: sender,
 	}, nil
 }
 
-func (h ConnectionHandler) HandleConnection(conn net.Conn) {
+func (h ConnectHandler) HandleConnect(conn net.Conn) {
 	picture := make([]byte, 1)
 
 	_, err := conn.Read(picture)
@@ -38,7 +38,7 @@ func (h ConnectionHandler) HandleConnection(conn net.Conn) {
 	h.handleConnect(picture[0], conn)
 }
 
-func (h ConnectionHandler) handleConnect(picture byte, conn net.Conn) {
+func (h ConnectHandler) handleConnect(picture byte, conn net.Conn) {
 	err := h.sender.Send(conn.RemoteAddr().String(), picture, conn)
 
 	if err != nil {
