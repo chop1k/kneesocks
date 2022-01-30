@@ -7,6 +7,7 @@ type SocksV4aConfig interface {
 	IsBindAllowed() bool
 	GetConnectDeadline() uint
 	GetBindDeadline() uint
+	GetRestrictions() tree.Restrictions
 }
 
 type BaseSocksV4aConfig struct {
@@ -31,4 +32,8 @@ func (b BaseSocksV4aConfig) GetConnectDeadline() uint {
 
 func (b BaseSocksV4aConfig) GetBindDeadline() uint {
 	return b.config.SocksV4a.BindDeadline
+}
+
+func (b BaseSocksV4aConfig) GetRestrictions() tree.Restrictions {
+	return b.config.SocksV4a.Restrictions
 }

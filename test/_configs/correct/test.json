@@ -17,13 +17,21 @@
     "AllowConnect": true,
     "AllowBind": true,
     "ConnectDeadline": 120,
-    "BindDeadline": 120
+    "BindDeadline": 120,
+    "Restrictions": {
+      "Blacklist": [],
+      "Whitelist": []
+    }
   },
   "SocksV4a": {
     "AllowConnect": true,
     "AllowBind": true,
     "ConnectDeadline": 120,
-    "BindDeadline": 120
+    "BindDeadline": 120,
+    "Restrictions": {
+      "Blacklist": [],
+      "Whitelist": []
+    }
   },
   "SocksV5": {
     "AllowConnect": true,
@@ -37,7 +45,23 @@
       "name/password"
     ],
     "ConnectDeadline": 120,
-    "BindDeadline": 120
+    "BindDeadline": 120,
+    "Users": {
+      "test": {
+        "Password": "test",
+        "Restrictions": {
+          "Blacklist": [],
+          "Whitelist": []
+        }
+      },
+      "anonymous": {
+        "Password": "",
+        "Restrictions": {
+          "Blacklist": [],
+          "Whitelist": []
+        }
+      }
+    }
   },
   "Log": {
     "Server": {
@@ -79,15 +103,5 @@
         "Path": "/tmp/v5.log"
       }
     }
-  },
-  "WhiteList": [
-  ],
-  "BlackList": [
-  ],
-  "Users": [
-    {
-      "Name": "test",
-      "Password": "test"
-    }
-  ]
+  }
 }

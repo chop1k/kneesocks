@@ -3,12 +3,16 @@ package config
 import "socks/config/tree"
 
 type SocksV5Config interface {
-	SocksV4aConfig
+	IsConnectAllowed() bool
+	IsBindAllowed() bool
+	GetConnectDeadline() uint
+	GetBindDeadline() uint
 	IsUdpAssociationAllowed() bool
 	IsIPv4Allowed() bool
 	IsIPv6Allowed() bool
 	IsDomainAllowed() bool
 	GetAuthenticationMethods() []string
+	GetUsers() map[string]tree.User
 }
 
 type BaseSocksV5Config struct {
@@ -53,4 +57,8 @@ func (b BaseSocksV5Config) IsDomainAllowed() bool {
 
 func (b BaseSocksV5Config) GetAuthenticationMethods() []string {
 	return b.config.SocksV5.AuthenticationMethodsAllowed
+}
+
+func (b BaseSocksV5Config) GetUsers() map[string]tree.User {
+	return b.config.SocksV5.Users
 }

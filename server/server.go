@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net"
 	"socks/config"
+	"socks/handlers"
 	"socks/logger"
 )
 
 type Server struct {
-	connectionHandler ConnectionHandler
-	packetHandler     PacketHandler
+	connectionHandler handlers.ConnectionHandler
+	packetHandler     handlers.PacketHandler
 	tcpLogger         logger.TcpLogger
 	tcpConfig         config.TcpConfig
 	udpLogger         logger.UdpLogger
@@ -17,8 +18,8 @@ type Server struct {
 }
 
 func NewServer(
-	connectionHandler ConnectionHandler,
-	packetHandler PacketHandler,
+	connectionHandler handlers.ConnectionHandler,
+	packetHandler handlers.PacketHandler,
 	tcpLogger logger.TcpLogger,
 	tcpConfig config.TcpConfig,
 	udpLogger logger.UdpLogger,

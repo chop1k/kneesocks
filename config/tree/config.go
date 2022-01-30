@@ -7,15 +7,12 @@ import (
 )
 
 type Config struct {
-	Tcp       TcpConfig `validate:"required"`
-	Udp       UdpConfig `validate:"required"`
-	SocksV4   *SocksV4Config
-	SocksV4a  *SocksV4aConfig
-	SocksV5   *SocksV5Config
-	Log       LogConfig `validate:"required"`
-	WhiteList []string  `validate:"required"`
-	BlackList []string  `validate:"required"`
-	Users     []User    `validate:"required"`
+	Tcp      TcpConfig `validate:"required"`
+	Udp      UdpConfig `validate:"required"`
+	SocksV4  *SocksV4Config
+	SocksV4a *SocksV4aConfig
+	SocksV5  *SocksV5Config
+	Log      LogConfig `validate:"required"`
 }
 
 func NewConfig(validate validator.Validate, path string) (Config, error) {

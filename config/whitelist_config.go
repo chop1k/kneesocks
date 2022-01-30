@@ -3,7 +3,7 @@ package config
 import "socks/config/tree"
 
 type WhitelistConfig interface {
-	GetWhitelist() []string
+	GetWhitelist(name string) ([]string, error)
 }
 
 type BaseWhitelistConfig struct {
@@ -16,6 +16,16 @@ func NewBaseWhitelistConfig(config tree.Config) BaseWhitelistConfig {
 	}
 }
 
-func (b BaseWhitelistConfig) GetWhitelist() []string {
-	return b.config.WhiteList
+func (b BaseWhitelistConfig) GetWhitelist(name string) ([]string, error) {
+	if b.config.SocksV5 == nil {
+
+	}
+
+	user, ok := b.config.SocksV5.Users[name]
+
+	if !ok {
+
+	}
+
+	return user.Restrictions.WhiteList, nil
 }
