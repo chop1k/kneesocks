@@ -49,7 +49,7 @@ func (t BindTester) Test(number int) {
 
 	t.sender.SendBindRequest(scope.Port, conn)
 	t.comparator.CompareConnectResponse(conn)
-	t.server.SendBindRequest(scope.Picture, scope.Port)
+	t.server.SendBindRequest(scope.Picture, 1, scope.Port)
 	t.comparator.CompareBindResponse(scope.Port, conn)
 	t.picture.Compare(scope.Picture, conn)
 }

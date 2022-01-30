@@ -43,7 +43,7 @@ func (s Sender) send(command byte, port uint16, conn net.Conn) {
 }
 
 func (s Sender) SendConnectRequest(conn net.Conn) {
-	s.send(1, s.config.Server.TcpPort, conn)
+	s.send(1, s.config.Server.ConnectPort, conn)
 }
 
 func (s Sender) SendBindRequest(port uint16, conn net.Conn) {

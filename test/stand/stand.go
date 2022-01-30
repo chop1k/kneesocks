@@ -283,10 +283,37 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v4a_builder").(v4a2.Builder)
 			pic := ctn.Get("picture").(picture.Picture)
+			srv := ctn.Get("server").(server.Server)
+			sender := ctn.Get("v4a_sender").(v4a.Sender)
+			comparator := ctn.Get("v4a_comparator").(v4a.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
 
-			return v4a.NewBindTester(cfg, t, builder, pic)
+			return v4a.NewBindTester(cfg, t, pic, srv, sender, comparator, scope)
+		},
+	}
+
+	senderDef := di.Def{
+		Name:  "v4a_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			builder := ctn.Get("v4a_builder").(v4a2.Builder)
+
+			return v4a.NewSender(t, cfg, builder)
+		},
+	}
+
+	comparatorDef := di.Def{
+		Name:  "v4a_comparator",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			builder := ctn.Get("v4a_builder").(v4a2.Builder)
+
+			return v4a.NewComparator(t, cfg, builder)
 		},
 	}
 
@@ -296,10 +323,12 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v4a_builder").(v4a2.Builder)
 			srv := ctn.Get("server").(server.Server)
+			sender := ctn.Get("v4a_sender").(v4a.Sender)
+			comparator := ctn.Get("v4a_comparator").(v4a.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
 
-			return v4a.NewConnectTester(cfg, t, builder, srv)
+			return v4a.NewConnectTester(cfg, t, srv, sender, comparator, scope)
 		},
 	}
 
@@ -318,6 +347,8 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 
 	err := builder.Add(
 		builderDef,
+		senderDef,
+		comparatorDef,
 		bindTesterDef,
 		connectTesterDef,
 		testDef,
@@ -371,6 +402,22 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		},
 	}
 
+	bindTesterDef := di.Def{
+		Name:  "v5_bind_tester",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			srv := ctn.Get("server").(server.Server)
+			sender := ctn.Get("v5_sender").(v5.Sender)
+			compare := ctn.Get("v5_comparator").(v5.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
+			pic := ctn.Get("picture").(picture.Picture)
+
+			return v5.NewBindTester(t, cfg, sender, compare, srv, scope, pic)
+		},
+	}
+
 	authTesterDef := di.Def{
 		Name:  "v5_auth_tester",
 		Scope: di.App,
@@ -380,8 +427,9 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 			srv := ctn.Get("server").(server.Server)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			compare := ctn.Get("v5_comparator").(v5.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
 
-			return v5.NewAuthTester(t, cfg, srv, sender, compare)
+			return v5.NewAuthTester(t, cfg, srv, sender, compare, scope)
 		},
 	}
 
@@ -394,8 +442,9 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 			srv := ctn.Get("server").(server.Server)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			compare := ctn.Get("v5_comparator").(v5.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
 
-			return v5.NewConnectTester(t, cfg, sender, compare, srv)
+			return v5.NewConnectTester(t, cfg, sender, compare, srv, scope)
 		},
 	}
 
@@ -407,8 +456,9 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 			_case := ctn.Get("case").(config.Case)
 			auth := ctn.Get("v5_auth_tester").(v5.AuthTester)
 			connect := ctn.Get("v5_connect_tester").(v5.ConnectTester)
+			bind := ctn.Get("v5_bind_tester").(v5.BindTester)
 
-			return v5.NewTest(_case, t, auth, connect)
+			return v5.NewTest(_case, t, auth, connect, bind)
 		},
 	}
 
@@ -417,6 +467,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		builderDef,
 		senderDef,
 		comparatorDef,
+		bindTesterDef,
 		authTesterDef,
 		connectTesterDef,
 		testDef,

@@ -55,6 +55,51 @@
   },
   "V5": {
     "Bind": [
+      {
+        "Port": 10007,
+        "Picture": 1,
+        "AddressType": 1
+      },
+      {
+        "Port": 10008,
+        "Picture": 1,
+        "AddressType": 3
+      },
+      {
+        "Port": 10009,
+        "Picture": 1,
+        "AddressType": 4
+      },
+      {
+        "Port": 10010,
+        "Picture": 2,
+        "AddressType": 1
+      },
+      {
+        "Port": 10011,
+        "Picture": 2,
+        "AddressType": 3
+      },
+      {
+        "Port": 10012,
+        "Picture": 2,
+        "AddressType": 4
+      },
+      {
+        "Port": 10013,
+        "Picture": 3,
+        "AddressType": 1
+      },
+      {
+        "Port": 10014,
+        "Picture": 3,
+        "AddressType": 3
+      },
+      {
+        "Port": 10015,
+        "Picture": 3,
+        "AddressType": 4
+      }
     ],
     "Connect": [
       {
@@ -97,75 +142,93 @@
     "Auth": [
       {
         "Picture": 1,
-        "AddressType": 1
+        "AddressType": 1,
+        "Method": 0
       },
       {
         "Picture": 1,
-        "AddressType": 3
+        "AddressType": 3,
+        "Method": 0
       },
       {
         "Picture": 1,
-        "AddressType": 4
+        "AddressType": 4,
+        "Method": 0
       },
       {
         "Picture": 2,
-        "AddressType": 1
+        "AddressType": 1,
+        "Method": 0
       },
       {
         "Picture": 2,
-        "AddressType": 3
+        "AddressType": 3,
+        "Method": 0
       },
       {
         "Picture": 2,
-        "AddressType": 4
+        "AddressType": 4,
+        "Method": 0
       },
       {
         "Picture": 3,
-        "AddressType": 1
+        "AddressType": 1,
+        "Method": 0
       },
       {
         "Picture": 3,
-        "AddressType": 3
+        "AddressType": 3,
+        "Method": 0
       },
       {
         "Picture": 3,
-        "AddressType": 4
+        "AddressType": 4,
+        "Method": 0
       },
       {
         "Picture": 1,
-        "AddressType": 1
+        "AddressType": 1,
+        "Method": 2
       },
       {
         "Picture": 1,
-        "AddressType": 3
+        "AddressType": 3,
+        "Method": 2
       },
       {
         "Picture": 1,
-        "AddressType": 4
+        "AddressType": 4,
+        "Method": 2
       },
       {
         "Picture": 2,
-        "AddressType": 1
+        "AddressType": 1,
+        "Method": 2
       },
       {
         "Picture": 2,
-        "AddressType": 3
+        "AddressType": 3,
+        "Method": 2
       },
       {
         "Picture": 2,
-        "AddressType": 4
+        "AddressType": 4,
+        "Method": 2
       },
       {
         "Picture": 3,
-        "AddressType": 1
+        "AddressType": 1,
+        "Method": 2
       },
       {
         "Picture": 3,
-        "AddressType": 3
+        "AddressType": 3,
+        "Method": 2
       },
       {
         "Picture": 3,
-        "AddressType": 4
+        "AddressType": 4,
+        "Method": 2
       }
     ],
     "Associate": []
@@ -181,10 +244,9 @@
     "IPv4": "127.0.0.1",
     "Domain": "localhost",
     "IPv6": "::1",
-    "TcpPort": 9999,
-    "UdpPort": 9999,
-    "HttpPort": 9000,
-    "HttpUri": "test"
+    "ConnectPort": 9999,
+    "BindPort": 9000,
+    "UdpPort": 9999
   },
   "Picture": {
     "BigPictureHash": "f170d55c41c713edc2282404d2502cf0921f1ea3e78cdfc6839dde0a79c4bb8c",

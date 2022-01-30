@@ -57,7 +57,7 @@ func (s Sender) SendPassword(conn net.Conn) {
 	require.NoError(s.t, err)
 }
 
-func (s Sender) SendRequest(command byte, addressType byte, conn net.Conn) {
+func (s Sender) sendRequest(command byte, addressType byte, port uint16, conn net.Conn) {
 	var address string
 
 	if addressType == 1 {
@@ -75,7 +75,7 @@ func (s Sender) SendRequest(command byte, addressType byte, conn net.Conn) {
 		CommandCode:  command,
 		AddressType:  addressType,
 		Address:      address,
-		Port:         s.config.Server.TcpPort,
+		Port:         port,
 	})
 
 	require.NoError(s.t, err)
@@ -83,4 +83,12 @@ func (s Sender) SendRequest(command byte, addressType byte, conn net.Conn) {
 	_, err = conn.Write(request)
 
 	require.NoError(s.t, err)
+}
+
+func (s Sender) SendConnectRequest(addressType byte, conn net.Conn) {
+	s.sendRequest(1, addressType, s.config.Server.ConnectPort, conn)
+}
+
+func (s Sender) SendBindRequest(port uint16, addressType byte, conn net.Conn) {
+	s.sendRequest(2, addressType, port, conn)
 }

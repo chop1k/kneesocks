@@ -18,8 +18,8 @@ func NewComparator(t *testing.T, config config.Config, builder v4.Builder) (Comp
 	return Comparator{t: t, config: config, builder: builder}, nil
 }
 
-func (c Comparator) compare(status byte, port uint16, ip net.IP, conn net.Conn) {
-	actual := make([]byte, 512)
+func (c Comparator) compare(port uint16, ip net.IP, conn net.Conn) {
+	actual := make([]byte, 8)
 
 	i, err := conn.Read(actual)
 
@@ -27,7 +27,7 @@ func (c Comparator) compare(status byte, port uint16, ip net.IP, conn net.Conn) 
 
 	expected, buildErr := c.builder.BuildResponse(v4.ResponseChunk{
 		SocksVersion:    0,
-		CommandCode:     status,
+		CommandCode:     90,
 		DestinationPort: port,
 		DestinationIp:   ip,
 	})
@@ -38,7 +38,7 @@ func (c Comparator) compare(status byte, port uint16, ip net.IP, conn net.Conn) 
 }
 
 func (c Comparator) CompareConnectResponse(conn net.Conn) {
-	c.compare(90, c.config.Socks.TcpPort, net.IP{0, 0, 0, 0}, conn)
+	c.compare(c.config.Socks.TcpPort, net.IP{0, 0, 0, 0}, conn)
 }
 
 func (c Comparator) CompareBindResponse(port uint16, conn net.Conn) {
@@ -50,5 +50,5 @@ func (c Comparator) CompareBindResponse(port uint16, conn net.Conn) {
 
 	require.NotNil(c.t, ip)
 
-	c.compare(90, port, ip, conn)
+	c.compare(port, ip, conn)
 }

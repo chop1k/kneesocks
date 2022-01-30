@@ -64,7 +64,7 @@ func (c Comparator) ComparePassword(conn net.Conn) {
 	require.Equal(c.t, expected, actual[:i])
 }
 
-func (c Comparator) CompareResponse(status byte, addressType byte, conn net.Conn) {
+func (c Comparator) CompareConnectResponse(addressType byte, conn net.Conn) {
 	actual := make([]byte, 512)
 
 	i, err := conn.Read(actual)
@@ -85,14 +85,65 @@ func (c Comparator) CompareResponse(status byte, addressType byte, conn net.Conn
 
 	expected, buildErr := c.builder.BuildResponse(v5.ResponseChunk{
 		SocksVersion: 5,
-		ReplyCode:    status,
+		ReplyCode:    0,
 		AddressType:  addressType,
 		Address:      address,
-		Port:         c.config.Server.TcpPort,
+		Port:         c.config.Server.ConnectPort,
 	})
 
 	require.NoError(c.t, buildErr)
 
 	require.Equal(c.t, expected, actual[:i])
+}
 
+func (c Comparator) CompareFirstBindResponse(conn net.Conn) {
+	actual := make([]byte, 512)
+
+	i, err := conn.Read(actual)
+
+	require.NoError(c.t, err)
+
+	expected, buildErr := c.builder.BuildResponse(v5.ResponseChunk{
+		SocksVersion: 5,
+		ReplyCode:    0,
+		AddressType:  1,
+		Address:      "0.0.0.0",
+		Port:         c.config.Socks.TcpPort,
+	})
+
+	require.NoError(c.t, buildErr)
+
+	require.Equal(c.t, expected, actual[:i])
+}
+
+func (c Comparator) CompareSecondBindResponse(port uint16, addressType byte, conn net.Conn) {
+	actual := make([]byte, 512)
+
+	i, err := conn.Read(actual)
+
+	require.NoError(c.t, err)
+
+	var address string
+
+	if addressType == 1 {
+		address = c.config.Server.IPv4
+	} else if addressType == 3 {
+		address = c.config.Server.Domain
+	} else if addressType == 4 {
+		address = c.config.Server.IPv6
+	} else {
+		require.Fail(c.t, "Unsupported address type \"%d\". ", addressType)
+	}
+
+	expected, buildErr := c.builder.BuildResponse(v5.ResponseChunk{
+		SocksVersion: 5,
+		ReplyCode:    0,
+		AddressType:  addressType,
+		Address:      address,
+		Port:         port,
+	})
+
+	require.NoError(c.t, buildErr)
+
+	require.Equal(c.t, expected, actual[:i])
 }

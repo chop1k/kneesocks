@@ -21,6 +21,7 @@ type BindScope struct {
 type AuthScope struct {
 	Picture     byte `validate:"required"`
 	AddressType byte `validate:"required"`
+	Method      byte
 }
 
 type AssociateScope struct {

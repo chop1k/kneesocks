@@ -8,8 +8,9 @@
   "Tcp": {
     "BindIPv4": "127.0.0.1",
     "BindIPv6": "::1",
-    "BindPort": 9999,
-    "BindZone": ""
+    "BindPort": 9000,
+    "BindZone": "",
+    "ConnectPort": 9999
   },
   "Udp": {
     "BindIPv4": "127.0.0.1",

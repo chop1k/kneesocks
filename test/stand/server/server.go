@@ -1,9 +1,9 @@
 package server
 
 import (
-	"encoding/json"
+	"bytes"
+	"encoding/binary"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/require"
 	"net"
 	"socks/test/stand/config"
@@ -37,37 +37,21 @@ func (s Server) SendPictureRequest(picture byte, conn net.Conn) {
 	s.picture.Compare(picture, conn)
 }
 
-func (s Server) SendBindRequest(picture byte, port uint16) {
-	ip := net.ParseIP(s.config.Socks.IPv4)
-
-	require.NotNil(s.t, ip)
-
-	ip = ip.To4()
-
-	require.NotNil(s.t, ip)
-
-	chunk := struct {
-		Picture     byte
-		AddressType byte
-		Address     net.IP
-		Port        uint16
-	}{
-		picture, 1, ip, port,
-	}
-
-	data, err := json.Marshal(chunk)
+func (s Server) SendBindRequest(picture byte, addressType byte, port uint16) {
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", s.config.Server.IPv4, s.config.Server.BindPort))
 
 	require.NoError(s.t, err)
 
-	s.sendBindRequest(data)
-}
+	buffer := bytes.Buffer{}
 
-func (s Server) sendBindRequest(json []byte) {
-	address := fmt.Sprintf("http://%s:%d/%s", s.config.Server.IPv4, s.config.Server.HttpPort, s.config.Server.HttpUri)
+	buffer.WriteByte(picture)
+	buffer.WriteByte(addressType)
 
-	resp, err := resty.New().R().SetHeader("content-type", "application/json").SetBody(json).Post(address)
+	err = binary.Write(&buffer, binary.BigEndian, port)
 
 	require.NoError(s.t, err)
 
-	require.Equal(s.t, "200", resp.Status())
+	_, err = conn.Write(buffer.Bytes())
+
+	require.NoError(s.t, err)
 }
