@@ -3,7 +3,7 @@ package v4
 import (
 	"fmt"
 	"net"
-	"socks/config"
+	v42 "socks/config/v4"
 	"socks/logger"
 	v4 "socks/protocol/v4"
 )
@@ -14,7 +14,7 @@ type Handler interface {
 
 type BaseHandler struct {
 	parser         v4.Parser
-	config         config.SocksV4Config
+	config         v42.Config
 	logger         logger.SocksV4Logger
 	connectHandler ConnectHandler
 	bindHandler    BindHandler
@@ -24,7 +24,7 @@ type BaseHandler struct {
 
 func NewBaseHandler(
 	parser v4.Parser,
-	config config.SocksV4Config,
+	config v42.Config,
 	logger logger.SocksV4Logger,
 	connectHandler ConnectHandler,
 	bindHandler BindHandler,

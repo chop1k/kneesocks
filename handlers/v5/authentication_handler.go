@@ -3,7 +3,7 @@ package v5
 import (
 	"errors"
 	"net"
-	"socks/config"
+	v52 "socks/config/v5"
 	v5 "socks/protocol/v5"
 )
 
@@ -22,7 +22,7 @@ type AuthenticationHandler interface {
 
 type BaseAuthenticationHandler struct {
 	protocol     v5.Protocol
-	config       config.SocksV5Config
+	config       v52.Config
 	errorHandler ErrorHandler
 	password     Authenticator
 	noAuth       Authenticator
@@ -30,7 +30,7 @@ type BaseAuthenticationHandler struct {
 
 func NewBaseAuthenticationHandler(
 	protocol v5.Protocol,
-	config config.SocksV5Config,
+	config v52.Config,
 	errorHandler ErrorHandler,
 	password Authenticator,
 	noAuth Authenticator,

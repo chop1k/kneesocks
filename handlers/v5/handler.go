@@ -3,7 +3,7 @@ package v5
 import (
 	"fmt"
 	"net"
-	"socks/config"
+	v52 "socks/config/v5"
 	"socks/logger"
 	v5 "socks/protocol/v5"
 )
@@ -15,7 +15,7 @@ type Handler interface {
 type BaseHandler struct {
 	protocol              v5.Protocol
 	parser                v5.Parser
-	config                config.SocksV5Config
+	config                v52.Config
 	authenticationHandler AuthenticationHandler
 	logger                logger.SocksV5Logger
 	connectHandler        ConnectHandler
@@ -28,7 +28,7 @@ type BaseHandler struct {
 func NewBaseHandler(
 	protocol v5.Protocol,
 	parser v5.Parser,
-	config config.SocksV5Config,
+	config v52.Config,
 	authenticationHandler AuthenticationHandler,
 	logger logger.SocksV5Logger,
 	connectHandler ConnectHandler,

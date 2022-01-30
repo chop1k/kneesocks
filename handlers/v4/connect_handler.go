@@ -2,7 +2,7 @@ package v4
 
 import (
 	"net"
-	"socks/config"
+	"socks/config/v4"
 	"socks/logger"
 	"socks/transfer"
 	"time"
@@ -13,7 +13,7 @@ type ConnectHandler interface {
 }
 
 type BaseConnectHandler struct {
-	config        config.SocksV4Config
+	config        v4.Config
 	streamHandler transfer.StreamHandler
 	logger        logger.SocksV4Logger
 	sender        Sender
@@ -23,7 +23,7 @@ type BaseConnectHandler struct {
 }
 
 func NewBaseConnectHandler(
-	config config.SocksV4Config,
+	config v4.Config,
 	streamHandler transfer.StreamHandler,
 	logger logger.SocksV4Logger,
 	sender Sender,

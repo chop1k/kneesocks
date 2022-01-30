@@ -2,7 +2,7 @@ package v4
 
 import (
 	"net"
-	"socks/config"
+	"socks/config/tcp"
 	v4 "socks/protocol/v4"
 )
 
@@ -14,10 +14,10 @@ type Sender interface {
 
 type BaseSender struct {
 	protocol  v4.Protocol
-	tcpConfig config.TcpConfig
+	tcpConfig tcp.Config
 }
 
-func NewBaseSender(protocol v4.Protocol, tcpConfig config.TcpConfig) (BaseSender, error) {
+func NewBaseSender(protocol v4.Protocol, tcpConfig tcp.Config) (BaseSender, error) {
 	return BaseSender{
 		protocol:  protocol,
 		tcpConfig: tcpConfig,

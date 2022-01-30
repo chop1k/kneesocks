@@ -3,7 +3,7 @@ package authenticator
 import (
 	"errors"
 	"net"
-	"socks/config"
+	v52 "socks/config/v5"
 	"socks/handlers/v5"
 	"socks/protocol/auth/password"
 )
@@ -14,11 +14,11 @@ var (
 
 type BasePasswordAuthenticator struct {
 	password     password.Password
-	config       config.SocksV5Config
+	config       v52.Config
 	errorHandler v5.ErrorHandler
 }
 
-func NewBasePasswordAuthenticator(password password.Password, config config.SocksV5Config, errorHandler v5.ErrorHandler) (BasePasswordAuthenticator, error) {
+func NewBasePasswordAuthenticator(password password.Password, config v52.Config, errorHandler v5.ErrorHandler) (BasePasswordAuthenticator, error) {
 	return BasePasswordAuthenticator{
 		password:     password,
 		config:       config,

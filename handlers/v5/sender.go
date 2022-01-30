@@ -2,7 +2,8 @@ package v5
 
 import (
 	"net"
-	"socks/config"
+	"socks/config/tcp"
+	"socks/config/udp"
 	v5 "socks/protocol/v5"
 )
 
@@ -21,14 +22,14 @@ type Sender interface {
 
 type BaseSender struct {
 	protocol  v5.Protocol
-	tcpConfig config.TcpConfig
-	udpConfig config.UdpConfig
+	tcpConfig tcp.Config
+	udpConfig udp.Config
 }
 
 func NewBaseSender(
 	protocol v5.Protocol,
-	tcpConfig config.TcpConfig,
-	udpConfig config.UdpConfig,
+	tcpConfig tcp.Config,
+	udpConfig udp.Config,
 ) (BaseSender, error) {
 	return BaseSender{
 		protocol:  protocol,

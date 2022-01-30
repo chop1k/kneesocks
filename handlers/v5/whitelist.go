@@ -1,7 +1,7 @@
 package v5
 
 import (
-	"socks/config"
+	"socks/config/v5"
 	"socks/managers"
 )
 
@@ -10,11 +10,11 @@ type Whitelist interface {
 }
 
 type BaseWhitelist struct {
-	config    config.SocksV5Config
+	config    v5.Config
 	whitelist managers.WhitelistManager
 }
 
-func NewBaseWhitelist(config config.SocksV5Config, whitelist managers.WhitelistManager) (BaseWhitelist, error) {
+func NewBaseWhitelist(config v5.Config, whitelist managers.WhitelistManager) (BaseWhitelist, error) {
 	return BaseWhitelist{config: config, whitelist: whitelist}, nil
 }
 

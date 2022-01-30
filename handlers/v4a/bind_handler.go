@@ -2,7 +2,8 @@ package v4a
 
 import (
 	"net"
-	"socks/config"
+	"socks/config/v4"
+	"socks/config/v4a"
 	"socks/logger"
 	"socks/managers"
 	"socks/transfer"
@@ -15,7 +16,7 @@ type BindHandler interface {
 }
 
 type BaseBindHandler struct {
-	config        config.SocksV4aConfig
+	config        v4a.Config
 	logger        logger.SocksV4aLogger
 	streamHandler transfer.StreamHandler
 	bindManager   managers.BindManager
@@ -27,7 +28,7 @@ type BaseBindHandler struct {
 }
 
 func NewBaseBindHandler(
-	config config.SocksV4Config,
+	config v4.Config,
 	logger logger.SocksV4aLogger,
 	streamHandler transfer.StreamHandler,
 	bindManager managers.BindManager,

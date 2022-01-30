@@ -1,7 +1,7 @@
 package v5
 
 import (
-	"socks/config"
+	"socks/config/v5"
 	"socks/managers"
 )
 
@@ -10,11 +10,11 @@ type Blacklist interface {
 }
 
 type BaseBlacklist struct {
-	config    config.SocksV5Config
+	config    v5.Config
 	blacklist managers.BlacklistManager
 }
 
-func NewBaseBlacklist(config config.SocksV5Config, blacklist managers.BlacklistManager) (BaseBlacklist, error) {
+func NewBaseBlacklist(config v5.Config, blacklist managers.BlacklistManager) (BaseBlacklist, error) {
 	return BaseBlacklist{config: config, blacklist: blacklist}, nil
 }
 

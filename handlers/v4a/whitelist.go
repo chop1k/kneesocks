@@ -1,7 +1,7 @@
 package v4a
 
 import (
-	"socks/config"
+	"socks/config/v4a"
 	"socks/managers"
 )
 
@@ -10,11 +10,11 @@ type Whitelist interface {
 }
 
 type BaseWhitelist struct {
-	config    config.SocksV4aConfig
+	config    v4a.Config
 	whitelist managers.WhitelistManager
 }
 
-func NewBaseWhitelist(config config.SocksV4aConfig, whitelist managers.WhitelistManager) (BaseWhitelist, error) {
+func NewBaseWhitelist(config v4a.Config, whitelist managers.WhitelistManager) (BaseWhitelist, error) {
 	return BaseWhitelist{config: config, whitelist: whitelist}, nil
 }
 

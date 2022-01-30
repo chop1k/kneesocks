@@ -1,8 +1,8 @@
-package config
+package v5
 
 import "socks/config/tree"
 
-type SocksV5Config interface {
+type Config interface {
 	IsConnectAllowed() bool
 	IsBindAllowed() bool
 	GetConnectDeadline() uint
@@ -15,50 +15,50 @@ type SocksV5Config interface {
 	GetUsers() map[string]tree.User
 }
 
-type BaseSocksV5Config struct {
+type BaseConfig struct {
 	config tree.Config
 }
 
-func NewBaseSocksV5Config(config tree.Config) BaseSocksV5Config {
-	return BaseSocksV5Config{config: config}
+func NewBaseConfig(config tree.Config) (BaseConfig, error) {
+	return BaseConfig{config: config}, nil
 }
 
-func (b BaseSocksV5Config) IsConnectAllowed() bool {
+func (b BaseConfig) IsConnectAllowed() bool {
 	return b.config.SocksV5.AllowConnect
 }
 
-func (b BaseSocksV5Config) IsBindAllowed() bool {
+func (b BaseConfig) IsBindAllowed() bool {
 	return b.config.SocksV5.AllowBind
 }
 
-func (b BaseSocksV5Config) GetConnectDeadline() uint {
+func (b BaseConfig) GetConnectDeadline() uint {
 	return b.config.SocksV5.ConnectDeadline
 }
 
-func (b BaseSocksV5Config) GetBindDeadline() uint {
+func (b BaseConfig) GetBindDeadline() uint {
 	return b.config.SocksV5.BindDeadline
 }
 
-func (b BaseSocksV5Config) IsUdpAssociationAllowed() bool {
+func (b BaseConfig) IsUdpAssociationAllowed() bool {
 	return b.config.SocksV5.AllowUdpAssociation
 }
 
-func (b BaseSocksV5Config) IsIPv4Allowed() bool {
+func (b BaseConfig) IsIPv4Allowed() bool {
 	return b.config.SocksV5.AllowIPv4
 }
 
-func (b BaseSocksV5Config) IsIPv6Allowed() bool {
+func (b BaseConfig) IsIPv6Allowed() bool {
 	return b.config.SocksV5.AllowIPv6
 }
 
-func (b BaseSocksV5Config) IsDomainAllowed() bool {
+func (b BaseConfig) IsDomainAllowed() bool {
 	return b.config.SocksV5.AllowDomain
 }
 
-func (b BaseSocksV5Config) GetAuthenticationMethods() []string {
+func (b BaseConfig) GetAuthenticationMethods() []string {
 	return b.config.SocksV5.AuthenticationMethodsAllowed
 }
 
-func (b BaseSocksV5Config) GetUsers() map[string]tree.User {
+func (b BaseConfig) GetUsers() map[string]tree.User {
 	return b.config.SocksV5.Users
 }

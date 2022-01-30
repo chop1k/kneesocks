@@ -2,7 +2,7 @@ package v5
 
 import (
 	"net"
-	"socks/config"
+	"socks/config/v5"
 	"socks/logger"
 	"socks/managers"
 	"socks/transfer"
@@ -16,7 +16,7 @@ type BindHandler interface {
 
 type BaseBindHandler struct {
 	bindManager   managers.BindManager
-	config        config.SocksV5Config
+	config        v5.Config
 	streamHandler transfer.StreamHandler
 	utils         utils.AddressUtils
 	logger        logger.SocksV5Logger
@@ -28,7 +28,7 @@ type BaseBindHandler struct {
 
 func NewBaseBindHandler(
 	bindManager managers.BindManager,
-	config config.SocksV5Config,
+	config v5.Config,
 	streamHandler transfer.StreamHandler,
 	utils utils.AddressUtils,
 	logger logger.SocksV5Logger,

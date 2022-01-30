@@ -1,7 +1,7 @@
 package v4a
 
 import (
-	"socks/config"
+	"socks/config/v4a"
 	"socks/managers"
 )
 
@@ -10,11 +10,11 @@ type Blacklist interface {
 }
 
 type BaseBlacklist struct {
-	config    config.SocksV4aConfig
+	config    v4a.Config
 	blacklist managers.BlacklistManager
 }
 
-func NewBaseBlacklist(config config.SocksV4aConfig, blacklist managers.BlacklistManager) (BaseBlacklist, error) {
+func NewBaseBlacklist(config v4a.Config, blacklist managers.BlacklistManager) (BaseBlacklist, error) {
 	return BaseBlacklist{config: config, blacklist: blacklist}, nil
 }
 

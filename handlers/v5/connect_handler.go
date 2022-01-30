@@ -2,7 +2,7 @@ package v5
 
 import (
 	"net"
-	"socks/config"
+	"socks/config/v5"
 	"socks/logger"
 	"socks/transfer"
 	"socks/utils"
@@ -14,7 +14,7 @@ type ConnectHandler interface {
 }
 
 type BaseConnectHandler struct {
-	config        config.SocksV5Config
+	config        v5.Config
 	streamHandler transfer.StreamHandler
 	logger        logger.SocksV5Logger
 	utils         utils.AddressUtils
@@ -25,7 +25,7 @@ type BaseConnectHandler struct {
 }
 
 func NewBaseConnectHandler(
-	config config.SocksV5Config,
+	config v5.Config,
 	streamHandler transfer.StreamHandler,
 	logger logger.SocksV5Logger,
 	addressUtils utils.AddressUtils,

@@ -2,7 +2,7 @@ package v5
 
 import (
 	"net"
-	"socks/config"
+	"socks/config/v5"
 	"socks/logger"
 	"socks/managers"
 	"socks/utils"
@@ -13,7 +13,7 @@ type UdpAssociationHandler interface {
 }
 
 type BaseUdpAssociationHandler struct {
-	config                config.SocksV5Config
+	config                v5.Config
 	utils                 utils.AddressUtils
 	udpAssociationManager managers.UdpAssociationManager
 	logger                logger.SocksV5Logger
@@ -22,7 +22,7 @@ type BaseUdpAssociationHandler struct {
 }
 
 func NewBaseUdpAssociationHandler(
-	config config.SocksV5Config,
+	config v5.Config,
 	utils utils.AddressUtils,
 	udpAssociationManager managers.UdpAssociationManager,
 	logger logger.SocksV5Logger,

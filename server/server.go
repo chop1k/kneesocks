@@ -3,7 +3,8 @@ package server
 import (
 	"fmt"
 	"net"
-	"socks/config"
+	"socks/config/tcp"
+	"socks/config/udp"
 	"socks/handlers"
 	"socks/logger"
 )
@@ -12,18 +13,18 @@ type Server struct {
 	connectionHandler handlers.ConnectionHandler
 	packetHandler     handlers.PacketHandler
 	tcpLogger         logger.TcpLogger
-	tcpConfig         config.TcpConfig
+	tcpConfig         tcp.Config
 	udpLogger         logger.UdpLogger
-	udpConfig         config.UdpConfig
+	udpConfig         udp.Config
 }
 
 func NewServer(
 	connectionHandler handlers.ConnectionHandler,
 	packetHandler handlers.PacketHandler,
 	tcpLogger logger.TcpLogger,
-	tcpConfig config.TcpConfig,
+	tcpConfig tcp.Config,
 	udpLogger logger.UdpLogger,
-	udpConfig config.UdpConfig,
+	udpConfig udp.Config,
 ) (Server, error) {
 	return Server{
 		connectionHandler: connectionHandler,

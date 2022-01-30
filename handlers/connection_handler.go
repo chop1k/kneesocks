@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net"
-	"socks/config"
+	"socks/config/tcp"
 	"socks/handlers/v4"
 	"socks/handlers/v4a"
 	"socks/handlers/v5"
@@ -26,7 +26,7 @@ type BaseConnectionHandler struct {
 	bindManager   managers.BindManager
 	utils         utils.AddressUtils
 	logger        logger.TcpLogger
-	config        config.TcpConfig
+	config        tcp.Config
 }
 
 func NewBaseConnectionHandler(
@@ -37,7 +37,7 @@ func NewBaseConnectionHandler(
 	bindManager managers.BindManager,
 	utils utils.AddressUtils,
 	logger logger.TcpLogger,
-	config config.TcpConfig,
+	config tcp.Config,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
 		streamHandler: streamHandler,
