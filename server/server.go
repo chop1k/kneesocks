@@ -6,24 +6,25 @@ import (
 	"socks/config/tcp"
 	"socks/config/udp"
 	"socks/handlers"
-	"socks/logger"
+	tcp2 "socks/logger/tcp"
+	udp2 "socks/logger/udp"
 )
 
 type Server struct {
 	connectionHandler handlers.ConnectionHandler
 	packetHandler     handlers.PacketHandler
-	tcpLogger         logger.TcpLogger
+	tcpLogger         tcp2.Logger
 	tcpConfig         tcp.Config
-	udpLogger         logger.UdpLogger
+	udpLogger         udp2.Logger
 	udpConfig         udp.Config
 }
 
 func NewServer(
 	connectionHandler handlers.ConnectionHandler,
 	packetHandler handlers.PacketHandler,
-	tcpLogger logger.TcpLogger,
+	tcpLogger tcp2.Logger,
 	tcpConfig tcp.Config,
-	udpLogger logger.UdpLogger,
+	udpLogger udp2.Logger,
 	udpConfig udp.Config,
 ) (Server, error) {
 	return Server{
@@ -46,12 +47,12 @@ func (s Server) listenTcp() {
 	listener, err := net.ListenTCP("tcp", address)
 
 	if err != nil {
-		s.tcpLogger.ListenError(address.String(), err)
+		s.tcpLogger.Errors.ListenError(address.String(), err)
 
 		panic(err)
 	}
 
-	s.tcpLogger.Listen(address.String())
+	s.tcpLogger.Listen.Listen(address.String())
 
 	for {
 		conn, err := listener.AcceptTCP()
@@ -60,7 +61,7 @@ func (s Server) listenTcp() {
 			continue
 		}
 
-		s.tcpLogger.ConnectionAccepted(conn.RemoteAddr().String())
+		s.tcpLogger.Connection.ConnectionAccepted(conn.RemoteAddr().String())
 
 		go s.connectionHandler.HandleConnection(conn)
 	}
@@ -72,12 +73,12 @@ func (s Server) listenUdp() {
 	packet, err := net.ListenPacket("udp", address)
 
 	if err != nil {
-		s.udpLogger.ListenError(address, err)
+		s.udpLogger.Errors.ListenError(address, err)
 
 		panic(err)
 	}
 
-	s.udpLogger.Listen(address)
+	s.udpLogger.Listen.Listen(address)
 
 	for {
 		payload := make([]byte, s.udpConfig.GetBufferSize())
@@ -85,12 +86,12 @@ func (s Server) listenUdp() {
 		i, address, err := packet.ReadFrom(payload)
 
 		if err != nil {
-			s.udpLogger.AcceptError(err)
+			s.udpLogger.Errors.AcceptError(err)
 
 			continue
 		}
 
-		s.udpLogger.PacketAccepted(address.String())
+		s.udpLogger.Packet.PacketAccepted(address.String())
 
 		go s.packetHandler.HandlePacket(payload[:i], address, packet)
 	}

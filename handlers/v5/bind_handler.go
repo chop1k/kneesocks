@@ -3,7 +3,7 @@ package v5
 import (
 	"net"
 	"socks/config/v5"
-	"socks/logger"
+	v52 "socks/logger/v5"
 	"socks/managers"
 	"socks/transfer"
 	"socks/utils"
@@ -19,7 +19,7 @@ type BaseBindHandler struct {
 	config        v5.Config
 	streamHandler transfer.StreamHandler
 	utils         utils.AddressUtils
-	logger        logger.SocksV5Logger
+	logger        v52.Logger
 	sender        Sender
 	whitelist     Whitelist
 	blacklist     Blacklist
@@ -31,7 +31,7 @@ func NewBaseBindHandler(
 	config v5.Config,
 	streamHandler transfer.StreamHandler,
 	utils utils.AddressUtils,
-	logger logger.SocksV5Logger,
+	logger v52.Logger,
 	sender Sender,
 	whitelist Whitelist,
 	blacklist Blacklist,
@@ -56,7 +56,7 @@ func (b BaseBindHandler) HandleBind(name string, address string, client net.Conn
 	if whitelisted {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
-		b.logger.BindNotAllowedByWhitelist(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -66,7 +66,7 @@ func (b BaseBindHandler) HandleBind(name string, address string, client net.Conn
 	if blacklisted {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
-		b.logger.BindNotAllowedByBlacklist(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -83,7 +83,7 @@ func (b BaseBindHandler) bind(address string, client net.Conn) {
 		return
 	}
 
-	b.logger.BindSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Bind.BindSuccessful(client.RemoteAddr().String(), address)
 
 	b.bindSendFirstResponse(address, client)
 }
@@ -153,7 +153,7 @@ func (b BaseBindHandler) sendSecondResponse(address string, addrType byte, hostA
 		return
 	}
 
-	b.logger.Bound(client.RemoteAddr().String(), host.RemoteAddr().String())
+	b.logger.Bind.Bound(client.RemoteAddr().String(), host.RemoteAddr().String())
 
 	b.streamHandler.ClientToHost(host, client)
 }

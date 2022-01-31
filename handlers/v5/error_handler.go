@@ -2,7 +2,7 @@ package v5
 
 import (
 	"net"
-	"socks/logger"
+	"socks/logger/v5"
 	"socks/utils"
 )
 
@@ -32,13 +32,13 @@ type ErrorHandler interface {
 }
 
 type BaseErrorHandler struct {
-	logger logger.SocksV5Logger
+	logger v5.Logger
 	sender Sender
 	errors utils.ErrorUtils
 }
 
 func NewBaseErrorHandler(
-	logger logger.SocksV5Logger,
+	logger v5.Logger,
 	sender Sender,
 	errors utils.ErrorUtils,
 ) (BaseErrorHandler, error) {
@@ -53,7 +53,7 @@ func (b BaseErrorHandler) HandleDialError(err error, address string, client net.
 	if b.errors.IsConnectionRefusedError(err) {
 		b.sender.SendConnectionRefusedAndClose(client)
 
-		b.logger.ConnectRefused(client.RemoteAddr().String(), address)
+		b.logger.Connect.ConnectRefused(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -61,7 +61,7 @@ func (b BaseErrorHandler) HandleDialError(err error, address string, client net.
 	if b.errors.IsNetworkUnreachableError(err) {
 		b.sender.SendNetworkUnreachableAndClose(client)
 
-		b.logger.ConnectNetworkUnreachable(client.RemoteAddr().String(), address)
+		b.logger.Connect.ConnectNetworkUnreachable(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -69,22 +69,22 @@ func (b BaseErrorHandler) HandleDialError(err error, address string, client net.
 	if b.errors.IsHostUnreachableError(err) {
 		b.sender.SendHostUnreachableAndClose(client)
 
-		b.logger.ConnectHostUnreachable(client.RemoteAddr().String(), address)
+		b.logger.Connect.ConnectHostUnreachable(client.RemoteAddr().String(), address)
 
 		return
 	}
 
 	b.sender.SendFailAndClose(client)
 
-	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
-	b.logger.ConnectFailed(client.RemoteAddr().String(), address)
+	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.Connect.ConnectFailed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleConnectIOError(err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
-	b.logger.ConnectFailed(client.RemoteAddr().String(), address)
+	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.Connect.ConnectFailed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleConnectIOErrorWithHost(err error, address string, client net.Conn, host net.Conn) {
@@ -92,15 +92,15 @@ func (b BaseErrorHandler) HandleConnectIOErrorWithHost(err error, address string
 
 	_ = host.Close()
 
-	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
-	b.logger.ConnectFailed(client.RemoteAddr().String(), address)
+	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.Connect.ConnectFailed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleBindIOError(err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
-	b.logger.BindFailed(client.RemoteAddr().String(), address)
+	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.Bind.BindFailed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleBindIOErrorWithHost(err error, address string, client net.Conn, host net.Conn) {
@@ -108,15 +108,15 @@ func (b BaseErrorHandler) HandleBindIOErrorWithHost(err error, address string, c
 
 	_ = host.Close()
 
-	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
-	b.logger.BindFailed(client.RemoteAddr().String(), address)
+	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.Bind.BindFailed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleUdpAssociationError(err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.UnknownError(client.RemoteAddr().String(), address, err)
-	b.logger.UdpAssociationFailed(client.RemoteAddr().String(), address)
+	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
+	b.logger.Association.UdpAssociationFailed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleAddressParsingError(err error, address string, client net.Conn, host net.Conn) {
@@ -124,7 +124,7 @@ func (b BaseErrorHandler) HandleAddressParsingError(err error, address string, c
 
 	_ = host.Close()
 
-	b.logger.AddressParsingError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+	b.logger.Errors.AddressParsingError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
 }
 
 func (b BaseErrorHandler) HandleAddressDeterminationError(err error, address string, client net.Conn, host net.Conn) {
@@ -132,89 +132,89 @@ func (b BaseErrorHandler) HandleAddressDeterminationError(err error, address str
 
 	_ = host.Close()
 
-	b.logger.AddressDeterminationError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+	b.logger.Errors.AddressDeterminationError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
 }
 
 func (b BaseErrorHandler) HandleInvalidAddressTypeError(addressType byte, address string, client net.Conn) {
 	b.sender.SendAddressNotSupportedAndClose(client)
 
-	b.logger.InvalidAddressTypeError(client.RemoteAddr().String(), addressType, address)
+	b.logger.Errors.InvalidAddressTypeError(client.RemoteAddr().String(), addressType, address)
 }
 
 func (b BaseErrorHandler) HandleBindManagerBindError(err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.BindError(client.RemoteAddr().String(), address, err)
+	b.logger.Errors.BindError(client.RemoteAddr().String(), address, err)
 }
 
 func (b BaseErrorHandler) HandleBindManagerReceiveHostError(err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.ReceiveHostError(client.RemoteAddr().String(), address, err)
+	b.logger.Errors.ReceiveHostError(client.RemoteAddr().String(), address, err)
 }
 
 func (b BaseErrorHandler) HandleBindManagerSendClientError(err error, address string, client net.Conn, host net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.SendClientError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
+	b.logger.Errors.SendClientError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
 }
 
 func (b BaseErrorHandler) HandleReceiveRequestError(err error, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.ReceiveRequestError(client.RemoteAddr().String(), err)
+	b.logger.Errors.ReceiveRequestError(client.RemoteAddr().String(), err)
 }
 
 func (b BaseErrorHandler) HandlePasswordReceiveRequestError(err error, client net.Conn) {
 	_ = client.Close()
 
-	b.logger.ReceiveRequestError(client.RemoteAddr().String(), err)
+	b.logger.Errors.ReceiveRequestError(client.RemoteAddr().String(), err)
 }
 
 func (b BaseErrorHandler) HandleUnknownCommandError(command byte, address string, client net.Conn) {
 	b.sender.SendCommandNotSupportedAndClose(client)
 
-	b.logger.UnknownCommandError(client.RemoteAddr().String(), command, address)
+	b.logger.Errors.UnknownCommandError(client.RemoteAddr().String(), command, address)
 }
 
 func (b BaseErrorHandler) HandleParseMethodsError(err error, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.ParseMethodsError(client.RemoteAddr().String(), err)
+	b.logger.Errors.ParseMethodsError(client.RemoteAddr().String(), err)
 }
 
 func (b BaseErrorHandler) HandleSelectMethodsError(err error, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.SelectMethodsError(client.RemoteAddr().String(), err)
+	b.logger.Errors.SelectMethodsError(client.RemoteAddr().String(), err)
 }
 
 func (b BaseErrorHandler) HandlePasswordResponseError(err error, user string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.PasswordResponseError(client.RemoteAddr().String(), user, err)
+	b.logger.Errors.PasswordResponseError(client.RemoteAddr().String(), user, err)
 }
 
 func (b BaseErrorHandler) HandleUdpAddressParsingError(err error, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	b.logger.UdpAddressParsingError(client.RemoteAddr().String(), err)
+	b.logger.Errors.UdpAddressParsingError(client.RemoteAddr().String(), err)
 }
 
 func (b BaseErrorHandler) HandleIPv4AddressNotAllowed(address string, client net.Conn) {
 	b.sender.SendAddressNotSupportedAndClose(client)
 
-	b.logger.IPv4AddressNotAllowed(client.RemoteAddr().String(), address)
+	b.logger.Restrictions.IPv4AddressNotAllowed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleDomainAddressNotAllowed(address string, client net.Conn) {
 	b.sender.SendAddressNotSupportedAndClose(client)
 
-	b.logger.DomainAddressNotAllowed(client.RemoteAddr().String(), address)
+	b.logger.Restrictions.DomainAddressNotAllowed(client.RemoteAddr().String(), address)
 }
 
 func (b BaseErrorHandler) HandleIPv6AddressNotAllowed(address string, client net.Conn) {
 	b.sender.SendAddressNotSupportedAndClose(client)
 
-	b.logger.IPv6AddressNotAllowed(client.RemoteAddr().String(), address)
+	b.logger.Restrictions.IPv6AddressNotAllowed(client.RemoteAddr().String(), address)
 }

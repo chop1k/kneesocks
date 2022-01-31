@@ -3,7 +3,7 @@ package v5
 import (
 	"net"
 	"socks/config/v5"
-	"socks/logger"
+	v52 "socks/logger/v5"
 	"socks/managers"
 	"socks/utils"
 )
@@ -16,7 +16,7 @@ type BaseUdpAssociationHandler struct {
 	config                v5.Config
 	utils                 utils.AddressUtils
 	udpAssociationManager managers.UdpAssociationManager
-	logger                logger.SocksV5Logger
+	logger                v52.Logger
 	sender                Sender
 	errorHandler          ErrorHandler
 }
@@ -25,7 +25,7 @@ func NewBaseUdpAssociationHandler(
 	config v5.Config,
 	utils utils.AddressUtils,
 	udpAssociationManager managers.UdpAssociationManager,
-	logger logger.SocksV5Logger,
+	logger v52.Logger,
 	sender Sender,
 	errorHandler ErrorHandler,
 ) (BaseUdpAssociationHandler, error) {
@@ -62,7 +62,7 @@ func (b BaseUdpAssociationHandler) udpSendResponse(address string, client net.Co
 		return
 	}
 
-	b.logger.UdpAssociationSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Association.UdpAssociationSuccessful(client.RemoteAddr().String(), address)
 
 	b.udpWaitForClose(address, client)
 }

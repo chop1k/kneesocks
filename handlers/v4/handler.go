@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 	v42 "socks/config/v4"
-	"socks/logger"
+	v43 "socks/logger/v4"
 	v4 "socks/protocol/v4"
 )
 
@@ -15,7 +15,7 @@ type Handler interface {
 type BaseHandler struct {
 	parser         v4.Parser
 	config         v42.Config
-	logger         logger.SocksV4Logger
+	logger         v43.Logger
 	connectHandler ConnectHandler
 	bindHandler    BindHandler
 	sender         Sender
@@ -25,7 +25,7 @@ type BaseHandler struct {
 func NewBaseHandler(
 	parser v4.Parser,
 	config v42.Config,
-	logger logger.SocksV4Logger,
+	logger v43.Logger,
 	connectHandler ConnectHandler,
 	bindHandler BindHandler,
 	sender Sender,
@@ -63,12 +63,12 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 }
 
 func (b BaseHandler) handleConnect(address string, client net.Conn) {
-	b.logger.ConnectRequest(client.RemoteAddr().String(), address)
+	b.logger.Connect.ConnectRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsConnectAllowed() {
 		b.sender.SendFailAndClose(client)
 
-		b.logger.ConnectNotAllowed(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -76,12 +76,12 @@ func (b BaseHandler) handleConnect(address string, client net.Conn) {
 	b.connectHandler.HandleConnect(address, client)
 }
 func (b BaseHandler) handleBind(address string, client net.Conn) {
-	b.logger.BindRequest(client.RemoteAddr().String(), address)
+	b.logger.Bind.BindRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsBindAllowed() {
 		b.sender.SendFailAndClose(client)
 
-		b.logger.BindNotAllowed(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return
 	}

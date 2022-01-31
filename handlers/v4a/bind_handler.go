@@ -4,7 +4,7 @@ import (
 	"net"
 	"socks/config/v4"
 	"socks/config/v4a"
-	"socks/logger"
+	v4a2 "socks/logger/v4a"
 	"socks/managers"
 	"socks/transfer"
 	"socks/utils"
@@ -17,7 +17,7 @@ type BindHandler interface {
 
 type BaseBindHandler struct {
 	config        v4a.Config
-	logger        logger.SocksV4aLogger
+	logger        v4a2.Logger
 	streamHandler transfer.StreamHandler
 	bindManager   managers.BindManager
 	utils         utils.AddressUtils
@@ -29,7 +29,7 @@ type BaseBindHandler struct {
 
 func NewBaseBindHandler(
 	config v4.Config,
-	logger logger.SocksV4aLogger,
+	logger v4a2.Logger,
 	streamHandler transfer.StreamHandler,
 	bindManager managers.BindManager,
 	utils utils.AddressUtils,
@@ -57,7 +57,7 @@ func (b BaseBindHandler) HandleBind(address string, client net.Conn) {
 	if whitelisted {
 		b.sender.SendFailAndClose(client)
 
-		b.logger.BindNotAllowedByWhitelist(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -67,7 +67,7 @@ func (b BaseBindHandler) HandleBind(address string, client net.Conn) {
 	if blacklisted {
 		b.sender.SendFailAndClose(client)
 
-		b.logger.BindNotAllowedByBlacklist(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -84,7 +84,7 @@ func (b BaseBindHandler) bind(address string, client net.Conn) {
 		return
 	}
 
-	b.logger.BindSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Bind.BindSuccessful(client.RemoteAddr().String(), address)
 
 	b.bindSendFirstResponse(address, client)
 }
@@ -162,7 +162,7 @@ func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string,
 		return
 	}
 
-	b.logger.BindSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Bind.BindSuccessful(client.RemoteAddr().String(), address)
 
 	b.streamHandler.ClientToHost(host, client)
 }

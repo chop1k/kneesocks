@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 	v52 "socks/config/v5"
-	"socks/logger"
+	v53 "socks/logger/v5"
 	v5 "socks/protocol/v5"
 )
 
@@ -17,7 +17,7 @@ type BaseHandler struct {
 	parser                v5.Parser
 	config                v52.Config
 	authenticationHandler AuthenticationHandler
-	logger                logger.SocksV5Logger
+	logger                v53.Logger
 	connectHandler        ConnectHandler
 	bindHandler           BindHandler
 	udpAssociationHandler UdpAssociationHandler
@@ -30,7 +30,7 @@ func NewBaseHandler(
 	parser v5.Parser,
 	config v52.Config,
 	authenticationHandler AuthenticationHandler,
-	logger logger.SocksV5Logger,
+	logger v53.Logger,
 	connectHandler ConnectHandler,
 	bindHandler BindHandler,
 	udpAssociationHandler UdpAssociationHandler,
@@ -69,12 +69,12 @@ func (b BaseHandler) handleAuthentication(methods v5.MethodsChunk, client net.Co
 	if err != nil {
 		_ = client.Close()
 
-		b.logger.AuthenticationFailed(client.RemoteAddr().String())
+		b.logger.Auth.AuthenticationFailed(client.RemoteAddr().String())
 
 		return
 	}
 
-	b.logger.AuthenticationSuccessful(client.RemoteAddr().String(), name)
+	b.logger.Auth.AuthenticationSuccessful(client.RemoteAddr().String(), name)
 
 	b.handleChunk(name, client)
 }
@@ -147,7 +147,7 @@ func (b BaseHandler) handleCommand(name string, command byte, address string, cl
 	} else if command == 2 {
 		b.handleBind(name, address, client)
 	} else if command == 3 {
-		b.handleUdpAssociate(name, client)
+		b.handleUdpAssociate(name, address, client)
 	} else {
 		b.errorHandler.HandleUnknownCommandError(command, address, client)
 
@@ -156,12 +156,12 @@ func (b BaseHandler) handleCommand(name string, command byte, address string, cl
 }
 
 func (b BaseHandler) handleConnect(name string, address string, client net.Conn) {
-	b.logger.ConnectRequest(client.RemoteAddr().String(), address)
+	b.logger.Connect.ConnectRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsConnectAllowed() {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
-		b.logger.ConnectNotAllowed(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -170,12 +170,12 @@ func (b BaseHandler) handleConnect(name string, address string, client net.Conn)
 }
 
 func (b BaseHandler) handleBind(name string, address string, client net.Conn) {
-	b.logger.BindRequest(client.RemoteAddr().String(), address)
+	b.logger.Bind.BindRequest(client.RemoteAddr().String(), address)
 
 	if !b.config.IsBindAllowed() {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
-		b.logger.BindNotAllowed(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -183,13 +183,13 @@ func (b BaseHandler) handleBind(name string, address string, client net.Conn) {
 	b.bindHandler.HandleBind(name, address, client)
 }
 
-func (b BaseHandler) handleUdpAssociate(name string, client net.Conn) {
-	b.logger.UdpAssociationRequest(client.RemoteAddr().String())
+func (b BaseHandler) handleUdpAssociate(name string, address string, client net.Conn) {
+	b.logger.Association.UdpAssociationRequest(client.RemoteAddr().String())
 
 	if !b.config.IsUdpAssociationAllowed() {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
-		b.logger.UdpAssociationNotAllowed(client.RemoteAddr().String())
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return
 	}

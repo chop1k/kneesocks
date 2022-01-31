@@ -7,7 +7,7 @@ import (
 	"socks/handlers/v4"
 	"socks/handlers/v4a"
 	"socks/handlers/v5"
-	"socks/logger"
+	tcp2 "socks/logger/tcp"
 	"socks/managers"
 	"socks/transfer"
 	"socks/utils"
@@ -25,7 +25,7 @@ type BaseConnectionHandler struct {
 	v5Handler     v5.Handler
 	bindManager   managers.BindManager
 	utils         utils.AddressUtils
-	logger        logger.TcpLogger
+	logger        tcp2.Logger
 	config        tcp.Config
 }
 
@@ -36,7 +36,7 @@ func NewBaseConnectionHandler(
 	v5Handler v5.Handler,
 	bindManager managers.BindManager,
 	utils utils.AddressUtils,
-	logger logger.TcpLogger,
+	logger tcp2.Logger,
 	config tcp.Config,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
@@ -89,11 +89,11 @@ func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
 	}
 
 	if request[4] == 0 && request[5] == 0 && request[6] == 0 && request[7] != 0 {
-		b.logger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
+		b.logger.Connection.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
 
 		b.v4aHandler.Handle(request, client)
 	} else {
-		b.logger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4")
+		b.logger.Connection.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4")
 
 		b.v4Handler.Handle(request, client)
 	}
@@ -112,7 +112,7 @@ func (b BaseConnectionHandler) checkV5(request []byte, client net.Conn) {
 		return
 	}
 
-	b.logger.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV5")
+	b.logger.Connection.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV5")
 
 	b.v5Handler.Handle(request, client)
 }
@@ -133,7 +133,7 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 	if parseErr != nil {
 		_ = client.Close()
 
-		b.logger.AddressParseError(addr, parseErr)
+		b.logger.Errors.AddressParseError(addr, parseErr)
 
 		return
 	}
@@ -143,7 +143,7 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 	if err != nil {
 		_ = client.Close()
 
-		b.logger.LookupError(hostAddr, err)
+		b.logger.Errors.LookupError(hostAddr, err)
 
 		return
 	}
@@ -160,7 +160,7 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 
 	_ = client.Close()
 
-	b.logger.ConnectionDenied(addr)
+	b.logger.Connection.ConnectionDenied(addr)
 }
 
 func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.Conn) {
@@ -169,7 +169,7 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 	if err != nil {
 		_ = client.Close()
 
-		b.logger.SendHostError(addr, err)
+		b.logger.Errors.SendHostError(addr, err)
 
 		return
 	}
@@ -181,12 +181,12 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 	if receiveErr != nil {
 		_ = client.Close()
 
-		b.logger.ReceiveClientError(addr, receiveErr)
+		b.logger.Errors.ReceiveClientError(addr, receiveErr)
 
 		return
 	}
 
-	b.logger.ConnectionBound(client.RemoteAddr().String(), host.RemoteAddr().String())
+	b.logger.Connection.ConnectionBound(client.RemoteAddr().String(), host.RemoteAddr().String())
 
 	_, err = host.Write(request)
 
@@ -194,7 +194,7 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 		_ = client.Close()
 		_ = host.Close()
 
-		b.logger.WriteRequestError(client.RemoteAddr().String(), host.RemoteAddr().String(), err)
+		b.logger.Errors.WriteRequestError(client.RemoteAddr().String(), host.RemoteAddr().String(), err)
 
 		return
 	}

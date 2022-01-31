@@ -3,7 +3,7 @@ package v4
 import (
 	"net"
 	"socks/config/v4"
-	"socks/logger"
+	v42 "socks/logger/v4"
 	"socks/transfer"
 	"time"
 )
@@ -15,7 +15,7 @@ type ConnectHandler interface {
 type BaseConnectHandler struct {
 	config        v4.Config
 	streamHandler transfer.StreamHandler
-	logger        logger.SocksV4Logger
+	logger        v42.Logger
 	sender        Sender
 	errorHandler  ErrorHandler
 	whitelist     Whitelist
@@ -25,7 +25,7 @@ type BaseConnectHandler struct {
 func NewBaseConnectHandler(
 	config v4.Config,
 	streamHandler transfer.StreamHandler,
-	logger logger.SocksV4Logger,
+	logger v42.Logger,
 	sender Sender,
 	errorHandler ErrorHandler,
 	whitelist Whitelist,
@@ -48,7 +48,7 @@ func (b BaseConnectHandler) HandleConnect(address string, client net.Conn) {
 	if whitelisted {
 		b.sender.SendFailAndClose(client)
 
-		b.logger.ConnectNotAllowedByWhitelist(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -58,7 +58,7 @@ func (b BaseConnectHandler) HandleConnect(address string, client net.Conn) {
 	if blacklisted {
 		b.sender.SendFailAndClose(client)
 
-		b.logger.ConnectNotAllowedByBlacklist(client.RemoteAddr().String(), address)
+		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
 
 		return
 	}
@@ -89,7 +89,7 @@ func (b BaseConnectHandler) connectSendSuccess(address string, host net.Conn, cl
 		return
 	}
 
-	b.logger.ConnectSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Connect.ConnectSuccessful(client.RemoteAddr().String(), address)
 
 	go b.streamHandler.ClientToHost(client, host)
 	b.streamHandler.HostToClient(client, host)

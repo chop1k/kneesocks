@@ -1,8 +1,8 @@
-package logger
+package udp
 
 import "github.com/rs/zerolog"
 
-type UdpLogger interface {
+type PacketLogger interface {
 	PacketAccepted(address string)
 	PacketDenied(address string)
 	PacketNotAllowed(address string)
@@ -10,22 +10,19 @@ type UdpLogger interface {
 	PacketNotAllowedByBlacklist(address string)
 	PacketHostUnreachable(address string)
 	PacketNetworkUnreachable(address string)
-	Listen(address string)
-	ListenError(address string, err error)
-	AcceptError(err error)
 }
 
-type BaseUdpLogger struct {
+type BasePacketLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseUdpLogger(logger zerolog.Logger) (BaseUdpLogger, error) {
-	return BaseUdpLogger{
+func NewBasePacketLogger(logger zerolog.Logger) (BasePacketLogger, error) {
+	return BasePacketLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseUdpLogger) PacketAccepted(client string) {
+func (b BasePacketLogger) PacketAccepted(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -37,7 +34,7 @@ func (b BaseUdpLogger) PacketAccepted(client string) {
 		Msg("Packet accepted.")
 }
 
-func (b BaseUdpLogger) PacketDenied(client string) {
+func (b BasePacketLogger) PacketDenied(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -49,7 +46,7 @@ func (b BaseUdpLogger) PacketDenied(client string) {
 		Msg("Packet denied.")
 }
 
-func (b BaseUdpLogger) PacketNotAllowed(client string) {
+func (b BasePacketLogger) PacketNotAllowed(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -61,7 +58,7 @@ func (b BaseUdpLogger) PacketNotAllowed(client string) {
 		Msg("Packet not allowed due to ruleset.")
 }
 
-func (b BaseUdpLogger) PacketNotAllowedByWhitelist(client string) {
+func (b BasePacketLogger) PacketNotAllowedByWhitelist(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -73,7 +70,7 @@ func (b BaseUdpLogger) PacketNotAllowedByWhitelist(client string) {
 		Msg("Packet not allowed by whitelist.")
 }
 
-func (b BaseUdpLogger) PacketNotAllowedByBlacklist(client string) {
+func (b BasePacketLogger) PacketNotAllowedByBlacklist(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -85,7 +82,7 @@ func (b BaseUdpLogger) PacketNotAllowedByBlacklist(client string) {
 		Msg("Packet not allowed by blacklist.")
 }
 
-func (b BaseUdpLogger) PacketHostUnreachable(client string) {
+func (b BasePacketLogger) PacketHostUnreachable(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -97,7 +94,7 @@ func (b BaseUdpLogger) PacketHostUnreachable(client string) {
 		Msg("Host unreachable.")
 }
 
-func (b BaseUdpLogger) PacketNetworkUnreachable(client string) {
+func (b BasePacketLogger) PacketNetworkUnreachable(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -107,41 +104,4 @@ func (b BaseUdpLogger) PacketNetworkUnreachable(client string) {
 	e.
 		Str("client", client).
 		Msg("Network unreachable.")
-}
-
-func (b BaseUdpLogger) Listen(address string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("address", address).
-		Msg("Listening for udp packets.")
-}
-
-func (b BaseUdpLogger) ListenError(address string, err error) {
-	e := b.logger.Fatal()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("address", address).
-		Err(err).
-		Msg("Got listen error.")
-}
-
-func (b BaseUdpLogger) AcceptError(err error) {
-	e := b.logger.Error()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Err(err).
-		Msg("Got listen error.")
 }

@@ -2,7 +2,6 @@ package managers
 
 import (
 	"regexp"
-	"socks/config"
 	"socks/logger"
 )
 
@@ -11,16 +10,13 @@ type WhitelistManager interface {
 }
 
 type BaseWhitelistManager struct {
-	config config.WhitelistConfig
 	logger logger.ServerLogger
 }
 
 func NewBaseWhitelistManager(
-	config config.WhitelistConfig,
 	logger logger.ServerLogger,
 ) (BaseWhitelistManager, error) {
 	return BaseWhitelistManager{
-		config: config,
 		logger: logger,
 	}, nil
 }

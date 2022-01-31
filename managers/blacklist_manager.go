@@ -2,7 +2,6 @@ package managers
 
 import (
 	"regexp"
-	"socks/config"
 	"socks/logger"
 )
 
@@ -11,16 +10,13 @@ type BlacklistManager interface {
 }
 
 type BaseBlacklistManager struct {
-	config config.BlacklistConfig
 	logger logger.ServerLogger
 }
 
 func NewBaseBlacklistManager(
-	config config.BlacklistConfig,
 	logger logger.ServerLogger,
 ) (BaseBlacklistManager, error) {
 	return BaseBlacklistManager{
-		config: config,
 		logger: logger,
 	}, nil
 }
