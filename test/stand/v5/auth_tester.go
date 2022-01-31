@@ -56,7 +56,12 @@ func (t AuthTester) handleNoAuth(picture byte, addressType byte, conn net.Conn) 
 	t.sender.SendMethods([]byte{0}, conn)
 	t.comparator.CompareSelection(0, conn)
 	t.sender.SendConnectRequest(addressType, conn)
-	t.comparator.CompareConnectResponse(addressType, conn)
+
+	if addressType == 3 {
+		t.comparator.CompareConnectResponse(4, conn)
+	} else {
+		t.comparator.CompareConnectResponse(addressType, conn)
+	}
 
 	t.server.SendPictureRequest(picture, conn)
 }
@@ -67,7 +72,12 @@ func (t AuthTester) handlePasswordAuth(picture byte, addressType byte, conn net.
 	t.sender.SendPassword(conn)
 	t.comparator.ComparePassword(conn)
 	t.sender.SendConnectRequest(addressType, conn)
-	t.comparator.CompareConnectResponse(addressType, conn)
+
+	if addressType == 3 {
+		t.comparator.CompareConnectResponse(4, conn)
+	} else {
+		t.comparator.CompareConnectResponse(addressType, conn)
+	}
 
 	t.server.SendPictureRequest(picture, conn)
 }

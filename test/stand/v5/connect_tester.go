@@ -46,7 +46,12 @@ func (t ConnectTester) Test(number int) {
 	t.sender.SendMethods([]byte{0}, conn)
 	t.comparator.CompareSelection(0, conn)
 	t.sender.SendConnectRequest(scope.AddressType, conn)
-	t.comparator.CompareConnectResponse(scope.AddressType, conn)
+
+	if scope.AddressType == 3 {
+		t.comparator.CompareConnectResponse(4, conn)
+	} else {
+		t.comparator.CompareConnectResponse(scope.AddressType, conn)
+	}
 
 	t.server.SendPictureRequest(scope.Picture, conn)
 }

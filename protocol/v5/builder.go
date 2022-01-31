@@ -13,6 +13,7 @@ var (
 	CannotConvertIPToIPv6Error        = errors.New("Cannot convert IP address to ipv6. ")
 	UnknownAddressTypeError           = errors.New("Unknown address type. ")
 	TooManyAuthenticationMethodsError = errors.New("Too many authentication methods, 256 maximum. ")
+	DomainTooLongError                = errors.New("Domain too long. ")
 )
 
 type Builder interface {
@@ -122,6 +123,11 @@ func (b BaseBuilder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 
 		buffer.Write(ipv4)
 	} else if chunk.AddressType == 3 {
+		if len(chunk.Address) > 256 {
+			return nil, DomainTooLongError
+		}
+
+		buffer.WriteByte(byte(len(chunk.Address)))
 		buffer.Write([]byte(chunk.Address))
 	} else if chunk.AddressType == 4 {
 		ip := net.ParseIP(chunk.Address)
