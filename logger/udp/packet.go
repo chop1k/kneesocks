@@ -3,13 +3,13 @@ package udp
 import "github.com/rs/zerolog"
 
 type PacketLogger interface {
-	PacketAccepted(address string)
-	PacketDenied(address string)
-	PacketNotAllowed(address string)
-	PacketNotAllowedByWhitelist(address string)
-	PacketNotAllowedByBlacklist(address string)
-	PacketHostUnreachable(address string)
-	PacketNetworkUnreachable(address string)
+	Accepted(address string)
+	Denied(address string)
+	NotAllowed(address string)
+	NotAllowedByWhitelist(address string)
+	NotAllowedByBlacklist(address string)
+	HostUnreachable(address string)
+	NetworkUnreachable(address string)
 }
 
 type BasePacketLogger struct {
@@ -22,7 +22,7 @@ func NewBasePacketLogger(logger zerolog.Logger) (BasePacketLogger, error) {
 	}, nil
 }
 
-func (b BasePacketLogger) PacketAccepted(client string) {
+func (b BasePacketLogger) Accepted(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -34,7 +34,7 @@ func (b BasePacketLogger) PacketAccepted(client string) {
 		Msg("Packet accepted.")
 }
 
-func (b BasePacketLogger) PacketDenied(client string) {
+func (b BasePacketLogger) Denied(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -46,7 +46,7 @@ func (b BasePacketLogger) PacketDenied(client string) {
 		Msg("Packet denied.")
 }
 
-func (b BasePacketLogger) PacketNotAllowed(client string) {
+func (b BasePacketLogger) NotAllowed(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -58,7 +58,7 @@ func (b BasePacketLogger) PacketNotAllowed(client string) {
 		Msg("Packet not allowed due to ruleset.")
 }
 
-func (b BasePacketLogger) PacketNotAllowedByWhitelist(client string) {
+func (b BasePacketLogger) NotAllowedByWhitelist(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -70,7 +70,7 @@ func (b BasePacketLogger) PacketNotAllowedByWhitelist(client string) {
 		Msg("Packet not allowed by whitelist.")
 }
 
-func (b BasePacketLogger) PacketNotAllowedByBlacklist(client string) {
+func (b BasePacketLogger) NotAllowedByBlacklist(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -82,7 +82,7 @@ func (b BasePacketLogger) PacketNotAllowedByBlacklist(client string) {
 		Msg("Packet not allowed by blacklist.")
 }
 
-func (b BasePacketLogger) PacketHostUnreachable(client string) {
+func (b BasePacketLogger) HostUnreachable(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -94,7 +94,7 @@ func (b BasePacketLogger) PacketHostUnreachable(client string) {
 		Msg("Host unreachable.")
 }
 
-func (b BasePacketLogger) PacketNetworkUnreachable(client string) {
+func (b BasePacketLogger) NetworkUnreachable(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

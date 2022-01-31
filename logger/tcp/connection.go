@@ -3,11 +3,11 @@ package tcp
 import "github.com/rs/zerolog"
 
 type ConnectionLogger interface {
-	ConnectionAccepted(client string)
-	ConnectionDenied(client string)
-	ConnectionProtocolDetermined(client string, protocol string)
-	ConnectionBound(client string, host string)
-	ConnectionExchangeTimeout(client string)
+	Accepted(client string)
+	Denied(client string)
+	ProtocolDetermined(client string, protocol string)
+	Bound(client string, host string)
+	ExchangeTimeout(client string)
 }
 
 type BaseConnectionLogger struct {
@@ -20,7 +20,7 @@ func NewBaseConnectionLogger(logger zerolog.Logger) (BaseConnectionLogger, error
 	}, nil
 }
 
-func (b BaseConnectionLogger) ConnectionAccepted(client string) {
+func (b BaseConnectionLogger) Accepted(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -32,7 +32,7 @@ func (b BaseConnectionLogger) ConnectionAccepted(client string) {
 		Msg("Tcp connection accepted.")
 }
 
-func (b BaseConnectionLogger) ConnectionDenied(client string) {
+func (b BaseConnectionLogger) Denied(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -44,7 +44,7 @@ func (b BaseConnectionLogger) ConnectionDenied(client string) {
 		Msg("Tcp connection denied.")
 }
 
-func (b BaseConnectionLogger) ConnectionProtocolDetermined(client string, protocol string) {
+func (b BaseConnectionLogger) ProtocolDetermined(client string, protocol string) {
 	e := b.logger.Debug()
 
 	if !e.Enabled() {
@@ -57,7 +57,7 @@ func (b BaseConnectionLogger) ConnectionProtocolDetermined(client string, protoc
 		Msg("Connection protocol determined.")
 }
 
-func (b BaseConnectionLogger) ConnectionBound(client string, host string) {
+func (b BaseConnectionLogger) Bound(client string, host string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -70,7 +70,7 @@ func (b BaseConnectionLogger) ConnectionBound(client string, host string) {
 		Msg("Connection bound.")
 }
 
-func (b BaseConnectionLogger) ConnectionExchangeTimeout(client string) {
+func (b BaseConnectionLogger) ExchangeTimeout(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

@@ -98,7 +98,7 @@ func registerTree(builder di.Builder) {
 }
 
 func registerTcpConfig(builder di.Builder) {
-	tcpLoggerConfigDef := di.Def{
+	loggerConfigDef := di.Def{
 		Name:  "tcp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -108,7 +108,7 @@ func registerTcpConfig(builder di.Builder) {
 		},
 	}
 
-	tcpConfigDef := di.Def{
+	configDef := di.Def{
 		Name:  "tcp_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -119,8 +119,8 @@ func registerTcpConfig(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		tcpLoggerConfigDef,
-		tcpConfigDef,
+		loggerConfigDef,
+		configDef,
 	)
 
 	if err != nil {
@@ -129,7 +129,7 @@ func registerTcpConfig(builder di.Builder) {
 }
 
 func registerUdpConfig(builder di.Builder) {
-	udpLoggerConfigDef := di.Def{
+	loggerConfigDef := di.Def{
 		Name:  "udp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -139,7 +139,7 @@ func registerUdpConfig(builder di.Builder) {
 		},
 	}
 
-	udpConfigDef := di.Def{
+	configDef := di.Def{
 		Name:  "udp_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -150,8 +150,8 @@ func registerUdpConfig(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		udpLoggerConfigDef,
-		udpConfigDef,
+		loggerConfigDef,
+		configDef,
 	)
 
 	if err != nil {
@@ -160,7 +160,7 @@ func registerUdpConfig(builder di.Builder) {
 }
 
 func registerV4Config(builder di.Builder) {
-	v4LoggerConfigDef := di.Def{
+	loggerConfigDef := di.Def{
 		Name:  "v4_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -170,7 +170,7 @@ func registerV4Config(builder di.Builder) {
 		},
 	}
 
-	v4ConfigDef := di.Def{
+	configDef := di.Def{
 		Name:  "v4_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -181,8 +181,8 @@ func registerV4Config(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v4LoggerConfigDef,
-		v4ConfigDef,
+		loggerConfigDef,
+		configDef,
 	)
 
 	if err != nil {
@@ -191,7 +191,7 @@ func registerV4Config(builder di.Builder) {
 }
 
 func registerV4aConfig(builder di.Builder) {
-	v4aLoggerConfigDef := di.Def{
+	loggerConfigDef := di.Def{
 		Name:  "v4a_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -201,7 +201,7 @@ func registerV4aConfig(builder di.Builder) {
 		},
 	}
 
-	v4aConfigDef := di.Def{
+	configDef := di.Def{
 		Name:  "v4a_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -212,8 +212,8 @@ func registerV4aConfig(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v4aLoggerConfigDef,
-		v4aConfigDef,
+		loggerConfigDef,
+		configDef,
 	)
 
 	if err != nil {
@@ -222,7 +222,7 @@ func registerV4aConfig(builder di.Builder) {
 }
 
 func registerV5Config(builder di.Builder) {
-	v5LoggerConfigDef := di.Def{
+	loggerConfigDef := di.Def{
 		Name:  "v5_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -232,7 +232,7 @@ func registerV5Config(builder di.Builder) {
 		},
 	}
 
-	v5ConfigDef := di.Def{
+	configDef := di.Def{
 		Name:  "v5_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -243,8 +243,8 @@ func registerV5Config(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v5LoggerConfigDef,
-		v5ConfigDef,
+		loggerConfigDef,
+		configDef,
 	)
 
 	if err != nil {

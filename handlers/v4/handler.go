@@ -63,7 +63,7 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 }
 
 func (b BaseHandler) handleConnect(address string, client net.Conn) {
-	b.logger.Connect.ConnectRequest(client.RemoteAddr().String(), address)
+	b.logger.Connect.Request(client.RemoteAddr().String(), address)
 
 	if !b.config.IsConnectAllowed() {
 		b.sender.SendFailAndClose(client)
@@ -76,7 +76,7 @@ func (b BaseHandler) handleConnect(address string, client net.Conn) {
 	b.connectHandler.HandleConnect(address, client)
 }
 func (b BaseHandler) handleBind(address string, client net.Conn) {
-	b.logger.Bind.BindRequest(client.RemoteAddr().String(), address)
+	b.logger.Bind.Request(client.RemoteAddr().String(), address)
 
 	if !b.config.IsBindAllowed() {
 		b.sender.SendFailAndClose(client)

@@ -3,10 +3,10 @@ package v5
 import "github.com/rs/zerolog"
 
 type BindLogger interface {
-	BindRequest(client string, address string)
-	BindFailed(client string, address string)
-	BindSuccessful(client string, address string)
-	BindTimeout(client string, address string)
+	Request(client string, address string)
+	Failed(client string, address string)
+	Successful(client string, address string)
+	Timeout(client string, address string)
 	Bound(client string, host string)
 }
 
@@ -20,7 +20,7 @@ func NewBaseBindLogger(logger zerolog.Logger) (BaseBindLogger, error) {
 	}, nil
 }
 
-func (b BaseBindLogger) BindRequest(client string, address string) {
+func (b BaseBindLogger) Request(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -33,7 +33,7 @@ func (b BaseBindLogger) BindRequest(client string, address string) {
 		Msg("Received bind request. ")
 }
 
-func (b BaseBindLogger) BindFailed(client string, address string) {
+func (b BaseBindLogger) Failed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -46,7 +46,7 @@ func (b BaseBindLogger) BindFailed(client string, address string) {
 		Msg("Bind failed. ")
 }
 
-func (b BaseBindLogger) BindSuccessful(client string, address string) {
+func (b BaseBindLogger) Successful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -59,46 +59,7 @@ func (b BaseBindLogger) BindSuccessful(client string, address string) {
 		Msg("Bind successful. ")
 }
 
-func (b BaseBindLogger) BindNotAllowed(client string, address string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Str("host", address).
-		Msg("Bind not allowed due to ruleset. ")
-}
-
-func (b BaseBindLogger) BindNotAllowedByWhitelist(client string, address string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Str("host", address).
-		Msg("Bind not allowed due to whitelist.")
-}
-
-func (b BaseBindLogger) BindNotAllowedByBlacklist(client string, address string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Str("host", address).
-		Msg("Bind not allowed due to blacklist.")
-}
-
-func (b BaseBindLogger) BindTimeout(client string, address string) {
+func (b BaseBindLogger) Timeout(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {

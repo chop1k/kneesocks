@@ -89,11 +89,11 @@ func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
 	}
 
 	if request[4] == 0 && request[5] == 0 && request[6] == 0 && request[7] != 0 {
-		b.logger.Connection.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
+		b.logger.Connection.ProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
 
 		b.v4aHandler.Handle(request, client)
 	} else {
-		b.logger.Connection.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV4")
+		b.logger.Connection.ProtocolDetermined(client.RemoteAddr().String(), "socksV4")
 
 		b.v4Handler.Handle(request, client)
 	}
@@ -112,7 +112,7 @@ func (b BaseConnectionHandler) checkV5(request []byte, client net.Conn) {
 		return
 	}
 
-	b.logger.Connection.ConnectionProtocolDetermined(client.RemoteAddr().String(), "socksV5")
+	b.logger.Connection.ProtocolDetermined(client.RemoteAddr().String(), "socksV5")
 
 	b.v5Handler.Handle(request, client)
 }
@@ -160,7 +160,7 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 
 	_ = client.Close()
 
-	b.logger.Connection.ConnectionDenied(addr)
+	b.logger.Connection.Denied(addr)
 }
 
 func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.Conn) {
@@ -186,7 +186,7 @@ func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.
 		return
 	}
 
-	b.logger.Connection.ConnectionBound(client.RemoteAddr().String(), host.RemoteAddr().String())
+	b.logger.Connection.Bound(client.RemoteAddr().String(), host.RemoteAddr().String())
 
 	_, err = host.Write(request)
 

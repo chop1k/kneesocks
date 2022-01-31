@@ -61,7 +61,7 @@ func (s Server) listenTcp() {
 			continue
 		}
 
-		s.tcpLogger.Connection.ConnectionAccepted(conn.RemoteAddr().String())
+		s.tcpLogger.Connection.Accepted(conn.RemoteAddr().String())
 
 		go s.connectionHandler.HandleConnection(conn)
 	}
@@ -91,7 +91,7 @@ func (s Server) listenUdp() {
 			continue
 		}
 
-		s.udpLogger.Packet.PacketAccepted(address.String())
+		s.udpLogger.Packet.Accepted(address.String())
 
 		go s.packetHandler.HandlePacket(payload[:i], address, packet)
 	}

@@ -3,16 +3,13 @@ package v4a
 import "github.com/rs/zerolog"
 
 type ConnectLogger interface {
-	ConnectRequest(client string, address string)
-	ConnectFailed(client string, address string)
-	ConnectSuccessful(client string, address string)
-	ConnectNotAllowed(client string, address string)
-	ConnectNotAllowedByWhitelist(client string, address string)
-	ConnectNotAllowedByBlacklist(client string, address string)
-	ConnectHostUnreachable(client string, address string)
-	ConnectNetworkUnreachable(client string, address string)
-	ConnectRefused(client string, address string)
-	ConnectTimeout(client string, address string)
+	Request(client string, address string)
+	Failed(client string, address string)
+	Successful(client string, address string)
+	HostUnreachable(client string, address string)
+	NetworkUnreachable(client string, address string)
+	Refused(client string, address string)
+	Timeout(client string, address string)
 }
 
 type BaseConnectLogger struct {
@@ -25,7 +22,7 @@ func NewBaseConnectLogger(logger zerolog.Logger) (BaseConnectLogger, error) {
 	}, nil
 }
 
-func (b BaseConnectLogger) ConnectRequest(client string, address string) {
+func (b BaseConnectLogger) Request(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -38,7 +35,7 @@ func (b BaseConnectLogger) ConnectRequest(client string, address string) {
 		Msg("Received connect request. ")
 }
 
-func (b BaseConnectLogger) ConnectFailed(client string, address string) {
+func (b BaseConnectLogger) Failed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -51,7 +48,7 @@ func (b BaseConnectLogger) ConnectFailed(client string, address string) {
 		Msg("Connect failed. ")
 }
 
-func (b BaseConnectLogger) ConnectSuccessful(client string, address string) {
+func (b BaseConnectLogger) Successful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -102,7 +99,7 @@ func (b BaseConnectLogger) ConnectNotAllowedByBlacklist(client string, address s
 		Str("host", address).
 		Msg("Connect not allowed due to blacklist.")
 }
-func (b BaseConnectLogger) ConnectHostUnreachable(client string, address string) {
+func (b BaseConnectLogger) HostUnreachable(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -115,7 +112,7 @@ func (b BaseConnectLogger) ConnectHostUnreachable(client string, address string)
 		Msg("Host unreachable. ")
 }
 
-func (b BaseConnectLogger) ConnectTimeout(client string, address string) {
+func (b BaseConnectLogger) Timeout(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -128,7 +125,7 @@ func (b BaseConnectLogger) ConnectTimeout(client string, address string) {
 		Msg("Connect failed due to timeout. ")
 }
 
-func (b BaseConnectLogger) ConnectNetworkUnreachable(client string, address string) {
+func (b BaseConnectLogger) NetworkUnreachable(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -141,7 +138,7 @@ func (b BaseConnectLogger) ConnectNetworkUnreachable(client string, address stri
 		Msg("Network unreachable. ")
 }
 
-func (b BaseConnectLogger) ConnectRefused(client string, address string) {
+func (b BaseConnectLogger) Refused(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {

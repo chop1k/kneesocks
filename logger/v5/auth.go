@@ -3,8 +3,8 @@ package v5
 import "github.com/rs/zerolog"
 
 type AuthLogger interface {
-	AuthenticationSuccessful(client string, name string)
-	AuthenticationFailed(client string)
+	Successful(client string, name string)
+	Failed(client string)
 }
 
 type BaseAuthLogger struct {
@@ -17,7 +17,7 @@ func NewBaseAuthLogger(logger zerolog.Logger) (BaseAuthLogger, error) {
 	}, nil
 }
 
-func (b BaseAuthLogger) AuthenticationSuccessful(client string, name string) {
+func (b BaseAuthLogger) Successful(client string, name string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -30,7 +30,7 @@ func (b BaseAuthLogger) AuthenticationSuccessful(client string, name string) {
 		Msg("Authentication successful. ")
 }
 
-func (b BaseAuthLogger) AuthenticationFailed(client string) {
+func (b BaseAuthLogger) Failed(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {

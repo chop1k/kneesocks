@@ -84,7 +84,7 @@ func (b BaseBindHandler) bind(address string, client net.Conn) {
 		return
 	}
 
-	b.logger.Bind.BindSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Bind.Successful(client.RemoteAddr().String(), address)
 
 	b.bindSendFirstResponse(address, client)
 }
@@ -162,7 +162,7 @@ func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string,
 		return
 	}
 
-	b.logger.Bind.BindSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Bind.Successful(client.RemoteAddr().String(), address)
 
 	b.streamHandler.ClientToHost(host, client)
 }

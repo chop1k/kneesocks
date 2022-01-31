@@ -30,7 +30,7 @@ func registerZeroLog(builder di.Builder) {
 			Level(zerolog.Level(level)), nil
 	}
 
-	serverZeroLoggerDef := di.Def{
+	serverDef := di.Def{
 		Name:  "server_zero_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -73,7 +73,7 @@ func registerZeroLog(builder di.Builder) {
 		},
 	}
 
-	tcpZeroLoggerDef := di.Def{
+	tcpDef := di.Def{
 		Name:  "tcp_zero_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -116,7 +116,7 @@ func registerZeroLog(builder di.Builder) {
 		},
 	}
 
-	udpZeroLoggerDef := di.Def{
+	udpDef := di.Def{
 		Name:  "udp_zero_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -159,7 +159,7 @@ func registerZeroLog(builder di.Builder) {
 		},
 	}
 
-	v4ZeroLoggerDef := di.Def{
+	v4Def := di.Def{
 		Name:  "v4_zero_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -202,7 +202,7 @@ func registerZeroLog(builder di.Builder) {
 		},
 	}
 
-	v4aZeroLoggerDef := di.Def{
+	v4aDef := di.Def{
 		Name:  "v4a_zero_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -245,7 +245,7 @@ func registerZeroLog(builder di.Builder) {
 		},
 	}
 
-	v5ZeroLoggerDef := di.Def{
+	v5Def := di.Def{
 		Name:  "v5_zero_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -289,12 +289,12 @@ func registerZeroLog(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		serverZeroLoggerDef,
-		tcpZeroLoggerDef,
-		udpZeroLoggerDef,
-		v4ZeroLoggerDef,
-		v4aZeroLoggerDef,
-		v5ZeroLoggerDef,
+		serverDef,
+		tcpDef,
+		udpDef,
+		v4Def,
+		v4aDef,
+		v5Def,
 	)
 
 	if err != nil {
@@ -360,7 +360,7 @@ func registerTcpLogger(builder di.Builder) {
 		},
 	}
 
-	tcpLoggerDef := di.Def{
+	loggerDef := di.Def{
 		Name:  "tcp_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -376,7 +376,7 @@ func registerTcpLogger(builder di.Builder) {
 		connectionLoggerDef,
 		errorsLoggerDef,
 		listenLoggerDef,
-		tcpLoggerDef,
+		loggerDef,
 	)
 
 	if err != nil {
@@ -415,7 +415,7 @@ func registerUdpLogger(builder di.Builder) {
 		},
 	}
 
-	udpLoggerDef := di.Def{
+	loggerDef := di.Def{
 		Name:  "udp_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -431,7 +431,7 @@ func registerUdpLogger(builder di.Builder) {
 		errorsLoggerDef,
 		listenLoggerDef,
 		packetLoggerDef,
-		udpLoggerDef,
+		loggerDef,
 	)
 
 	if err != nil {
@@ -490,7 +490,7 @@ func registerV4Logger(builder di.Builder) {
 		},
 	}
 
-	v4LoggerDef := di.Def{
+	loggerDef := di.Def{
 		Name:  "v4_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -510,7 +510,7 @@ func registerV4Logger(builder di.Builder) {
 		errorsDef,
 		restrictionsDef,
 		transferDef,
-		v4LoggerDef,
+		loggerDef,
 	)
 
 	if err != nil {
@@ -569,7 +569,7 @@ func registerV4aLogger(builder di.Builder) {
 		},
 	}
 
-	v4aLoggerDef := di.Def{
+	loggerDef := di.Def{
 		Name:  "v4a_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -589,7 +589,7 @@ func registerV4aLogger(builder di.Builder) {
 		errorsDef,
 		restrictionsDef,
 		transferDef,
-		v4aLoggerDef,
+		loggerDef,
 	)
 
 	if err != nil {
@@ -667,7 +667,7 @@ func registerV5Logger(builder di.Builder) {
 			return v5.NewBaseTransferLogger(zero)
 		},
 	}
-	v5LoggerDef := di.Def{
+	loggerDef := di.Def{
 		Name:  "v5_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -691,7 +691,7 @@ func registerV5Logger(builder di.Builder) {
 		errorsDef,
 		restrictionsDef,
 		transferDef,
-		v5LoggerDef,
+		loggerDef,
 	)
 
 	if err != nil {

@@ -21,7 +21,7 @@ func registerAuth(builder di.Builder) {
 }
 
 func registerPasswordAuth(builder di.Builder) {
-	passwordParserDef := di.Def{
+	parserDef := di.Def{
 		Name:  "auth_password_parser",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -29,7 +29,7 @@ func registerPasswordAuth(builder di.Builder) {
 		},
 	}
 
-	passwordBuilderDef := di.Def{
+	builderDef := di.Def{
 		Name:  "auth_password_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -37,7 +37,7 @@ func registerPasswordAuth(builder di.Builder) {
 		},
 	}
 
-	passwordDef := di.Def{
+	protocolDef := di.Def{
 		Name:  "auth_password",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -49,9 +49,9 @@ func registerPasswordAuth(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		passwordParserDef,
-		passwordBuilderDef,
-		passwordDef,
+		parserDef,
+		builderDef,
+		protocolDef,
 	)
 
 	if err != nil {
@@ -60,7 +60,7 @@ func registerPasswordAuth(builder di.Builder) {
 }
 
 func registerV4Protocol(builder di.Builder) {
-	v4ParserDef := di.Def{
+	parserDef := di.Def{
 		Name:  "v4_parser",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -68,7 +68,7 @@ func registerV4Protocol(builder di.Builder) {
 		},
 	}
 
-	v4BuilderDef := di.Def{
+	builderDef := di.Def{
 		Name:  "v4_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -76,7 +76,7 @@ func registerV4Protocol(builder di.Builder) {
 		},
 	}
 
-	v4Def := di.Def{
+	protocolDef := di.Def{
 		Name:  "v4",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -87,9 +87,9 @@ func registerV4Protocol(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v4ParserDef,
-		v4BuilderDef,
-		v4Def,
+		parserDef,
+		builderDef,
+		protocolDef,
 	)
 
 	if err != nil {
@@ -98,7 +98,7 @@ func registerV4Protocol(builder di.Builder) {
 }
 
 func registerV4aProtocol(builder di.Builder) {
-	v4aParserDef := di.Def{
+	parserDef := di.Def{
 		Name:  "v4a_parser",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -106,7 +106,7 @@ func registerV4aProtocol(builder di.Builder) {
 		},
 	}
 
-	v4aBuilderDef := di.Def{
+	builderDef := di.Def{
 		Name:  "v4a_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -114,7 +114,7 @@ func registerV4aProtocol(builder di.Builder) {
 		},
 	}
 
-	v4aDef := di.Def{
+	protocolDef := di.Def{
 		Name:  "v4a",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -125,9 +125,9 @@ func registerV4aProtocol(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v4aParserDef,
-		v4aBuilderDef,
-		v4aDef,
+		parserDef,
+		builderDef,
+		protocolDef,
 	)
 
 	if err != nil {
@@ -136,7 +136,7 @@ func registerV4aProtocol(builder di.Builder) {
 }
 
 func registerV5Protocol(builder di.Builder) {
-	v5ParserDef := di.Def{
+	parserDef := di.Def{
 		Name:  "v5_parser",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -146,7 +146,7 @@ func registerV5Protocol(builder di.Builder) {
 		},
 	}
 
-	v5BuilderDef := di.Def{
+	builderDef := di.Def{
 		Name:  "v5_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -154,7 +154,7 @@ func registerV5Protocol(builder di.Builder) {
 		},
 	}
 
-	v5Def := di.Def{
+	protocolDef := di.Def{
 		Name:  "v5",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -166,9 +166,9 @@ func registerV5Protocol(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v5ParserDef,
-		v5BuilderDef,
-		v5Def,
+		parserDef,
+		builderDef,
+		protocolDef,
 	)
 
 	if err != nil {

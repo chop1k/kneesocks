@@ -39,7 +39,7 @@ func NewBaseUdpAssociationHandler(
 	}, nil
 }
 
-func (b BaseUdpAssociationHandler) HandleUdpAssociation(name string, client net.Conn) {
+func (b BaseUdpAssociationHandler) HandleUdpAssociation(_ string, client net.Conn) {
 	address, _, err := b.utils.ParseAddress(client.RemoteAddr().String())
 
 	if err != nil {
@@ -62,7 +62,7 @@ func (b BaseUdpAssociationHandler) udpSendResponse(address string, client net.Co
 		return
 	}
 
-	b.logger.Association.UdpAssociationSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Association.Successful(client.RemoteAddr().String(), address)
 
 	b.udpWaitForClose(address, client)
 }

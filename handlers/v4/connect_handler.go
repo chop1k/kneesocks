@@ -89,7 +89,7 @@ func (b BaseConnectHandler) connectSendSuccess(address string, host net.Conn, cl
 		return
 	}
 
-	b.logger.Connect.ConnectSuccessful(client.RemoteAddr().String(), address)
+	b.logger.Connect.Successful(client.RemoteAddr().String(), address)
 
 	go b.streamHandler.ClientToHost(client, host)
 	b.streamHandler.HostToClient(client, host)

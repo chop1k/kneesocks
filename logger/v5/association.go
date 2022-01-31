@@ -3,10 +3,9 @@ package v5
 import "github.com/rs/zerolog"
 
 type AssociationLogger interface {
-	UdpAssociationRequest(client string)
-	UdpAssociationSuccessful(client string, address string)
-	UdpAssociationFailed(client string, address string)
-	UdpAssociationNotAllowed(client string)
+	Request(client string)
+	Successful(client string, address string)
+	Failed(client string, address string)
 }
 
 type BaseAssociationLogger struct {
@@ -19,7 +18,7 @@ func NewBaseAssociationLogger(logger zerolog.Logger) (BaseAssociationLogger, err
 	}, nil
 }
 
-func (b BaseAssociationLogger) UdpAssociationRequest(client string) {
+func (b BaseAssociationLogger) Request(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -31,7 +30,7 @@ func (b BaseAssociationLogger) UdpAssociationRequest(client string) {
 		Msg("Received udp association request. ")
 }
 
-func (b BaseAssociationLogger) UdpAssociationSuccessful(client string, address string) {
+func (b BaseAssociationLogger) Successful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -44,7 +43,7 @@ func (b BaseAssociationLogger) UdpAssociationSuccessful(client string, address s
 		Msg("Udp associate successful. ")
 }
 
-func (b BaseAssociationLogger) UdpAssociationFailed(client string, address string) {
+func (b BaseAssociationLogger) Failed(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -55,16 +54,4 @@ func (b BaseAssociationLogger) UdpAssociationFailed(client string, address strin
 		Str("client", client).
 		Str("bind_address", address).
 		Msg("Udp associate failed. ")
-}
-
-func (b BaseAssociationLogger) UdpAssociationNotAllowed(client string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Msg("Udp associate not allowed due to ruleset. ")
 }

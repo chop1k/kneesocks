@@ -109,7 +109,7 @@ func (b BaseConnectHandler) connectSendResponse(address string, host, client net
 		return
 	}
 
-	b.logger.Connect.ConnectSuccessful(client.RemoteAddr().String(), host.RemoteAddr().String())
+	b.logger.Connect.Successful(client.RemoteAddr().String(), host.RemoteAddr().String())
 
 	go b.streamHandler.ClientToHost(client, host)
 	b.streamHandler.HostToClient(client, host)

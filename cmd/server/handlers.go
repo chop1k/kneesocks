@@ -85,7 +85,7 @@ func registerHandlers(builder di.Builder) {
 }
 
 func registerV4Handlers(builder di.Builder) {
-	v4WhitelistDef := di.Def{
+	whitelistDef := di.Def{
 		Name:  "v4_whitelist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -96,7 +96,7 @@ func registerV4Handlers(builder di.Builder) {
 		},
 	}
 
-	v4BlacklistDef := di.Def{
+	blacklistDef := di.Def{
 		Name:  "v4_blacklist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -107,7 +107,7 @@ func registerV4Handlers(builder di.Builder) {
 		},
 	}
 
-	v4ConnectHandlerDef := di.Def{
+	connectHandlerDef := di.Def{
 		Name:  "v4_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -131,7 +131,7 @@ func registerV4Handlers(builder di.Builder) {
 		},
 	}
 
-	v4BindHandlerDef := di.Def{
+	bindHandlerDef := di.Def{
 		Name:  "v4_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -159,7 +159,7 @@ func registerV4Handlers(builder di.Builder) {
 		},
 	}
 
-	v4HandlerDef := di.Def{
+	handlerDef := di.Def{
 		Name:  "v4_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -183,7 +183,7 @@ func registerV4Handlers(builder di.Builder) {
 		},
 	}
 
-	v4SenderDef := di.Def{
+	senderDef := di.Def{
 		Name:  "v4_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -197,7 +197,7 @@ func registerV4Handlers(builder di.Builder) {
 		},
 	}
 
-	v4ErrorHandlerDef := di.Def{
+	errorHandlerDef := di.Def{
 		Name:  "v4_error_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -214,13 +214,13 @@ func registerV4Handlers(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v4WhitelistDef,
-		v4BlacklistDef,
-		v4ConnectHandlerDef,
-		v4BindHandlerDef,
-		v4HandlerDef,
-		v4SenderDef,
-		v4ErrorHandlerDef,
+		whitelistDef,
+		blacklistDef,
+		connectHandlerDef,
+		bindHandlerDef,
+		handlerDef,
+		senderDef,
+		errorHandlerDef,
 	)
 
 	if err != nil {
@@ -229,7 +229,7 @@ func registerV4Handlers(builder di.Builder) {
 }
 
 func registerV4aHandlers(builder di.Builder) {
-	v4aWhitelistDef := di.Def{
+	whitelistDef := di.Def{
 		Name:  "v4a_whitelist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -240,7 +240,7 @@ func registerV4aHandlers(builder di.Builder) {
 		},
 	}
 
-	v4aBlacklistDef := di.Def{
+	blacklistDef := di.Def{
 		Name:  "v4a_blacklist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -251,7 +251,7 @@ func registerV4aHandlers(builder di.Builder) {
 		},
 	}
 
-	v4aConnectHandlerDef := di.Def{
+	connectHandlerDef := di.Def{
 		Name:  "v4a_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -275,7 +275,7 @@ func registerV4aHandlers(builder di.Builder) {
 		},
 	}
 
-	v4aBindHandlerDef := di.Def{
+	bindHandlerDef := di.Def{
 		Name:  "v4a_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -303,7 +303,7 @@ func registerV4aHandlers(builder di.Builder) {
 		},
 	}
 
-	v4aHandlerDef := di.Def{
+	handlerDef := di.Def{
 		Name:  "v4a_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -327,7 +327,7 @@ func registerV4aHandlers(builder di.Builder) {
 		},
 	}
 
-	v4aSenderDef := di.Def{
+	senderDef := di.Def{
 		Name:  "v4a_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -341,7 +341,7 @@ func registerV4aHandlers(builder di.Builder) {
 		},
 	}
 
-	v4aErrorHandlerDef := di.Def{
+	errorHandlerDef := di.Def{
 		Name:  "v4a_error_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -358,13 +358,13 @@ func registerV4aHandlers(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		v4aWhitelistDef,
-		v4aBlacklistDef,
-		v4aConnectHandlerDef,
-		v4aBindHandlerDef,
-		v4aHandlerDef,
-		v4aSenderDef,
-		v4aErrorHandlerDef,
+		whitelistDef,
+		blacklistDef,
+		connectHandlerDef,
+		bindHandlerDef,
+		handlerDef,
+		senderDef,
+		errorHandlerDef,
 	)
 
 	if err != nil {
@@ -393,7 +393,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5WhitelistDef := di.Def{
+	whitelistDef := di.Def{
 		Name:  "v5_whitelist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -404,7 +404,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5BlacklistDef := di.Def{
+	blacklistDef := di.Def{
 		Name:  "v5_blacklist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -415,7 +415,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5ConnectHandlerDef := di.Def{
+	connectHandlerDef := di.Def{
 		Name:  "v5_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -441,7 +441,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5BindHandlerDef := di.Def{
+	bindHandlerDef := di.Def{
 		Name:  "v5_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -469,7 +469,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5UdpAssociationHandler := di.Def{
+	udpAssociationHandler := di.Def{
 		Name:  "v5_udp_association_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -491,7 +491,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5HandlerDef := di.Def{
+	handlerDef := di.Def{
 		Name:  "v5_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -521,7 +521,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5SenderDef := di.Def{
+	senderDef := di.Def{
 		Name:  "v5_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -537,7 +537,7 @@ func registerV5Handlers(builder di.Builder) {
 		},
 	}
 
-	v5ErrorHandlerDef := di.Def{
+	errorHandlerDef := di.Def{
 		Name:  "v5_error_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
@@ -555,14 +555,14 @@ func registerV5Handlers(builder di.Builder) {
 
 	err := builder.Add(
 		authenticationHandlerDef,
-		v5WhitelistDef,
-		v5BlacklistDef,
-		v5ConnectHandlerDef,
-		v5BindHandlerDef,
-		v5HandlerDef,
-		v5SenderDef,
-		v5ErrorHandlerDef,
-		v5UdpAssociationHandler,
+		whitelistDef,
+		blacklistDef,
+		connectHandlerDef,
+		bindHandlerDef,
+		handlerDef,
+		senderDef,
+		errorHandlerDef,
+		udpAssociationHandler,
 	)
 
 	if err != nil {
