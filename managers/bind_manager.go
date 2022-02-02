@@ -11,7 +11,6 @@ var (
 	HostChannelClosedError   = errors.New("Host channel is closed. ")
 	ClientChannelClosedError = errors.New("Client channel is closed. ")
 	AddressAlreadyBoundError = errors.New("Address already bound. ")
-	TimeoutError             = errors.New("Timeout. ")
 )
 
 type bundle struct {
@@ -64,8 +63,8 @@ func (m BindManager) Remove(addr string) {
 	delete(m.addresses, addr)
 }
 
-func (m BindManager) SendHost(addr string, host net.Conn) error { // TODO: add deadline
-	channel, ok := m.addresses[addr]
+func (m BindManager) SendHost(address string, host net.Conn) error { // TODO: add deadline
+	channel, ok := m.addresses[address]
 
 	if !ok {
 		return AddressNotExistsError
@@ -76,8 +75,8 @@ func (m BindManager) SendHost(addr string, host net.Conn) error { // TODO: add d
 	return nil
 }
 
-func (m BindManager) SendClient(addr string, client net.Conn) error { // TODO: add deadline
-	channel, ok := m.addresses[addr]
+func (m BindManager) SendClient(address string, client net.Conn) error { // TODO: add deadline
+	channel, ok := m.addresses[address]
 
 	if !ok {
 		return AddressNotExistsError
@@ -88,8 +87,8 @@ func (m BindManager) SendClient(addr string, client net.Conn) error { // TODO: a
 	return nil
 }
 
-func (m BindManager) ReceiveClient(addr string, deadline time.Duration) (net.Conn, error) {
-	channel, ok := m.addresses[addr]
+func (m BindManager) ReceiveClient(address string, deadline time.Duration) (net.Conn, error) {
+	channel, ok := m.addresses[address]
 
 	if !ok {
 		return nil, AddressNotExistsError
@@ -118,8 +117,8 @@ func (m BindManager) ReceiveClient(addr string, deadline time.Duration) (net.Con
 	return client, nil
 }
 
-func (m BindManager) ReceiveHost(addr string, deadline time.Duration) (net.Conn, error) {
-	channel, ok := m.addresses[addr]
+func (m BindManager) ReceiveHost(address string, deadline time.Duration) (net.Conn, error) {
+	channel, ok := m.addresses[address]
 
 	if !ok {
 		return nil, AddressNotExistsError
