@@ -181,6 +181,16 @@ func registerV4Config(builder di.Builder) {
 		},
 	}
 
+	deadlineDef := di.Def{
+		Name:  "v4_deadline_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return v43.NewBaseDeadlineConfig(cfg)
+		},
+	}
+
 	configDef := di.Def{
 		Name:  "v4_config",
 		Scope: di.App,
@@ -193,6 +203,7 @@ func registerV4Config(builder di.Builder) {
 
 	err := builder.Add(
 		loggerConfigDef,
+		deadlineDef,
 		configDef,
 	)
 

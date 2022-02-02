@@ -20,14 +20,11 @@
     "AllowConnect": true,
     "AllowBind": true,
     "Deadline": {
-      "Request": 10,
       "Response": 10,
       "Connect": 60,
       "Bind": 60,
       "Transfer": 60
     },
-    "ConnectDeadline": 60,
-    "BindDeadline": 60,
     "Restrictions": {
       "Blacklist": [],
       "Whitelist": []

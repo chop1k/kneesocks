@@ -10,6 +10,7 @@ import (
 	"socks/handlers"
 	helpers3 "socks/handlers/helpers"
 	v42 "socks/handlers/v4"
+	helpers5 "socks/handlers/v4/helpers"
 	v4a2 "socks/handlers/v4a"
 	helpers2 "socks/handlers/v4a/helpers"
 	v52 "socks/handlers/v5"
@@ -112,48 +113,22 @@ func registerHelpers(builder di.Builder) {
 }
 
 func registerV4Handlers(builder di.Builder) {
-	whitelistDef := di.Def{
-		Name:  "v4_whitelist",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_config").(v43.Config)
-			whitelist := ctn.Get("whitelist_manager").(managers.WhitelistManager)
-
-			return v42.NewBaseWhitelist(cfg, whitelist)
-		},
-	}
-
-	blacklistDef := di.Def{
-		Name:  "v4_blacklist",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_config").(v43.Config)
-			whitelist := ctn.Get("blacklist_manager").(managers.BlacklistManager)
-
-			return v42.NewBaseBlacklist(cfg, whitelist)
-		},
-	}
-
 	connectHandlerDef := di.Def{
 		Name:  "v4_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_config").(v43.Config)
 			v4Logger := ctn.Get("v4_logger").(v44.Logger)
 			streamHandler := ctn.Get("stream_handler").(transfer.StreamHandler)
-			sender := ctn.Get("v4_sender").(v42.Sender)
+			sender := ctn.Get("v4_sender").(helpers5.Sender)
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
-			whitelist := ctn.Get("v4_whitelist").(v42.Whitelist)
-			blacklist := ctn.Get("v4_blacklist").(v42.Blacklist)
+			dialer := ctn.Get("v4_dialer").(helpers5.Dialer)
 
 			return v42.NewBaseConnectHandler(
-				cfg,
 				streamHandler,
 				v4Logger,
 				sender,
 				errorHandler,
-				whitelist,
-				blacklist,
+				dialer,
 			)
 		},
 	}
@@ -162,26 +137,22 @@ func registerV4Handlers(builder di.Builder) {
 		Name:  "v4_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_config").(v43.Config)
 			v4Logger := ctn.Get("v4_logger").(v44.Logger)
 			streamHandler := ctn.Get("stream_handler").(transfer.StreamHandler)
 			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-			sender := ctn.Get("v4_sender").(v42.Sender)
-			whitelist := ctn.Get("v4_whitelist").(v42.Whitelist)
-			blacklist := ctn.Get("v4_blacklist").(v42.Blacklist)
+			sender := ctn.Get("v4_sender").(helpers5.Sender)
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
+			receiver := ctn.Get("v4_receiver").(helpers5.Receiver)
 
 			return v42.NewBaseBindHandler(
-				cfg,
 				v4Logger,
 				streamHandler,
 				bindManager,
 				addressUtils,
 				sender,
-				whitelist,
-				blacklist,
 				errorHandler,
+				receiver,
 			)
 		},
 	}
@@ -191,35 +162,21 @@ func registerV4Handlers(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			parser := ctn.Get("v4_parser").(v4.Parser)
-			cfg := ctn.Get("v4_config").(v43.Config)
 			v4Logger := ctn.Get("v4_logger").(v44.Logger)
 			connectHandler := ctn.Get("v4_connect_handler").(v42.ConnectHandler)
 			bindHandler := ctn.Get("v4_bind_handler").(v42.BindHandler)
-			sender := ctn.Get("v4_sender").(v42.Sender)
+			sender := ctn.Get("v4_sender").(helpers5.Sender)
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
+			validator := ctn.Get("v4_validator").(helpers5.Validator)
 
 			return v42.NewBaseHandler(
 				parser,
-				cfg,
 				v4Logger,
 				connectHandler,
 				bindHandler,
 				sender,
 				errorHandler,
-			)
-		},
-	}
-
-	senderDef := di.Def{
-		Name:  "v4_sender",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v4").(v4.Protocol)
-			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
-
-			return v42.NewBaseSender(
-				protocol,
-				tcpConfig,
+				validator,
 			)
 		},
 	}
@@ -228,7 +185,7 @@ func registerV4Handlers(builder di.Builder) {
 		Name:  "v4_error_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			sender := ctn.Get("v4_sender").(v42.Sender)
+			sender := ctn.Get("v4_sender").(helpers5.Sender)
 			v4Logger := ctn.Get("v4_logger").(v44.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
@@ -241,13 +198,98 @@ func registerV4Handlers(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		whitelistDef,
-		blacklistDef,
 		connectHandlerDef,
 		bindHandlerDef,
 		handlerDef,
-		senderDef,
 		errorHandlerDef,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	registerV4Helpers(builder)
+}
+
+func registerV4Helpers(builder di.Builder) {
+	blacklistDef := di.Def{
+		Name:  "v4_blacklist",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4_config").(v43.Config)
+			whitelist := ctn.Get("blacklist_manager").(managers.BlacklistManager)
+
+			return helpers5.NewBaseBlacklist(cfg, whitelist)
+		},
+	}
+
+	dialerDef := di.Def{
+		Name:  "v4_dialer",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4_deadline_config").(v43.DeadlineConfig)
+
+			return helpers5.NewBaseDialer(cfg)
+		},
+	}
+
+	receiverDef := di.Def{
+		Name:  "v4_receiver",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4_deadline_config").(v43.DeadlineConfig)
+			bindManager := ctn.Get("bind_manager").(managers.BindManager)
+
+			return helpers5.NewBaseReceiver(cfg, bindManager)
+		},
+	}
+
+	senderDef := di.Def{
+		Name:  "v4_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			protocol := ctn.Get("v4").(v4.Protocol)
+			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
+
+			return helpers5.NewBaseSender(
+				protocol,
+				tcpConfig,
+			)
+		},
+	}
+
+	validatorDef := di.Def{
+		Name:  "v4_validator",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4_config").(v43.Config)
+			whitelist := ctn.Get("v4_whitelist").(helpers5.Whitelist)
+			blacklist := ctn.Get("v4_blacklist").(helpers5.Blacklist)
+			sender := ctn.Get("v4_sender").(helpers5.Sender)
+			logger := ctn.Get("v4_logger").(v44.Logger)
+
+			return helpers5.NewBaseValidator(cfg, whitelist, blacklist, sender, logger)
+		},
+	}
+
+	whitelistDef := di.Def{
+		Name:  "v4_whitelist",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4_config").(v43.Config)
+			whitelist := ctn.Get("whitelist_manager").(managers.WhitelistManager)
+
+			return helpers5.NewBaseWhitelist(cfg, whitelist)
+		},
+	}
+
+	err := builder.Add(
+		blacklistDef,
+		dialerDef,
+		receiverDef,
+		senderDef,
+		validatorDef,
+		whitelistDef,
 	)
 
 	if err != nil {
@@ -256,7 +298,6 @@ func registerV4Handlers(builder di.Builder) {
 }
 
 func registerV4aHandlers(builder di.Builder) {
-
 	connectHandlerDef := di.Def{
 		Name:  "v4a_connect_handler",
 		Scope: di.App,

@@ -2,6 +2,7 @@ package v4
 
 import (
 	"net"
+	"socks/handlers/v4/helpers"
 	"socks/logger/v4"
 	"socks/managers"
 	"socks/utils"
@@ -24,13 +25,13 @@ type ErrorHandler interface {
 
 type BaseErrorHandler struct {
 	logger v4.Logger
-	sender Sender
+	sender helpers.Sender
 	errors utils.ErrorUtils
 }
 
 func NewBaseErrorHandler(
 	logger v4.Logger,
-	sender Sender,
+	sender helpers.Sender,
 	errors utils.ErrorUtils,
 ) (BaseErrorHandler, error) {
 	return BaseErrorHandler{
