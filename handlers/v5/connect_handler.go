@@ -2,11 +2,10 @@ package v5
 
 import (
 	"net"
-	"socks/config/v5"
+	"socks/handlers/v5/helpers"
 	v52 "socks/logger/v5"
 	"socks/transfer"
 	"socks/utils"
-	"time"
 )
 
 type ConnectHandler interface {
@@ -14,28 +13,27 @@ type ConnectHandler interface {
 }
 
 type BaseConnectHandler struct {
-	config        v5.Config
 	streamHandler transfer.StreamHandler
 	logger        v52.Logger
 	utils         utils.AddressUtils
-	sender        Sender
+	sender        helpers.Sender
 	errorHandler  ErrorHandler
-	whitelist     Whitelist
-	blacklist     Blacklist
+	whitelist     helpers.Whitelist
+	blacklist     helpers.Blacklist
+	dialer        helpers.Dialer
 }
 
 func NewBaseConnectHandler(
-	config v5.Config,
 	streamHandler transfer.StreamHandler,
 	logger v52.Logger,
 	addressUtils utils.AddressUtils,
-	sender Sender,
+	sender helpers.Sender,
 	errorHandler ErrorHandler,
-	whitelist Whitelist,
-	blacklist Blacklist,
+	whitelist helpers.Whitelist,
+	blacklist helpers.Blacklist,
+	dialer helpers.Dialer,
 ) (BaseConnectHandler, error) {
 	return BaseConnectHandler{
-		config:        config,
 		streamHandler: streamHandler,
 		logger:        logger,
 		utils:         addressUtils,
@@ -43,37 +41,12 @@ func NewBaseConnectHandler(
 		errorHandler:  errorHandler,
 		whitelist:     whitelist,
 		blacklist:     blacklist,
+		dialer:        dialer,
 	}, nil
 }
 
 func (b BaseConnectHandler) HandleConnect(name string, address string, client net.Conn) {
-	whitelisted := b.whitelist.IsWhitelisted(name, address)
-
-	if whitelisted {
-		b.sender.SendConnectionNotAllowedAndClose(client)
-
-		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
-
-		return
-	}
-
-	blacklisted := b.blacklist.IsBlacklisted(name, address)
-
-	if blacklisted {
-		b.sender.SendConnectionNotAllowedAndClose(client)
-
-		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
-
-		return
-	}
-
-	b.connect(address, client)
-}
-
-func (b BaseConnectHandler) connect(address string, client net.Conn) {
-	deadline := time.Second * time.Duration(b.config.GetConnectDeadline())
-
-	host, err := net.DialTimeout("tcp", address, deadline)
+	host, err := b.dialer.Dial(address)
 
 	if err != nil {
 		b.errorHandler.HandleDialError(err, address, client)

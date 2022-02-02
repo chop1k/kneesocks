@@ -16,8 +16,15 @@
   "SocksV4": {
     "AllowConnect": true,
     "AllowBind": true,
-    "ConnectDeadline": 120,
-    "BindDeadline": 120,
+    "Deadline": {
+      "Request": 10,
+      "Response": 10,
+      "Connect": 60,
+      "Bind": 60,
+      "Transfer": 60
+    },
+    "ConnectDeadline": 60,
+    "BindDeadline": 60,
     "Restrictions": {
       "Blacklist": [],
       "Whitelist": []
@@ -26,8 +33,15 @@
   "SocksV4a": {
     "AllowConnect": true,
     "AllowBind": true,
-    "ConnectDeadline": 120,
-    "BindDeadline": 120,
+    "Deadline": {
+      "Request": 10,
+      "Response": 10,
+      "Connect": 60,
+      "Bind": 60,
+      "Transfer": 60
+    },
+    "ConnectDeadline": 60,
+    "BindDeadline": 60,
     "Restrictions": {
       "Blacklist": [],
       "Whitelist": []
@@ -44,8 +58,17 @@
       "no-authentication",
       "name/password"
     ],
-    "ConnectDeadline": 120,
-    "BindDeadline": 120,
+    "Deadline": {
+      "Methods": 5,
+      "Selection": 5,
+      "Password": 5,
+      "PasswordResponse": 5,
+      "Request": 5,
+      "Response": 10,
+      "Connect": 60,
+      "Bind": 60,
+      "Transfer": 60
+    },
     "Users": {
       "test": {
         "Password": "test",

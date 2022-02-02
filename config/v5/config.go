@@ -5,8 +5,6 @@ import "socks/config/tree"
 type Config interface {
 	IsConnectAllowed() bool
 	IsBindAllowed() bool
-	GetConnectDeadline() uint
-	GetBindDeadline() uint
 	IsUdpAssociationAllowed() bool
 	IsIPv4Allowed() bool
 	IsIPv6Allowed() bool
@@ -29,14 +27,6 @@ func (b BaseConfig) IsConnectAllowed() bool {
 
 func (b BaseConfig) IsBindAllowed() bool {
 	return b.config.SocksV5.AllowBind
-}
-
-func (b BaseConfig) GetConnectDeadline() uint {
-	return b.config.SocksV5.ConnectDeadline
-}
-
-func (b BaseConfig) GetBindDeadline() uint {
-	return b.config.SocksV5.BindDeadline
 }
 
 func (b BaseConfig) IsUdpAssociationAllowed() bool {

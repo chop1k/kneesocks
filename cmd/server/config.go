@@ -242,9 +242,20 @@ func registerV5Config(builder di.Builder) {
 		},
 	}
 
+	deadlineDef := di.Def{
+		Name:  "v5_deadline_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return v53.NewBaseDeadlineConfig(cfg)
+		},
+	}
+
 	err := builder.Add(
 		loggerConfigDef,
 		configDef,
+		deadlineDef,
 	)
 
 	if err != nil {

@@ -23,6 +23,14 @@ func registerManagers(builder di.Builder) {
 		},
 	}
 
+	deadlineDef := di.Def{
+		Name:  "deadline_manager",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return managers.NewBaseDeadlineManager()
+		},
+	}
+
 	whitelistManagerDef := di.Def{
 		Name:  "whitelist_manager",
 		Scope: di.App,
@@ -46,6 +54,7 @@ func registerManagers(builder di.Builder) {
 	err := builder.Add(
 		bindManagerDef,
 		udpAssociationManagerDef,
+		deadlineDef,
 		whitelistManagerDef,
 		blacklistManagerDef,
 	)

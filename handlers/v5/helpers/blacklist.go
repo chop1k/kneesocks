@@ -1,4 +1,4 @@
-package v5
+package helpers
 
 import (
 	"socks/config/v5"

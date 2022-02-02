@@ -3,7 +3,7 @@ package v5
 import (
 	"fmt"
 	"net"
-	v52 "socks/config/v5"
+	"socks/handlers/v5/helpers"
 	v53 "socks/logger/v5"
 	v5 "socks/protocol/v5"
 )
@@ -13,41 +13,41 @@ type Handler interface {
 }
 
 type BaseHandler struct {
-	protocol              v5.Protocol
 	parser                v5.Parser
-	config                v52.Config
 	authenticationHandler AuthenticationHandler
 	logger                v53.Logger
 	connectHandler        ConnectHandler
 	bindHandler           BindHandler
 	udpAssociationHandler UdpAssociationHandler
-	sender                Sender
 	errorHandler          ErrorHandler
+	sender                helpers.Sender
+	receiver              helpers.Receiver
+	validator             helpers.Validator
 }
 
 func NewBaseHandler(
-	protocol v5.Protocol,
 	parser v5.Parser,
-	config v52.Config,
 	authenticationHandler AuthenticationHandler,
 	logger v53.Logger,
 	connectHandler ConnectHandler,
 	bindHandler BindHandler,
 	udpAssociationHandler UdpAssociationHandler,
-	sender Sender,
 	errorHandler ErrorHandler,
+	sender helpers.Sender,
+	receiver helpers.Receiver,
+	validator helpers.Validator,
 ) (BaseHandler, error) {
 	return BaseHandler{
-		protocol:              protocol,
 		parser:                parser,
-		config:                config,
 		authenticationHandler: authenticationHandler,
 		logger:                logger,
 		connectHandler:        connectHandler,
 		bindHandler:           bindHandler,
 		udpAssociationHandler: udpAssociationHandler,
-		sender:                sender,
 		errorHandler:          errorHandler,
+		sender:                sender,
+		receiver:              receiver,
+		validator:             validator,
 	}, nil
 }
 
@@ -80,7 +80,7 @@ func (b BaseHandler) handleAuthentication(methods v5.MethodsChunk, client net.Co
 }
 
 func (b BaseHandler) handleChunk(name string, client net.Conn) {
-	chunk, err := b.protocol.ReceiveRequest(client)
+	chunk, err := b.receiver.ReceiveRequest(client)
 
 	if err != nil {
 		b.errorHandler.HandleReceiveRequestError(err, client)
@@ -88,68 +88,34 @@ func (b BaseHandler) handleChunk(name string, client net.Conn) {
 		return
 	}
 
-	b.handleAddress(name, chunk, client)
+	b.handleCommand(name, chunk, client)
 }
 
-func (b BaseHandler) handleAddress(name string, chunk v5.RequestChunk, client net.Conn) {
-	if chunk.AddressType == 1 {
-		b.handleIPv4(name, chunk, client)
-	} else if chunk.AddressType == 3 {
-		b.handleDomain(name, chunk, client)
-	} else if chunk.AddressType == 4 {
-		b.handleIPv6(name, chunk, client)
+func (b BaseHandler) handleCommand(name string, chunk v5.RequestChunk, client net.Conn) {
+	var address string
+
+	if chunk.AddressType == 4 {
+		address = fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
+	} else if chunk.AddressType == 1 || chunk.AddressType == 3 {
+		address = fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
 	} else {
 		b.errorHandler.HandleInvalidAddressTypeError(chunk.AddressType, chunk.Address, client)
 
 		return
 	}
-}
 
-func (b BaseHandler) handleIPv4(name string, chunk v5.RequestChunk, client net.Conn) {
-	address := fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
-
-	if !b.config.IsIPv4Allowed() {
-		b.errorHandler.HandleIPv4AddressNotAllowed(address, client)
-
+	if !b.validator.ValidateRestrictions(chunk.CommandCode, name, chunk.AddressType, address, client) {
 		return
 	}
 
-	b.handleCommand(name, chunk.CommandCode, address, client)
-}
-
-func (b BaseHandler) handleDomain(name string, chunk v5.RequestChunk, client net.Conn) {
-	address := fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
-
-	if !b.config.IsDomainAllowed() {
-		b.errorHandler.HandleDomainAddressNotAllowed(address, client)
-
-		return
-	}
-
-	b.handleCommand(name, chunk.CommandCode, address, client)
-}
-
-func (b BaseHandler) handleIPv6(name string, chunk v5.RequestChunk, client net.Conn) {
-	address := fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
-
-	if !b.config.IsIPv6Allowed() {
-		b.errorHandler.HandleIPv6AddressNotAllowed(address, client)
-
-		return
-	}
-
-	b.handleCommand(name, chunk.CommandCode, address, client)
-}
-
-func (b BaseHandler) handleCommand(name string, command byte, address string, client net.Conn) {
-	if command == 1 {
+	if chunk.CommandCode == 1 {
 		b.handleConnect(name, address, client)
-	} else if command == 2 {
+	} else if chunk.CommandCode == 2 {
 		b.handleBind(name, address, client)
-	} else if command == 3 {
+	} else if chunk.CommandCode == 3 {
 		b.handleUdpAssociate(name, address, client)
 	} else {
-		b.errorHandler.HandleUnknownCommandError(command, address, client)
+		b.errorHandler.HandleUnknownCommandError(chunk.CommandCode, address, client)
 
 		return
 	}
@@ -158,41 +124,17 @@ func (b BaseHandler) handleCommand(name string, command byte, address string, cl
 func (b BaseHandler) handleConnect(name string, address string, client net.Conn) {
 	b.logger.Connect.Request(client.RemoteAddr().String(), address)
 
-	if !b.config.IsConnectAllowed() {
-		b.sender.SendConnectionNotAllowedAndClose(client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return
-	}
-
 	b.connectHandler.HandleConnect(name, address, client)
 }
 
 func (b BaseHandler) handleBind(name string, address string, client net.Conn) {
 	b.logger.Bind.Request(client.RemoteAddr().String(), address)
 
-	if !b.config.IsBindAllowed() {
-		b.sender.SendConnectionNotAllowedAndClose(client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return
-	}
-
 	b.bindHandler.HandleBind(name, address, client)
 }
 
-func (b BaseHandler) handleUdpAssociate(name string, address string, client net.Conn) {
+func (b BaseHandler) handleUdpAssociate(name string, _ string, client net.Conn) {
 	b.logger.Association.Request(client.RemoteAddr().String())
-
-	if !b.config.IsUdpAssociationAllowed() {
-		b.sender.SendConnectionNotAllowedAndClose(client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return
-	}
 
 	b.udpAssociationHandler.HandleUdpAssociation(name, client)
 }
