@@ -16,6 +16,7 @@ var (
 
 type DeadlineManager interface {
 	Read(deadline uint, bufferLength int, reader io.Reader) ([]byte, error)
+	Write(deadline uint, data []byte, writer io.Writer) error
 }
 
 type BaseDeadlineManager struct {
@@ -55,7 +56,7 @@ func (b BaseDeadlineManager) Read(deadline uint, bufferLength int, reader io.Rea
 	case data, ok := <-read:
 		closed = true
 
-		b.cleanUp(read, err, timer)
+		b.readCleanUp(read, err, timer)
 
 		if !ok {
 			return nil, ReadChannelClosedError
@@ -65,7 +66,7 @@ func (b BaseDeadlineManager) Read(deadline uint, bufferLength int, reader io.Rea
 	case _, ok := <-timer.C:
 		closed = true
 
-		b.cleanUp(read, err, timer)
+		b.readCleanUp(read, err, timer)
 
 		if !ok {
 			return nil, TimerChannelClosedError
@@ -75,7 +76,7 @@ func (b BaseDeadlineManager) Read(deadline uint, bufferLength int, reader io.Rea
 	case readErr, ok := <-err:
 		closed = true
 
-		b.cleanUp(read, err, timer)
+		b.readCleanUp(read, err, timer)
 
 		if !ok {
 			return nil, ErrChannelClosedError
@@ -85,8 +86,73 @@ func (b BaseDeadlineManager) Read(deadline uint, bufferLength int, reader io.Rea
 	}
 }
 
-func (b BaseDeadlineManager) cleanUp(read chan []byte, err chan error, timer *time.Timer) {
+func (b BaseDeadlineManager) readCleanUp(read chan []byte, err chan error, timer *time.Timer) {
 	close(read)
+	close(err)
+
+	timer.Stop()
+}
+
+func (b BaseDeadlineManager) Write(deadline uint, data []byte, writer io.Writer) error {
+	closed := false
+
+	done := make(chan bool, 1)
+	err := make(chan error, 1)
+
+	timer := time.NewTimer(time.Second * time.Duration(deadline))
+
+	go func() {
+		_, writeErr := writer.Write(data)
+
+		if closed {
+			return
+		}
+
+		if writeErr != nil {
+			err <- writeErr
+
+			return
+		}
+
+		done <- true
+	}()
+
+	select {
+	case _, ok := <-done:
+		closed = true
+
+		b.writeCleanUp(done, err, timer)
+
+		if !ok {
+			return WriteChannelClosedError
+		}
+
+		return nil
+	case _, ok := <-timer.C:
+		closed = true
+
+		b.writeCleanUp(done, err, timer)
+
+		if !ok {
+			return TimerChannelClosedError
+		}
+
+		return TimeoutError
+	case readErr, ok := <-err:
+		closed = true
+
+		b.writeCleanUp(done, err, timer)
+
+		if !ok {
+			return ErrChannelClosedError
+		}
+
+		return readErr
+	}
+}
+
+func (b BaseDeadlineManager) writeCleanUp(done chan bool, err chan error, timer *time.Timer) {
+	close(done)
 	close(err)
 
 	timer.Stop()

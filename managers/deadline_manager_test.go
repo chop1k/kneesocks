@@ -70,3 +70,59 @@ func TestBaseDeadlineManager_ReadReturnsError(t *testing.T) {
 
 	require.Nil(t, i)
 }
+
+type WriterMock struct {
+	Wait uint
+	Err  error
+}
+
+func (w WriterMock) Write(_ []byte) (n int, err error) {
+	time.Sleep(time.Second * time.Duration(w.Wait))
+
+	return 0, w.Err
+}
+
+func TestBaseDeadlineManager_Write(t *testing.T) {
+	manager, err := NewBaseDeadlineManager()
+
+	require.NoError(t, err)
+
+	writer := WriterMock{
+		Wait: 0,
+		Err:  nil,
+	}
+
+	writeErr := manager.Write(2, []byte{}, writer)
+
+	require.NoError(t, writeErr)
+}
+
+func TestBaseDeadlineManager_WriteReturnsTimeoutError(t *testing.T) {
+	manager, err := NewBaseDeadlineManager()
+
+	require.NoError(t, err)
+
+	writer := WriterMock{
+		Wait: 2,
+		Err:  nil,
+	}
+
+	writeErr := manager.Write(2, []byte{}, writer)
+
+	require.ErrorIs(t, TimeoutError, writeErr)
+}
+
+func TestBaseDeadlineManager_WriteReturnsError(t *testing.T) {
+	manager, err := NewBaseDeadlineManager()
+
+	require.NoError(t, err)
+
+	writer := WriterMock{
+		Wait: 0,
+		Err:  testError,
+	}
+
+	writeErr := manager.Write(2, []byte{}, writer)
+
+	require.ErrorIs(t, testError, writeErr)
+}
