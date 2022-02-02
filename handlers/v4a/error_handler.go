@@ -2,6 +2,7 @@ package v4a
 
 import (
 	"net"
+	"socks/handlers/v4a/helpers"
 	"socks/logger/v4a"
 	"socks/managers"
 	"socks/utils"
@@ -24,13 +25,13 @@ type ErrorHandler interface {
 
 type BaseErrorHandler struct {
 	logger v4a.Logger
-	sender Sender
+	sender helpers.Sender
 	errors utils.ErrorUtils
 }
 
 func NewBaseErrorHandler(
 	logger v4a.Logger,
-	sender Sender,
+	sender helpers.Sender,
 	errors utils.ErrorUtils,
 ) (BaseErrorHandler, error) {
 	return BaseErrorHandler{

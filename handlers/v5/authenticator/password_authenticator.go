@@ -5,6 +5,7 @@ import (
 	"net"
 	v52 "socks/config/v5"
 	"socks/handlers/v5"
+	"socks/handlers/v5/authenticator/helpers"
 	"socks/protocol/auth/password"
 )
 
@@ -16,18 +17,25 @@ type BasePasswordAuthenticator struct {
 	password     password.Password
 	config       v52.Config
 	errorHandler v5.ErrorHandler
+	receiver     helpers.Receiver
 }
 
-func NewBasePasswordAuthenticator(password password.Password, config v52.Config, errorHandler v5.ErrorHandler) (BasePasswordAuthenticator, error) {
+func NewBasePasswordAuthenticator(
+	password password.Password,
+	config v52.Config,
+	errorHandler v5.ErrorHandler,
+	receiver helpers.Receiver,
+) (BasePasswordAuthenticator, error) {
 	return BasePasswordAuthenticator{
 		password:     password,
 		config:       config,
 		errorHandler: errorHandler,
+		receiver:     receiver,
 	}, nil
 }
 
 func (b BasePasswordAuthenticator) Authenticate(client net.Conn) (string, error) {
-	request, err := b.password.ReceiveRequest(client)
+	request, err := b.receiver.ReceivePassword(client)
 
 	if err != nil {
 		//b.errorHandler.HandlePasswordReceiveRequestError(err, client)

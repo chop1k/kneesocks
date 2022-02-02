@@ -3,7 +3,7 @@ package v4a
 import (
 	"fmt"
 	"net"
-	v4a2 "socks/config/v4a"
+	"socks/handlers/v4a/helpers"
 	v4a3 "socks/logger/v4a"
 	"socks/protocol/v4a"
 )
@@ -14,31 +14,31 @@ type Handler interface {
 
 type BaseHandler struct {
 	parser         v4a.Parser
-	config         v4a2.Config
 	logger         v4a3.Logger
 	connectHandler ConnectHandler
 	bindHandler    BindHandler
-	sender         Sender
+	sender         helpers.Sender
 	errorHandler   ErrorHandler
+	validator      helpers.Validator
 }
 
 func NewBaseHandler(
 	parser v4a.Parser,
-	config v4a2.Config,
 	logger v4a3.Logger,
 	connectHandler ConnectHandler,
 	bindHandler BindHandler,
-	sender Sender,
+	sender helpers.Sender,
 	errorHandler ErrorHandler,
+	validator helpers.Validator,
 ) (BaseHandler, error) {
 	return BaseHandler{
 		parser:         parser,
-		config:         config,
 		logger:         logger,
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
 		sender:         sender,
 		errorHandler:   errorHandler,
+		validator:      validator,
 	}, nil
 }
 
@@ -53,6 +53,10 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 
 	address := fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)
 
+	if !b.validator.ValidateRestrictions(chunk.CommandCode, address, client) {
+		return
+	}
+
 	if chunk.CommandCode == 1 {
 		b.handleConnect(address, client)
 	} else if chunk.CommandCode == 2 {
@@ -65,27 +69,11 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 func (b BaseHandler) handleConnect(address string, client net.Conn) {
 	b.logger.Connect.Request(client.RemoteAddr().String(), address)
 
-	if !b.config.IsConnectAllowed() {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return
-	}
-
 	b.connectHandler.HandleConnect(address, client)
 }
 
 func (b BaseHandler) handleBind(address string, client net.Conn) {
 	b.logger.Bind.Request(client.RemoteAddr().String(), address)
-
-	if !b.config.IsBindAllowed() {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return
-	}
 
 	b.bindHandler.HandleBind(address, client)
 }

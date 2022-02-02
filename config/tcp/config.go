@@ -8,7 +8,6 @@ type Config interface {
 	GetBindZone() string
 	GetClientBufferSize() uint
 	GetHostBufferSize() uint
-	GetExchangeDeadline() uint
 }
 
 type BaseConfig struct {
@@ -37,8 +36,4 @@ func (b BaseConfig) GetClientBufferSize() uint {
 
 func (b BaseConfig) GetHostBufferSize() uint {
 	return b.config.Tcp.HostBufferSize
-}
-
-func (b BaseConfig) GetExchangeDeadline() uint {
-	return b.config.Tcp.ExchangeDeadline
 }

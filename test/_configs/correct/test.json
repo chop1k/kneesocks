@@ -5,7 +5,10 @@
     "BindZone": "",
     "ClientBufferSize": 512,
     "HostBufferSize": 512,
-    "ExchangeDeadline": 60
+    "Deadline": {
+      "Welcome": 2,
+      "Exchange": 15
+    }
   },
   "Udp": {
     "BindIP": "127.0.0.1",
@@ -34,14 +37,11 @@
     "AllowConnect": true,
     "AllowBind": true,
     "Deadline": {
-      "Request": 10,
       "Response": 10,
       "Connect": 60,
       "Bind": 60,
       "Transfer": 60
     },
-    "ConnectDeadline": 60,
-    "BindDeadline": 60,
     "Restrictions": {
       "Blacklist": [],
       "Whitelist": []
@@ -59,7 +59,6 @@
       "name/password"
     ],
     "Deadline": {
-      "Methods": 5,
       "Selection": 5,
       "Password": 5,
       "PasswordResponse": 5,

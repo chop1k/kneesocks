@@ -2,13 +2,11 @@ package v4a
 
 import (
 	"net"
-	"socks/config/v4"
-	"socks/config/v4a"
+	"socks/handlers/v4a/helpers"
 	v4a2 "socks/logger/v4a"
 	"socks/managers"
 	"socks/transfer"
 	"socks/utils"
-	"time"
 )
 
 type BindHandler interface {
@@ -16,66 +14,36 @@ type BindHandler interface {
 }
 
 type BaseBindHandler struct {
-	config        v4a.Config
 	logger        v4a2.Logger
 	streamHandler transfer.StreamHandler
 	bindManager   managers.BindManager
 	utils         utils.AddressUtils
-	sender        Sender
-	whitelist     Whitelist
-	blacklist     Blacklist
+	sender        helpers.Sender
 	errorHandler  ErrorHandler
+	receiver      helpers.Receiver
 }
 
 func NewBaseBindHandler(
-	config v4.Config,
 	logger v4a2.Logger,
 	streamHandler transfer.StreamHandler,
 	bindManager managers.BindManager,
 	utils utils.AddressUtils,
-	sender Sender,
-	whitelist Whitelist,
-	blacklist Blacklist,
+	sender helpers.Sender,
 	errorHandler ErrorHandler,
+	receiver helpers.Receiver,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
-		config:        config,
 		logger:        logger,
 		streamHandler: streamHandler,
 		bindManager:   bindManager,
 		utils:         utils,
 		sender:        sender,
-		whitelist:     whitelist,
-		blacklist:     blacklist,
 		errorHandler:  errorHandler,
+		receiver:      receiver,
 	}, nil
 }
 
 func (b BaseBindHandler) HandleBind(address string, client net.Conn) {
-	whitelisted := b.whitelist.IsWhitelisted(address)
-
-	if whitelisted {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
-
-		return
-	}
-
-	blacklisted := b.blacklist.IsBlacklisted(address)
-
-	if blacklisted {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
-
-		return
-	}
-
-	b.bind(address, client)
-}
-
-func (b BaseBindHandler) bind(address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
@@ -104,9 +72,7 @@ func (b BaseBindHandler) bindSendFirstResponse(address string, client net.Conn) 
 }
 
 func (b BaseBindHandler) bindWait(address string, client net.Conn) {
-	deadline := time.Second * time.Duration(b.config.GetBindDeadline())
-
-	host, err := b.bindManager.ReceiveHost(address, deadline)
+	host, err := b.receiver.ReceiveHost(address)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerReceiveHostError(err, address, client)
@@ -144,7 +110,21 @@ func (b BaseBindHandler) bindCheckAddress(address string, host net.Conn, client 
 }
 
 func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string, hostPort uint16, host net.Conn, client net.Conn) {
-	ip := net.ParseIP(hostAddr).To4()
+	ip := net.ParseIP(hostAddr)
+
+	if ip == nil {
+		b.errorHandler.HandleInvalidAddressTypeError(address, client, host)
+
+		return
+	}
+
+	ip = ip.To4()
+
+	if ip == nil {
+		b.errorHandler.HandleInvalidAddressTypeError(address, client, host)
+
+		return
+	}
 
 	err := b.sender.SendSuccessWithParameters(ip, hostPort, client)
 

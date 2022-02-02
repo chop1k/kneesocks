@@ -1,4 +1,4 @@
-package v4a
+package helpers
 
 import (
 	"socks/config/v4a"

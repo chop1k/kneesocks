@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net"
-	"socks/config/tcp"
+	"socks/handlers/helpers"
 	"socks/handlers/v4"
 	"socks/handlers/v4a"
 	"socks/handlers/v5"
@@ -11,7 +11,6 @@ import (
 	"socks/managers"
 	"socks/transfer"
 	"socks/utils"
-	"time"
 )
 
 type ConnectionHandler interface {
@@ -26,7 +25,7 @@ type BaseConnectionHandler struct {
 	bindManager   managers.BindManager
 	utils         utils.AddressUtils
 	logger        tcp2.Logger
-	config        tcp.Config
+	receiver      helpers.Receiver
 }
 
 func NewBaseConnectionHandler(
@@ -37,7 +36,7 @@ func NewBaseConnectionHandler(
 	bindManager managers.BindManager,
 	utils utils.AddressUtils,
 	logger tcp2.Logger,
-	config tcp.Config,
+	receiver helpers.Receiver,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
 		streamHandler: streamHandler,
@@ -47,14 +46,12 @@ func NewBaseConnectionHandler(
 		bindManager:   bindManager,
 		utils:         utils,
 		logger:        logger,
-		config:        config,
+		receiver:      receiver,
 	}, nil
 }
 
 func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
-	buffer := make([]byte, 512)
-
-	i, err := client.Read(buffer)
+	buffer, err := b.receiver.ReceiveWelcome(client)
 
 	if err != nil {
 		_ = client.Close()
@@ -62,7 +59,7 @@ func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
 		return
 	}
 
-	b.checkProtocol(buffer[:i], client)
+	b.checkProtocol(buffer, client)
 }
 
 func (b BaseConnectionHandler) checkProtocol(request []byte, client net.Conn) {
@@ -127,13 +124,13 @@ func (b BaseConnectionHandler) checkBound(request []byte, client net.Conn) {
 	}
 }
 
-func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client net.Conn) {
-	hostAddr, hostPort, parseErr := b.utils.ParseAddress(addr)
+func (b BaseConnectionHandler) checkDomain(request []byte, address string, client net.Conn) {
+	hostAddr, hostPort, parseErr := b.utils.ParseAddress(address)
 
 	if parseErr != nil {
 		_ = client.Close()
 
-		b.logger.Errors.AddressParseError(addr, parseErr)
+		b.logger.Errors.AddressParseError(address, parseErr)
 
 		return
 	}
@@ -160,28 +157,26 @@ func (b BaseConnectionHandler) checkDomain(request []byte, addr string, client n
 
 	_ = client.Close()
 
-	b.logger.Connection.Denied(addr)
+	b.logger.Connection.Denied(address)
 }
 
-func (b BaseConnectionHandler) exchange(request []byte, addr string, client net.Conn) {
-	err := b.bindManager.SendHost(addr, client)
+func (b BaseConnectionHandler) exchange(request []byte, address string, client net.Conn) {
+	err := b.bindManager.SendHost(address, client)
 
 	if err != nil {
 		_ = client.Close()
 
-		b.logger.Errors.SendHostError(addr, err)
+		b.logger.Errors.SendHostError(address, err)
 
 		return
 	}
 
-	deadline := time.Second * time.Duration(b.config.GetExchangeDeadline())
-
-	host, receiveErr := b.bindManager.ReceiveClient(addr, deadline)
+	host, receiveErr := b.receiver.ReceiveClient(address)
 
 	if receiveErr != nil {
 		_ = client.Close()
 
-		b.logger.Errors.ReceiveClientError(addr, receiveErr)
+		b.logger.Errors.ReceiveClientError(address, receiveErr)
 
 		return
 	}

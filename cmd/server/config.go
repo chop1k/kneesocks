@@ -108,6 +108,16 @@ func registerTcpConfig(builder di.Builder) {
 		},
 	}
 
+	deadlineDef := di.Def{
+		Name:  "tcp_deadline_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return tcp.NewBaseDeadlineConfig(cfg)
+		},
+	}
+
 	configDef := di.Def{
 		Name:  "tcp_config",
 		Scope: di.App,
@@ -120,6 +130,7 @@ func registerTcpConfig(builder di.Builder) {
 
 	err := builder.Add(
 		loggerConfigDef,
+		deadlineDef,
 		configDef,
 	)
 
@@ -201,6 +212,16 @@ func registerV4aConfig(builder di.Builder) {
 		},
 	}
 
+	deadlineDef := di.Def{
+		Name:  "v4a_deadline_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return v4a3.NewBaseDeadlineConfig(cfg)
+		},
+	}
+
 	configDef := di.Def{
 		Name:  "v4a_config",
 		Scope: di.App,
@@ -213,6 +234,7 @@ func registerV4aConfig(builder di.Builder) {
 
 	err := builder.Add(
 		loggerConfigDef,
+		deadlineDef,
 		configDef,
 	)
 

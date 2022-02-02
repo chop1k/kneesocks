@@ -50,20 +50,6 @@ func NewProtocol(builder Builder, parser Parser) Protocol {
 	}
 }
 
-func (p Protocol) ReceiveRequest(client net.Conn) (RequestChunk, error) {
-	request := make([]byte, 1024)
-
-	i, err := client.Read(request)
-
-	if err != nil {
-		_ = client.Close()
-
-		return RequestChunk{}, err
-	}
-
-	return p.parser.ParseRequest(request[:i])
-}
-
 func (p Protocol) SelectMethod(method byte, client net.Conn) error {
 	selection := MethodSelectionChunk{
 		SocksVersion: 5,

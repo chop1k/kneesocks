@@ -22,18 +22,6 @@ func NewPassword(parser Parser, builder Builder) Password {
 	return Password{parser: parser, builder: builder}
 }
 
-func (p Password) ReceiveRequest(client net.Conn) (RequestChunk, error) {
-	buffer := make([]byte, 600)
-
-	i, err := client.Read(buffer)
-
-	if err != nil {
-		return RequestChunk{}, err
-	}
-
-	return p.parser.ParseRequest(buffer[:i])
-}
-
 func (p Password) ResponseWith(code byte, client net.Conn) error {
 	bytes, err := p.builder.BuildResponse(ResponseChunk{
 		Version: 1,

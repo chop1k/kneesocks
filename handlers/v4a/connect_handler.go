@@ -2,10 +2,9 @@ package v4a
 
 import (
 	"net"
-	"socks/config/v4a"
+	"socks/handlers/v4a/helpers"
 	v4a2 "socks/logger/v4a"
 	"socks/transfer"
-	"time"
 )
 
 type ConnectHandler interface {
@@ -13,63 +12,31 @@ type ConnectHandler interface {
 }
 
 type BaseConnectHandler struct {
-	config        v4a.Config
 	streamHandler transfer.StreamHandler
 	logger        v4a2.Logger
-	sender        Sender
+	sender        helpers.Sender
 	errorHandler  ErrorHandler
-	whitelist     Whitelist
-	blacklist     Blacklist
+	dialer        helpers.Dialer
 }
 
 func NewBaseConnectHandler(
-	config v4a.Config,
 	streamHandler transfer.StreamHandler,
 	logger v4a2.Logger,
-	sender Sender,
+	sender helpers.Sender,
 	errorHandler ErrorHandler,
-	whitelist Whitelist,
-	blacklist Blacklist,
+	dialer helpers.Dialer,
 ) (BaseConnectHandler, error) {
 	return BaseConnectHandler{
-		config:        config,
 		streamHandler: streamHandler,
 		logger:        logger,
 		sender:        sender,
 		errorHandler:  errorHandler,
-		whitelist:     whitelist,
-		blacklist:     blacklist,
+		dialer:        dialer,
 	}, nil
 }
 
 func (b BaseConnectHandler) HandleConnect(address string, client net.Conn) {
-	whitelisted := b.whitelist.IsWhitelisted(address)
-
-	if whitelisted {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
-
-		return
-	}
-
-	blacklisted := b.blacklist.IsBlacklisted(address)
-
-	if blacklisted {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
-
-		return
-	}
-
-	b.connect(address, client)
-}
-
-func (b BaseConnectHandler) connect(address string, client net.Conn) {
-	deadline := time.Second * time.Duration(b.config.GetConnectDeadline())
-
-	host, err := net.DialTimeout("tcp", address, deadline)
+	host, err := b.dialer.Dial(address)
 
 	if err != nil {
 		b.errorHandler.HandleDialError(err, address, client)

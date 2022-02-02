@@ -1,12 +1,10 @@
-package v5
+package v4a
 
 import "socks/config/tree"
 
 type DeadlineConfig interface {
-	GetRequestDeadline() uint
 	GetConnectDeadline() uint
 	GetBindDeadline() uint
-	GetPasswordDeadline() uint
 }
 
 type BaseDeadlineConfig struct {
@@ -17,18 +15,10 @@ func NewBaseDeadlineConfig(tree tree.Config) (BaseDeadlineConfig, error) {
 	return BaseDeadlineConfig{tree: tree}, nil
 }
 
-func (b BaseDeadlineConfig) GetRequestDeadline() uint {
-	return b.tree.SocksV5.Deadline.Request
-}
-
 func (b BaseDeadlineConfig) GetConnectDeadline() uint {
-	return b.tree.SocksV5.Deadline.Connect
+	return b.tree.SocksV4a.Deadline.Connect
 }
 
 func (b BaseDeadlineConfig) GetBindDeadline() uint {
-	return b.tree.SocksV5.Deadline.Bind
-}
-
-func (b BaseDeadlineConfig) GetPasswordDeadline() uint {
-	return b.tree.SocksV5.Deadline.Password
+	return b.tree.SocksV4a.Deadline.Bind
 }

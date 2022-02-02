@@ -10,7 +10,6 @@ import (
 )
 
 type Receiver interface {
-	ReceiveMethods(reader io.Reader) (v5.MethodsChunk, error)
 	ReceiveRequest(reader io.Reader) (v5.RequestChunk, error)
 	ReceiveHost(address string) (net.Conn, error)
 }
@@ -34,16 +33,6 @@ func NewBaseReceiver(
 		parser:      parser,
 		bindManager: bindManager,
 	}, nil
-}
-
-func (b BaseReceiver) ReceiveMethods(reader io.Reader) (v5.MethodsChunk, error) {
-	chunk, err := b.deadline.Read(b.config.GetMethodsDeadline(), 258, reader)
-
-	if err != nil {
-		return v5.MethodsChunk{}, err
-	}
-
-	return b.parser.ParseMethods(chunk)
 }
 
 func (b BaseReceiver) ReceiveRequest(reader io.Reader) (v5.RequestChunk, error) {

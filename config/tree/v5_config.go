@@ -23,7 +23,6 @@ type Restrictions struct {
 }
 
 type SocksV5DeadlineConfig struct {
-	Methods          uint `validate:"required"`
 	Selection        uint `validate:"required"`
 	Password         uint `validate:"required"`
 	PasswordResponse uint `validate:"required"`
