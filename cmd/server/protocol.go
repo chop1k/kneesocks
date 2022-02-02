@@ -76,20 +76,9 @@ func registerV4Protocol(builder di.Builder) {
 		},
 	}
 
-	protocolDef := di.Def{
-		Name:  "v4",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			builder := ctn.Get("v4_builder").(v4.Builder)
-
-			return v4.NewProtocol(builder), nil
-		},
-	}
-
 	err := builder.Add(
 		parserDef,
 		builderDef,
-		protocolDef,
 	)
 
 	if err != nil {
