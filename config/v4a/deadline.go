@@ -5,6 +5,7 @@ import "socks/config/tree"
 type DeadlineConfig interface {
 	GetConnectDeadline() uint
 	GetBindDeadline() uint
+	GetResponseDeadline() uint
 }
 
 type BaseDeadlineConfig struct {
@@ -21,4 +22,8 @@ func (b BaseDeadlineConfig) GetConnectDeadline() uint {
 
 func (b BaseDeadlineConfig) GetBindDeadline() uint {
 	return b.tree.SocksV4a.Deadline.Bind
+}
+
+func (b BaseDeadlineConfig) GetResponseDeadline() uint {
+	return b.tree.SocksV4a.Deadline.Response
 }

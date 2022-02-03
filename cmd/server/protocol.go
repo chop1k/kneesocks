@@ -103,20 +103,9 @@ func registerV4aProtocol(builder di.Builder) {
 		},
 	}
 
-	protocolDef := di.Def{
-		Name:  "v4a",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			builder := ctn.Get("v4a_builder").(v4a.Builder)
-
-			return v4a.NewProtocol(builder), nil
-		},
-	}
-
 	err := builder.Add(
 		parserDef,
 		builderDef,
-		protocolDef,
 	)
 
 	if err != nil {

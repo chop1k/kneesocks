@@ -437,12 +437,16 @@ func registerV4aHelpers(builder di.Builder) {
 		Name:  "v4a_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v4a").(v4a.Protocol)
 			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
+			cfg := ctn.Get("v4a_deadline_config").(v43.DeadlineConfig)
+			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			builder := ctn.Get("v4a_builder").(v4a.Builder)
 
 			return helpers2.NewBaseSender(
-				protocol,
 				tcpConfig,
+				cfg,
+				deadlineManager,
+				builder,
 			)
 		},
 	}

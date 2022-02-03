@@ -34,7 +34,7 @@
     "AllowConnect": true,
     "AllowBind": true,
     "Deadline": {
-      "Response": 10,
+      "Response": 2,
       "Connect": 60,
       "Bind": 60,
       "Transfer": 60
