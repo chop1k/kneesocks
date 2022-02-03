@@ -4,6 +4,7 @@ import (
 	"net"
 	"socks/handlers/v4a/helpers"
 	v4a2 "socks/logger/v4a"
+	"socks/protocol/v4a"
 	"socks/transfer"
 )
 
@@ -14,7 +15,7 @@ type ConnectHandler interface {
 type BaseConnectHandler struct {
 	streamHandler transfer.StreamHandler
 	logger        v4a2.Logger
-	sender        helpers.Sender
+	sender        v4a.Sender
 	errorHandler  ErrorHandler
 	dialer        helpers.Dialer
 }
@@ -22,7 +23,7 @@ type BaseConnectHandler struct {
 func NewBaseConnectHandler(
 	streamHandler transfer.StreamHandler,
 	logger v4a2.Logger,
-	sender helpers.Sender,
+	sender v4a.Sender,
 	errorHandler ErrorHandler,
 	dialer helpers.Dialer,
 ) (BaseConnectHandler, error) {

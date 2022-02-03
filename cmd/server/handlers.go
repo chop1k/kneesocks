@@ -306,7 +306,7 @@ func registerV4aHandlers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			v4aLogger := ctn.Get("v4a_logger").(v4a4.Logger)
 			streamHandler := ctn.Get("stream_handler").(transfer.StreamHandler)
-			sender := ctn.Get("v4a_sender").(helpers2.Sender)
+			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			errorHandler := ctn.Get("v4a_error_handler").(v4a2.ErrorHandler)
 			dialer := ctn.Get("v4a_dialer").(helpers2.Dialer)
 
@@ -326,20 +326,18 @@ func registerV4aHandlers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			v4aLogger := ctn.Get("v4a_logger").(v4a4.Logger)
 			streamHandler := ctn.Get("stream_handler").(transfer.StreamHandler)
-			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-			sender := ctn.Get("v4a_sender").(helpers2.Sender)
+			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			errorHandler := ctn.Get("v4a_error_handler").(v4a2.ErrorHandler)
-			receiver := ctn.Get("v4a_receiver").(helpers2.Receiver)
+			binder := ctn.Get("v4a_binder").(helpers2.Binder)
 
 			return v4a2.NewBaseBindHandler(
 				v4aLogger,
 				streamHandler,
-				bindManager,
 				addressUtils,
 				sender,
 				errorHandler,
-				receiver,
+				binder,
 			)
 		},
 	}
@@ -352,7 +350,7 @@ func registerV4aHandlers(builder di.Builder) {
 			v4aLogger := ctn.Get("v4a_logger").(v4a4.Logger)
 			connectHandler := ctn.Get("v4a_connect_handler").(v4a2.ConnectHandler)
 			bindHandler := ctn.Get("v4a_bind_handler").(v4a2.BindHandler)
-			sender := ctn.Get("v4a_sender").(helpers2.Sender)
+			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			errorHandler := ctn.Get("v4a_error_handler").(v4a2.ErrorHandler)
 			validator := ctn.Get("v4a_validator").(helpers2.Validator)
 
@@ -372,7 +370,7 @@ func registerV4aHandlers(builder di.Builder) {
 		Name:  "v4a_error_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			sender := ctn.Get("v4a_sender").(helpers2.Sender)
+			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			v4Logger := ctn.Get("v4a_logger").(v4a4.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
@@ -399,6 +397,17 @@ func registerV4aHandlers(builder di.Builder) {
 }
 
 func registerV4aHelpers(builder di.Builder) {
+	binderDef := di.Def{
+		Name:  "v4a_binder",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4a_deadline_config").(v4a3.DeadlineConfig)
+			bindManager := ctn.Get("bind_manager").(managers.BindManager)
+
+			return helpers2.NewBaseBinder(cfg, bindManager)
+		},
+	}
+
 	blacklistDef := di.Def{
 		Name:  "v4a_blacklist",
 		Scope: di.App,
@@ -420,35 +429,6 @@ func registerV4aHelpers(builder di.Builder) {
 		},
 	}
 
-	receiverDef := di.Def{
-		Name:  "v4a_receiver",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4a_deadline_config").(v4a3.DeadlineConfig)
-			bindManager := ctn.Get("bind_manager").(managers.BindManager)
-
-			return helpers2.NewBaseReceiver(cfg, bindManager)
-		},
-	}
-
-	senderDef := di.Def{
-		Name:  "v4a_sender",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
-			cfg := ctn.Get("v4a_deadline_config").(v43.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
-			builder := ctn.Get("v4a_builder").(v4a.Builder)
-
-			return helpers2.NewBaseSender(
-				tcpConfig,
-				cfg,
-				deadlineManager,
-				builder,
-			)
-		},
-	}
-
 	validatorDef := di.Def{
 		Name:  "v4a_validator",
 		Scope: di.App,
@@ -456,7 +436,7 @@ func registerV4aHelpers(builder di.Builder) {
 			cfg := ctn.Get("v4a_config").(v4a3.Config)
 			whitelist := ctn.Get("v4a_whitelist").(helpers2.Whitelist)
 			blacklist := ctn.Get("v4a_blacklist").(helpers2.Blacklist)
-			sender := ctn.Get("v4a_sender").(helpers2.Sender)
+			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			logger := ctn.Get("v4a_logger").(v4a4.Logger)
 
 			return helpers2.NewBaseValidator(cfg, whitelist, blacklist, sender, logger)
@@ -475,10 +455,9 @@ func registerV4aHelpers(builder di.Builder) {
 	}
 
 	err := builder.Add(
+		binderDef,
 		blacklistDef,
 		dialerDef,
-		receiverDef,
-		senderDef,
 		validatorDef,
 		whitelistDef,
 	)

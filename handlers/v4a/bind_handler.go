@@ -4,7 +4,7 @@ import (
 	"net"
 	"socks/handlers/v4a/helpers"
 	v4a2 "socks/logger/v4a"
-	"socks/managers"
+	"socks/protocol/v4a"
 	"socks/transfer"
 	"socks/utils"
 )
@@ -16,35 +16,32 @@ type BindHandler interface {
 type BaseBindHandler struct {
 	logger        v4a2.Logger
 	streamHandler transfer.StreamHandler
-	bindManager   managers.BindManager
 	utils         utils.AddressUtils
-	sender        helpers.Sender
+	sender        v4a.Sender
 	errorHandler  ErrorHandler
-	receiver      helpers.Receiver
+	binder        helpers.Binder
 }
 
 func NewBaseBindHandler(
 	logger v4a2.Logger,
 	streamHandler transfer.StreamHandler,
-	bindManager managers.BindManager,
 	utils utils.AddressUtils,
-	sender helpers.Sender,
+	sender v4a.Sender,
 	errorHandler ErrorHandler,
-	receiver helpers.Receiver,
+	binder helpers.Binder,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
 		logger:        logger,
 		streamHandler: streamHandler,
-		bindManager:   bindManager,
 		utils:         utils,
 		sender:        sender,
 		errorHandler:  errorHandler,
-		receiver:      receiver,
+		binder:        binder,
 	}, nil
 }
 
 func (b BaseBindHandler) HandleBind(address string, client net.Conn) {
-	err := b.bindManager.Bind(address)
+	err := b.binder.Bind(address)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerBindError(err, address, client)
@@ -68,11 +65,11 @@ func (b BaseBindHandler) bindSendFirstResponse(address string, client net.Conn) 
 
 	b.bindWait(address, client)
 
-	b.bindManager.Remove(address)
+	b.binder.Remove(address)
 }
 
 func (b BaseBindHandler) bindWait(address string, client net.Conn) {
-	host, err := b.receiver.ReceiveHost(address)
+	host, err := b.binder.Receive(address)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerReceiveHostError(err, address, client)
@@ -134,7 +131,7 @@ func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string,
 		return
 	}
 
-	err = b.bindManager.SendClient(address, client)
+	err = b.binder.Send(address, client)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerSendClientError(err, address, client, host)

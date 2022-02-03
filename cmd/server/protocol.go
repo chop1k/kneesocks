@@ -4,6 +4,7 @@ import (
 	"github.com/sarulabs/di"
 	"socks/config/tcp"
 	"socks/config/udp"
+	v43 "socks/config/v4"
 	v53 "socks/config/v5"
 	"socks/managers"
 	"socks/protocol/auth/password"
@@ -94,9 +95,28 @@ func registerV4Protocol(builder di.Builder) {
 		},
 	}
 
+	senderDef := di.Def{
+		Name:  "v4a_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
+			cfg := ctn.Get("v4a_deadline_config").(v43.DeadlineConfig)
+			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			builder := ctn.Get("v4a_builder").(v4a.Builder)
+
+			return v4a.NewBaseSender(
+				tcpConfig,
+				cfg,
+				deadlineManager,
+				builder,
+			)
+		},
+	}
+
 	err := builder.Add(
 		parserDef,
 		builderDef,
+		senderDef,
 	)
 
 	if err != nil {
