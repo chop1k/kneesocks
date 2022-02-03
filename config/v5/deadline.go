@@ -7,6 +7,9 @@ type DeadlineConfig interface {
 	GetConnectDeadline() uint
 	GetBindDeadline() uint
 	GetPasswordDeadline() uint
+	GetResponseDeadline() uint
+	GetSelectionDeadline() uint
+	GetPasswordResponseDeadline() uint
 }
 
 type BaseDeadlineConfig struct {
@@ -31,4 +34,16 @@ func (b BaseDeadlineConfig) GetBindDeadline() uint {
 
 func (b BaseDeadlineConfig) GetPasswordDeadline() uint {
 	return b.tree.SocksV5.Deadline.Password
+}
+
+func (b BaseDeadlineConfig) GetResponseDeadline() uint {
+	return b.tree.SocksV5.Deadline.Response
+}
+
+func (b BaseDeadlineConfig) GetSelectionDeadline() uint {
+	return b.tree.SocksV5.Deadline.Selection
+}
+
+func (b BaseDeadlineConfig) GetPasswordResponseDeadline() uint {
+	return b.tree.SocksV5.Deadline.PasswordResponse
 }

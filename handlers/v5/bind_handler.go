@@ -4,7 +4,7 @@ import (
 	"net"
 	"socks/handlers/v5/helpers"
 	v52 "socks/logger/v5"
-	"socks/managers"
+	"socks/protocol/v5"
 	"socks/transfer"
 	"socks/utils"
 )
@@ -14,43 +14,34 @@ type BindHandler interface {
 }
 
 type BaseBindHandler struct {
-	bindManager   managers.BindManager
 	streamHandler transfer.StreamHandler
 	utils         utils.AddressUtils
 	logger        v52.Logger
-	sender        helpers.Sender
-	whitelist     helpers.Whitelist
-	blacklist     helpers.Blacklist
+	sender        v5.Sender
 	errorHandler  ErrorHandler
-	receiver      helpers.Receiver
+	binder        helpers.Binder
 }
 
 func NewBaseBindHandler(
-	bindManager managers.BindManager,
 	streamHandler transfer.StreamHandler,
 	utils utils.AddressUtils,
 	logger v52.Logger,
-	sender helpers.Sender,
-	whitelist helpers.Whitelist,
-	blacklist helpers.Blacklist,
+	sender v5.Sender,
 	errorHandler ErrorHandler,
-	receiver helpers.Receiver,
+	binder helpers.Binder,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
-		bindManager:   bindManager,
 		streamHandler: streamHandler,
 		utils:         utils,
 		logger:        logger,
 		sender:        sender,
-		whitelist:     whitelist,
-		blacklist:     blacklist,
 		errorHandler:  errorHandler,
-		receiver:      receiver,
+		binder:        binder,
 	}, nil
 }
 
 func (b BaseBindHandler) HandleBind(name string, address string, client net.Conn) {
-	err := b.bindManager.Bind(address)
+	err := b.binder.Bind(address)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerBindError(err, address, client)
@@ -74,11 +65,11 @@ func (b BaseBindHandler) bindSendFirstResponse(address string, client net.Conn) 
 
 	b.bindWait(address, client)
 
-	b.bindManager.Remove(address)
+	b.binder.Remove(address)
 }
 
 func (b BaseBindHandler) bindWait(address string, client net.Conn) {
-	host, err := b.receiver.ReceiveHost(address)
+	host, err := b.binder.Receive(address)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerReceiveHostError(err, address, client)
@@ -118,7 +109,7 @@ func (b BaseBindHandler) sendSecondResponse(address string, addrType byte, hostA
 		return
 	}
 
-	err = b.bindManager.SendClient(address, client)
+	err = b.binder.Send(address, client)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerSendClientError(err, address, client, host)

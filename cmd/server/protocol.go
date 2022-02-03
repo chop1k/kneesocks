@@ -2,6 +2,10 @@ package main
 
 import (
 	"github.com/sarulabs/di"
+	"socks/config/tcp"
+	"socks/config/udp"
+	v53 "socks/config/v5"
+	"socks/managers"
 	"socks/protocol/auth/password"
 	v4 "socks/protocol/v4"
 	"socks/protocol/v4a"
@@ -37,21 +41,35 @@ func registerPasswordAuth(builder di.Builder) {
 		},
 	}
 
-	protocolDef := di.Def{
-		Name:  "auth_password",
+	receiverDef := di.Def{
+		Name:  "auth_password_receiver",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
+			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
 			parser := ctn.Get("auth_password_parser").(password.Parser)
+
+			return password.NewBaseReceiver(cfg, deadlineManager, parser)
+		},
+	}
+
+	senderDef := di.Def{
+		Name:  "auth_password_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
+			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
 			builder := ctn.Get("auth_password_builder").(password.Builder)
 
-			return password.NewPassword(parser, builder), nil
+			return password.NewBaseSender(cfg, deadlineManager, builder)
 		},
 	}
 
 	err := builder.Add(
 		parserDef,
 		builderDef,
-		protocolDef,
+		receiverDef,
+		senderDef,
 	)
 
 	if err != nil {
@@ -132,21 +150,37 @@ func registerV5Protocol(builder di.Builder) {
 		},
 	}
 
-	protocolDef := di.Def{
-		Name:  "v5",
+	receiverDef := di.Def{
+		Name:  "v5_receiver",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			builder := ctn.Get("v5_builder").(v5.Builder)
+			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
+			deadline := ctn.Get("deadline_manager").(managers.DeadlineManager)
 			parser := ctn.Get("v5_parser").(v5.Parser)
 
-			return v5.NewProtocol(builder, parser), nil
+			return v5.NewBaseReceiver(cfg, deadline, parser)
+		},
+	}
+
+	senderDef := di.Def{
+		Name:  "v5_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
+			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
+			udpConfig := ctn.Get("udp_config").(udp.Config)
+			deadline := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			builder := ctn.Get("v5_builder").(v5.Builder)
+
+			return v5.NewBaseSender(tcpConfig, udpConfig, cfg, deadline, builder)
 		},
 	}
 
 	err := builder.Add(
 		parserDef,
 		builderDef,
-		protocolDef,
+		receiverDef,
+		senderDef,
 	)
 
 	if err != nil {

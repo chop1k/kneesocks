@@ -4,6 +4,7 @@ import (
 	"net"
 	v5 "socks/config/v5"
 	v52 "socks/logger/v5"
+	v53 "socks/protocol/v5"
 )
 
 type Validator interface {
@@ -14,7 +15,7 @@ type BaseValidator struct {
 	config    v5.Config
 	whitelist Whitelist
 	blacklist Blacklist
-	sender    Sender
+	sender    v53.Sender
 	logger    v52.Logger
 }
 
@@ -22,7 +23,7 @@ func NewBaseValidator(
 	config v5.Config,
 	whitelist Whitelist,
 	blacklist Blacklist,
-	sender Sender,
+	sender v53.Sender,
 	logger v52.Logger,
 ) (BaseValidator, error) {
 	return BaseValidator{

@@ -21,26 +21,26 @@ type AuthenticationHandler interface {
 }
 
 type BaseAuthenticationHandler struct {
-	protocol     v5.Protocol
 	config       v52.Config
 	errorHandler ErrorHandler
 	password     Authenticator
 	noAuth       Authenticator
+	sender       v5.Sender
 }
 
 func NewBaseAuthenticationHandler(
-	protocol v5.Protocol,
 	config v52.Config,
 	errorHandler ErrorHandler,
 	password Authenticator,
 	noAuth Authenticator,
+	sender v5.Sender,
 ) BaseAuthenticationHandler {
 	return BaseAuthenticationHandler{
-		protocol:     protocol,
 		config:       config,
 		errorHandler: errorHandler,
 		password:     password,
 		noAuth:       noAuth,
+		sender:       sender,
 	}
 }
 
@@ -65,13 +65,13 @@ func (b BaseAuthenticationHandler) HandleAuthentication(methods v5.MethodsChunk,
 		}
 	}
 
-	_ = b.protocol.SelectMethod(255, client)
+	_ = b.sender.SendMethodSelection(255, client)
 
 	return "", NoAuthenticationMethodsProvidedError
 }
 
 func (b BaseAuthenticationHandler) selectMethod(code byte, client net.Conn) (string, error) {
-	err := b.protocol.SelectMethod(code, client)
+	err := b.sender.SendMethodSelection(code, client)
 
 	if err != nil {
 		b.errorHandler.HandleSelectMethodsError(err, client)
@@ -84,7 +84,7 @@ func (b BaseAuthenticationHandler) selectMethod(code byte, client net.Conn) (str
 	} else if code == 2 {
 		return b.password.Authenticate(client)
 	} else {
-		_ = b.protocol.SelectMethod(255, client)
+		_ = b.sender.SendMethodSelection(255, client)
 
 		return "", MethodUnsupportedError
 	}

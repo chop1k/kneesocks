@@ -2,8 +2,8 @@ package v5
 
 import (
 	"net"
-	"socks/handlers/v5/helpers"
 	"socks/logger/v5"
+	v52 "socks/protocol/v5"
 	"socks/utils"
 )
 
@@ -34,13 +34,13 @@ type ErrorHandler interface {
 
 type BaseErrorHandler struct {
 	logger v5.Logger
-	sender helpers.Sender
+	sender v52.Sender
 	errors utils.ErrorUtils
 }
 
 func NewBaseErrorHandler(
 	logger v5.Logger,
-	sender helpers.Sender,
+	sender v52.Sender,
 	errors utils.ErrorUtils,
 ) (BaseErrorHandler, error) {
 	return BaseErrorHandler{

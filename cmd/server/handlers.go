@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/sarulabs/di"
 	"socks/config/tcp"
-	"socks/config/udp"
 	v43 "socks/config/v4"
 	v4a3 "socks/config/v4a"
 	v53 "socks/config/v5"
@@ -15,7 +14,6 @@ import (
 	helpers2 "socks/handlers/v4a/helpers"
 	v52 "socks/handlers/v5"
 	"socks/handlers/v5/authenticator"
-	helpers4 "socks/handlers/v5/authenticator/helpers"
 	"socks/handlers/v5/helpers"
 	tcp2 "socks/logger/tcp"
 	v44 "socks/logger/v4"
@@ -495,18 +493,18 @@ func registerV5Handlers(builder di.Builder) {
 		Name:  "authentication_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v5").(v5.Protocol)
 			cfg := ctn.Get("v5_config").(v53.Config)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 			passwordAuthenticator := ctn.Get("password_authenticator").(v52.Authenticator)
 			noAuthAuthenticator := ctn.Get("no_auth_authenticator").(v52.Authenticator)
+			sender := ctn.Get("v5_sender").(v5.Sender)
 
 			return v52.NewBaseAuthenticationHandler(
-				protocol,
 				cfg,
 				errorHandler,
 				passwordAuthenticator,
 				noAuthAuthenticator,
+				sender,
 			), nil
 		},
 	}
@@ -518,10 +516,8 @@ func registerV5Handlers(builder di.Builder) {
 			v5Logger := ctn.Get("v5_logger").(v54.Logger)
 			streamHandler := ctn.Get("stream_handler").(transfer.StreamHandler)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-			sender := ctn.Get("v5_sender").(helpers.Sender)
+			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
-			whitelist := ctn.Get("v5_whitelist").(helpers.Whitelist)
-			blacklist := ctn.Get("v5_blacklist").(helpers.Blacklist)
 			dialer := ctn.Get("v5_dialer").(helpers.Dialer)
 
 			return v52.NewBaseConnectHandler(
@@ -530,8 +526,6 @@ func registerV5Handlers(builder di.Builder) {
 				addressUtils,
 				sender,
 				errorHandler,
-				whitelist,
-				blacklist,
 				dialer,
 			)
 		},
@@ -543,24 +537,18 @@ func registerV5Handlers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			v5Logger := ctn.Get("v5_logger").(v54.Logger)
 			streamHandler := ctn.Get("stream_handler").(transfer.StreamHandler)
-			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-			sender := ctn.Get("v5_sender").(helpers.Sender)
-			whitelist := ctn.Get("v5_whitelist").(helpers.Whitelist)
-			blacklist := ctn.Get("v5_blacklist").(helpers.Blacklist)
+			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
-			receiver := ctn.Get("v5_receiver").(helpers.Receiver)
+			binder := ctn.Get("v5_binder").(helpers.Binder)
 
 			return v52.NewBaseBindHandler(
-				bindManager,
 				streamHandler,
 				addressUtils,
 				v5Logger,
 				sender,
-				whitelist,
-				blacklist,
 				errorHandler,
-				receiver,
+				binder,
 			)
 		},
 	}
@@ -573,7 +561,7 @@ func registerV5Handlers(builder di.Builder) {
 			v5Logger := ctn.Get("v5_logger").(v54.Logger)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			udpAssociationManager := ctn.Get("udp_association_manager").(managers.UdpAssociationManager)
-			sender := ctn.Get("v5_sender").(helpers.Sender)
+			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 
 			return v52.NewBaseUdpAssociationHandler(
@@ -597,10 +585,10 @@ func registerV5Handlers(builder di.Builder) {
 			connectHandler := ctn.Get("v5_connect_handler").(v52.ConnectHandler)
 			bindHandler := ctn.Get("v5_bind_handler").(v52.BindHandler)
 			associationHandler := ctn.Get("v5_udp_association_handler").(v52.UdpAssociationHandler)
-			sender := ctn.Get("v5_sender").(helpers.Sender)
+			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 			validator := ctn.Get("v5_validator").(helpers.Validator)
-			receiver := ctn.Get("v5_receiver").(helpers.Receiver)
+			receiver := ctn.Get("v5_receiver").(v5.Receiver)
 
 			return v52.NewBaseHandler(
 				parser,
@@ -621,7 +609,7 @@ func registerV5Handlers(builder di.Builder) {
 		Name:  "v5_error_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			sender := ctn.Get("v5_sender").(helpers.Sender)
+			sender := ctn.Get("v5_sender").(v5.Sender)
 			v5Logger := ctn.Get("v5_logger").(v54.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
@@ -650,42 +638,20 @@ func registerV5Handlers(builder di.Builder) {
 	registerV5Helpers(builder)
 }
 
-func registerAuthenticatorHelpers(builder di.Builder) {
-	receiverDef := di.Def{
-		Name:  "v5_auth_receiver",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
-			parser := ctn.Get("auth_password_parser").(password.Parser)
-
-			return helpers4.NewBaseReceiver(cfg, deadlineManager, parser)
-		},
-	}
-
-	err := builder.Add(
-		receiverDef,
-	)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
 func registerAuthenticators(builder di.Builder) {
 	passwordAuthenticatorDef := di.Def{
 		Name:  "password_authenticator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			passwd := ctn.Get("auth_password").(password.Password)
 			cfg := ctn.Get("v5_config").(v53.Config)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
-			receiver := ctn.Get("v5_auth_receiver").(helpers4.Receiver)
+			receiver := ctn.Get("auth_password_receiver").(password.Receiver)
+			sender := ctn.Get("auth_password_sender").(password.Sender)
 
 			return authenticator.NewBasePasswordAuthenticator(
-				passwd,
 				cfg,
 				errorHandler,
+				sender,
 				receiver,
 			)
 		},
@@ -707,11 +673,20 @@ func registerAuthenticators(builder di.Builder) {
 	if err != nil {
 		panic(err)
 	}
-
-	registerAuthenticatorHelpers(builder)
 }
 
 func registerV5Helpers(builder di.Builder) {
+	binderDef := di.Def{
+		Name:  "v5_binder",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
+			bindManager := ctn.Get("bind_manager").(managers.BindManager)
+
+			return helpers.NewBaseBinder(cfg, bindManager)
+		},
+	}
+
 	blacklistDef := di.Def{
 		Name:  "v5_blacklist",
 		Scope: di.App,
@@ -733,35 +708,6 @@ func registerV5Helpers(builder di.Builder) {
 		},
 	}
 
-	receiverDef := di.Def{
-		Name:  "v5_receiver",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
-			parser := ctn.Get("v5_parser").(v5.Parser)
-			bindManager := ctn.Get("bind_manager").(managers.BindManager)
-
-			return helpers.NewBaseReceiver(cfg, deadlineManager, parser, bindManager)
-		},
-	}
-
-	senderDef := di.Def{
-		Name:  "v5_sender",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			protocol := ctn.Get("v5").(v5.Protocol)
-			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
-			udpConfig := ctn.Get("udp_config").(udp.Config)
-
-			return helpers.NewBaseSender(
-				protocol,
-				tcpConfig,
-				udpConfig,
-			)
-		},
-	}
-
 	validatorDef := di.Def{
 		Name:  "v5_validator",
 		Scope: di.App,
@@ -769,7 +715,7 @@ func registerV5Helpers(builder di.Builder) {
 			cfg := ctn.Get("v5_config").(v53.Config)
 			whitelist := ctn.Get("v5_whitelist").(helpers.Whitelist)
 			blacklist := ctn.Get("v5_blacklist").(helpers.Blacklist)
-			sender := ctn.Get("v5_sender").(helpers.Sender)
+			sender := ctn.Get("v5_sender").(v5.Sender)
 			logger := ctn.Get("v5_logger").(v54.Logger)
 
 			return helpers.NewBaseValidator(cfg, whitelist, blacklist, sender, logger)
@@ -788,10 +734,9 @@ func registerV5Helpers(builder di.Builder) {
 	}
 
 	err := builder.Add(
+		binderDef,
 		blacklistDef,
 		dialerDef,
-		receiverDef,
-		senderDef,
 		validatorDef,
 		whitelistDef,
 	)

@@ -20,8 +20,8 @@ type BaseHandler struct {
 	bindHandler           BindHandler
 	udpAssociationHandler UdpAssociationHandler
 	errorHandler          ErrorHandler
-	sender                helpers.Sender
-	receiver              helpers.Receiver
+	sender                v5.Sender
+	receiver              v5.Receiver
 	validator             helpers.Validator
 }
 
@@ -33,8 +33,8 @@ func NewBaseHandler(
 	bindHandler BindHandler,
 	udpAssociationHandler UdpAssociationHandler,
 	errorHandler ErrorHandler,
-	sender helpers.Sender,
-	receiver helpers.Receiver,
+	sender v5.Sender,
+	receiver v5.Receiver,
 	validator helpers.Validator,
 ) (BaseHandler, error) {
 	return BaseHandler{

@@ -4,6 +4,7 @@ import (
 	"net"
 	"socks/handlers/v5/helpers"
 	v52 "socks/logger/v5"
+	"socks/protocol/v5"
 	"socks/transfer"
 	"socks/utils"
 )
@@ -16,10 +17,8 @@ type BaseConnectHandler struct {
 	streamHandler transfer.StreamHandler
 	logger        v52.Logger
 	utils         utils.AddressUtils
-	sender        helpers.Sender
+	sender        v5.Sender
 	errorHandler  ErrorHandler
-	whitelist     helpers.Whitelist
-	blacklist     helpers.Blacklist
 	dialer        helpers.Dialer
 }
 
@@ -27,10 +26,8 @@ func NewBaseConnectHandler(
 	streamHandler transfer.StreamHandler,
 	logger v52.Logger,
 	addressUtils utils.AddressUtils,
-	sender helpers.Sender,
+	sender v5.Sender,
 	errorHandler ErrorHandler,
-	whitelist helpers.Whitelist,
-	blacklist helpers.Blacklist,
 	dialer helpers.Dialer,
 ) (BaseConnectHandler, error) {
 	return BaseConnectHandler{
@@ -39,8 +36,6 @@ func NewBaseConnectHandler(
 		utils:         addressUtils,
 		sender:        sender,
 		errorHandler:  errorHandler,
-		whitelist:     whitelist,
-		blacklist:     blacklist,
 		dialer:        dialer,
 	}, nil
 }
