@@ -17,7 +17,7 @@ type BaseHandler struct {
 	logger         v43.Logger
 	connectHandler ConnectHandler
 	bindHandler    BindHandler
-	sender         helpers.Sender
+	sender         v4.Sender
 	errorHandler   ErrorHandler
 	validator      helpers.Validator
 }
@@ -27,7 +27,7 @@ func NewBaseHandler(
 	logger v43.Logger,
 	connectHandler ConnectHandler,
 	bindHandler BindHandler,
-	sender helpers.Sender,
+	sender v4.Sender,
 	errorHandler ErrorHandler,
 	validator helpers.Validator,
 ) (BaseHandler, error) {

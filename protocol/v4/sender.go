@@ -1,11 +1,10 @@
-package helpers
+package v4
 
 import (
 	"net"
 	"socks/config/tcp"
 	v42 "socks/config/v4"
 	"socks/managers"
-	v4 "socks/protocol/v4"
 )
 
 type Sender interface {
@@ -18,14 +17,14 @@ type BaseSender struct {
 	tcpConfig tcp.Config
 	config    v42.DeadlineConfig
 	deadline  managers.DeadlineManager
-	builder   v4.Builder
+	builder   Builder
 }
 
 func NewBaseSender(
 	tcpConfig tcp.Config,
 	config v42.DeadlineConfig,
 	deadline managers.DeadlineManager,
-	builder v4.Builder,
+	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
 		tcpConfig: tcpConfig,
@@ -36,7 +35,7 @@ func NewBaseSender(
 }
 
 func (b BaseSender) build(status byte, ip net.IP, port uint16) ([]byte, error) {
-	return b.builder.BuildResponse(v4.ResponseChunk{
+	return b.builder.BuildResponse(ResponseChunk{
 		SocksVersion:    0,
 		CommandCode:     status,
 		DestinationPort: port,

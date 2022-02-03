@@ -96,15 +96,15 @@ func registerV4Protocol(builder di.Builder) {
 	}
 
 	senderDef := di.Def{
-		Name:  "v4a_sender",
+		Name:  "v4_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
-			cfg := ctn.Get("v4a_deadline_config").(v43.DeadlineConfig)
+			cfg := ctn.Get("v4_deadline_config").(v43.DeadlineConfig)
 			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
-			builder := ctn.Get("v4a_builder").(v4a.Builder)
+			builder := ctn.Get("v4_builder").(v4.Builder)
 
-			return v4a.NewBaseSender(
+			return v4.NewBaseSender(
 				tcpConfig,
 				cfg,
 				deadlineManager,
@@ -141,9 +141,28 @@ func registerV4aProtocol(builder di.Builder) {
 		},
 	}
 
+	senderDef := di.Def{
+		Name:  "v4a_sender",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
+			cfg := ctn.Get("v4a_deadline_config").(v43.DeadlineConfig)
+			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			builder := ctn.Get("v4a_builder").(v4a.Builder)
+
+			return v4a.NewBaseSender(
+				tcpConfig,
+				cfg,
+				deadlineManager,
+				builder,
+			)
+		},
+	}
+
 	err := builder.Add(
 		parserDef,
 		builderDef,
+		senderDef,
 	)
 
 	if err != nil {
