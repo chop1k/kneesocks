@@ -10,6 +10,7 @@ type ErrorsLogger interface {
 	ReceiveClientError(address string, err error)
 	SendHostError(address string, err error)
 	WriteRequestError(client string, host string, err error)
+	ReceiveWelcomeError(client string, err error)
 }
 
 type BaseErrorsLogger struct {
@@ -111,4 +112,17 @@ func (b BaseErrorsLogger) WriteRequestError(client string, host string, err erro
 		Str("host", host).
 		Err(err).
 		Msg("Cannot send first packet because of error.")
+}
+
+func (b BaseErrorsLogger) ReceiveWelcomeError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Cannot receive welcome chunk because of error.")
 }

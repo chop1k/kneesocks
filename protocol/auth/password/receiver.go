@@ -3,7 +3,7 @@ package password
 import (
 	"net"
 	v5 "socks/config/v5"
-	"socks/managers"
+	"socks/protocol"
 )
 
 type Receiver interface {
@@ -12,13 +12,13 @@ type Receiver interface {
 
 type BaseReceiver struct {
 	config   v5.DeadlineConfig
-	deadline managers.DeadlineManager
+	deadline protocol.Deadline
 	parser   Parser
 }
 
 func NewBaseReceiver(
 	config v5.DeadlineConfig,
-	deadline managers.DeadlineManager,
+	deadline protocol.Deadline,
 	parser Parser,
 ) (BaseReceiver, error) {
 	return BaseReceiver{

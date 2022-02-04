@@ -1,4 +1,4 @@
-package managers
+package protocol
 
 import (
 	"errors"
@@ -14,19 +14,19 @@ var (
 	TimeoutError            = errors.New("Timeout exceeded. ")
 )
 
-type DeadlineManager interface {
+type Deadline interface {
 	Read(deadline uint, bufferLength int, reader io.Reader) ([]byte, error)
 	Write(deadline uint, data []byte, writer io.Writer) error
 }
 
-type BaseDeadlineManager struct {
+type BaseDeadline struct {
 }
 
-func NewBaseDeadlineManager() (BaseDeadlineManager, error) {
-	return BaseDeadlineManager{}, nil
+func NewBaseDeadline() (BaseDeadline, error) {
+	return BaseDeadline{}, nil
 }
 
-func (b BaseDeadlineManager) Read(deadline uint, bufferLength int, reader io.Reader) ([]byte, error) {
+func (b BaseDeadline) Read(deadline uint, bufferLength int, reader io.Reader) ([]byte, error) {
 	closed := false
 
 	read := make(chan []byte, 1)
@@ -86,14 +86,14 @@ func (b BaseDeadlineManager) Read(deadline uint, bufferLength int, reader io.Rea
 	}
 }
 
-func (b BaseDeadlineManager) readCleanUp(read chan []byte, err chan error, timer *time.Timer) {
+func (b BaseDeadline) readCleanUp(read chan []byte, err chan error, timer *time.Timer) {
 	close(read)
 	close(err)
 
 	timer.Stop()
 }
 
-func (b BaseDeadlineManager) Write(deadline uint, data []byte, writer io.Writer) error {
+func (b BaseDeadline) Write(deadline uint, data []byte, writer io.Writer) error {
 	closed := false
 
 	done := make(chan bool, 1)
@@ -151,7 +151,7 @@ func (b BaseDeadlineManager) Write(deadline uint, data []byte, writer io.Writer)
 	}
 }
 
-func (b BaseDeadlineManager) writeCleanUp(done chan bool, err chan error, timer *time.Timer) {
+func (b BaseDeadline) writeCleanUp(done chan bool, err chan error, timer *time.Timer) {
 	close(done)
 	close(err)
 

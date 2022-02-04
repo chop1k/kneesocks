@@ -5,12 +5,13 @@ import (
 	"socks/config/tcp"
 	"socks/config/udp"
 	v52 "socks/config/v5"
-	"socks/managers"
+	"socks/protocol"
 )
 
 type Sender interface {
 	SendMethodSelection(method byte, client net.Conn) error
 	SendConnectionRefusedAndClose(client net.Conn)
+	SendTTLExpiredAndClose(client net.Conn)
 	SendNetworkUnreachableAndClose(client net.Conn)
 	SendHostUnreachableAndClose(client net.Conn)
 	SendCommandNotSupportedAndClose(client net.Conn)
@@ -26,7 +27,7 @@ type BaseSender struct {
 	tcpConfig tcp.Config
 	udpConfig udp.Config
 	config    v52.DeadlineConfig
-	deadline  managers.DeadlineManager
+	deadline  protocol.Deadline
 	builder   Builder
 }
 
@@ -34,7 +35,7 @@ func NewBaseSender(
 	tcpConfig tcp.Config,
 	udpConfig udp.Config,
 	config v52.DeadlineConfig,
-	deadline managers.DeadlineManager,
+	deadline protocol.Deadline,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
@@ -109,6 +110,10 @@ func (b BaseSender) responseWithConnectionRefused(addrType byte, addr string, po
 	return b.responseWithCode(5, addrType, addr, port, client)
 }
 
+func (b BaseSender) responseWithTTLExpired(addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(6, addrType, addr, port, client)
+}
+
 func (b BaseSender) responseWithCommandNotSupported(addrType byte, addr string, port uint16, client net.Conn) error {
 	return b.responseWithCode(7, addrType, addr, port, client)
 }
@@ -119,6 +124,11 @@ func (b BaseSender) responseWithAddressNotSupported(addrType byte, addr string, 
 
 func (b BaseSender) SendConnectionRefusedAndClose(client net.Conn) {
 	_ = b.responseWithConnectionRefused(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	_ = client.Close()
+}
+
+func (b BaseSender) SendTTLExpiredAndClose(client net.Conn) {
+	_ = b.responseWithTTLExpired(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
 	_ = client.Close()
 }
 

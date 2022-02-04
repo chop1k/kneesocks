@@ -3,7 +3,7 @@ package v5
 import (
 	"io"
 	v52 "socks/config/v5"
-	"socks/managers"
+	"socks/protocol"
 )
 
 type Receiver interface {
@@ -12,13 +12,13 @@ type Receiver interface {
 
 type BaseReceiver struct {
 	config   v52.DeadlineConfig
-	deadline managers.DeadlineManager
+	deadline protocol.Deadline
 	parser   Parser
 }
 
 func NewBaseReceiver(
 	config v52.DeadlineConfig,
-	deadline managers.DeadlineManager,
+	deadline protocol.Deadline,
 	parser Parser,
 ) (BaseReceiver, error) {
 	return BaseReceiver{

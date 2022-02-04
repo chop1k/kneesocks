@@ -1,4 +1,4 @@
-package managers
+package protocol
 
 import (
 	"errors"
@@ -20,8 +20,8 @@ func (r ReaderMock) Read(_ []byte) (n int, err error) {
 	return 1, r.Err
 }
 
-func TestBaseDeadlineManager_Read(t *testing.T) {
-	manager, err := NewBaseDeadlineManager()
+func TestBaseDeadline_Read(t *testing.T) {
+	manager, err := NewBaseDeadline()
 
 	require.NoError(t, err)
 
@@ -37,8 +37,8 @@ func TestBaseDeadlineManager_Read(t *testing.T) {
 	require.Equal(t, []byte{0}, i)
 }
 
-func TestBaseDeadlineManager_ReadReturnsTimeoutError(t *testing.T) {
-	manager, err := NewBaseDeadlineManager()
+func TestBaseDeadline_ReadReturnsTimeoutError(t *testing.T) {
+	manager, err := NewBaseDeadline()
 
 	require.NoError(t, err)
 
@@ -54,8 +54,8 @@ func TestBaseDeadlineManager_ReadReturnsTimeoutError(t *testing.T) {
 	require.Nil(t, i)
 }
 
-func TestBaseDeadlineManager_ReadReturnsError(t *testing.T) {
-	manager, err := NewBaseDeadlineManager()
+func TestBaseDeadline_ReadReturnsError(t *testing.T) {
+	manager, err := NewBaseDeadline()
 
 	require.NoError(t, err)
 
@@ -82,8 +82,8 @@ func (w WriterMock) Write(_ []byte) (n int, err error) {
 	return 0, w.Err
 }
 
-func TestBaseDeadlineManager_Write(t *testing.T) {
-	manager, err := NewBaseDeadlineManager()
+func TestBaseDeadline_Write(t *testing.T) {
+	manager, err := NewBaseDeadline()
 
 	require.NoError(t, err)
 
@@ -97,8 +97,8 @@ func TestBaseDeadlineManager_Write(t *testing.T) {
 	require.NoError(t, writeErr)
 }
 
-func TestBaseDeadlineManager_WriteReturnsTimeoutError(t *testing.T) {
-	manager, err := NewBaseDeadlineManager()
+func TestBaseDeadline_WriteReturnsTimeoutError(t *testing.T) {
+	manager, err := NewBaseDeadline()
 
 	require.NoError(t, err)
 
@@ -112,8 +112,8 @@ func TestBaseDeadlineManager_WriteReturnsTimeoutError(t *testing.T) {
 	require.ErrorIs(t, TimeoutError, writeErr)
 }
 
-func TestBaseDeadlineManager_WriteReturnsError(t *testing.T) {
-	manager, err := NewBaseDeadlineManager()
+func TestBaseDeadline_WriteReturnsError(t *testing.T) {
+	manager, err := NewBaseDeadline()
 
 	require.NoError(t, err)
 

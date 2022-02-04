@@ -4,7 +4,7 @@ import (
 	"net"
 	"socks/config/tcp"
 	v42 "socks/config/v4"
-	"socks/managers"
+	"socks/protocol"
 )
 
 type Sender interface {
@@ -16,14 +16,14 @@ type Sender interface {
 type BaseSender struct {
 	tcpConfig tcp.Config
 	config    v42.DeadlineConfig
-	deadline  managers.DeadlineManager
+	deadline  protocol.Deadline
 	builder   Builder
 }
 
 func NewBaseSender(
 	tcpConfig tcp.Config,
 	config v42.DeadlineConfig,
-	deadline managers.DeadlineManager,
+	deadline protocol.Deadline,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
@@ -52,7 +52,7 @@ func (b BaseSender) send(status byte, ip net.IP, port uint16, client net.Conn) e
 
 	err = b.deadline.Write(b.config.GetResponseDeadline(), data, client)
 
-	if err == managers.TimeoutError {
+	if err == protocol.TimeoutError {
 		return err
 	}
 

@@ -11,6 +11,7 @@ var (
 	HostChannelClosedError   = errors.New("Host channel is closed. ")
 	ClientChannelClosedError = errors.New("Client channel is closed. ")
 	AddressAlreadyBoundError = errors.New("Address already bound. ")
+	TimeoutError             = errors.New("Timeout exceeded. ")
 )
 
 type bundle struct {
