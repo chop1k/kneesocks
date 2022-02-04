@@ -37,7 +37,7 @@ func (b BasePasswordAuthenticator) Authenticate(client net.Conn) (string, error)
 	request, err := b.receiver.ReceiveRequest(client)
 
 	if err != nil {
-		//b.errorHandler.HandlePasswordReceiveRequestError(err, client)
+		b.errorHandler.HandlePasswordReceiveRequestError(err, client)
 
 		return "", err
 	}
@@ -50,7 +50,7 @@ func (b BasePasswordAuthenticator) Authenticate(client net.Conn) (string, error)
 		err := b.sender.SendResponse(0, client)
 
 		if err != nil {
-			//b.errorHandler.HandlePasswordResponseError(err, user.Name, client)
+			b.errorHandler.HandlePasswordResponseError(err, name, client)
 
 			return "", err
 		}

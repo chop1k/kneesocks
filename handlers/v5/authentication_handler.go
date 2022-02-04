@@ -74,7 +74,7 @@ func (b BaseAuthenticationHandler) selectMethod(code byte, client net.Conn) (str
 	err := b.sender.SendMethodSelection(code, client)
 
 	if err != nil {
-		b.errorHandler.HandleSelectMethodsError(err, client)
+		b.errorHandler.HandleMethodSelectionError(err, client)
 
 		return "", err
 	}

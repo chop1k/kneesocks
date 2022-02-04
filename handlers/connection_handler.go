@@ -8,7 +8,7 @@ import (
 	"socks/handlers/v4a"
 	"socks/handlers/v5"
 	tcp2 "socks/logger/tcp"
-	"socks/managers"
+	"socks/protocol"
 	"socks/transfer"
 	"socks/utils"
 )
@@ -22,10 +22,10 @@ type BaseConnectionHandler struct {
 	v4Handler     v4.Handler
 	v4aHandler    v4a.Handler
 	v5Handler     v5.Handler
-	bindManager   managers.BindManager
 	utils         utils.AddressUtils
 	logger        tcp2.Logger
-	receiver      helpers.Receiver
+	receiver      protocol.Receiver
+	binder        helpers.Binder
 }
 
 func NewBaseConnectionHandler(
@@ -33,20 +33,20 @@ func NewBaseConnectionHandler(
 	v4Handler v4.Handler,
 	v4aHandler v4a.Handler,
 	v5Handler v5.Handler,
-	bindManager managers.BindManager,
 	utils utils.AddressUtils,
 	logger tcp2.Logger,
-	receiver helpers.Receiver,
+	receiver protocol.Receiver,
+	binder helpers.Binder,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
 		streamHandler: streamHandler,
 		v5Handler:     v5Handler,
 		v4aHandler:    v4aHandler,
 		v4Handler:     v4Handler,
-		bindManager:   bindManager,
 		utils:         utils,
 		logger:        logger,
 		receiver:      receiver,
+		binder:        binder,
 	}, nil
 }
 
@@ -55,6 +55,8 @@ func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
 
 	if err != nil {
 		_ = client.Close()
+
+		b.logger.Errors.ReceiveWelcomeError(client.RemoteAddr().String(), err)
 
 		return
 	}
@@ -117,7 +119,7 @@ func (b BaseConnectionHandler) checkV5(request []byte, client net.Conn) {
 func (b BaseConnectionHandler) checkBound(request []byte, client net.Conn) {
 	addr := client.RemoteAddr().String()
 
-	if b.bindManager.IsBound(addr) {
+	if b.binder.IsBound(addr) {
 		b.exchange(request, addr, client)
 	} else {
 		b.checkDomain(request, addr, client)
@@ -148,7 +150,7 @@ func (b BaseConnectionHandler) checkDomain(request []byte, address string, clien
 	for _, address := range addresses {
 		address = fmt.Sprintf("%s:%d", address, hostPort)
 
-		if b.bindManager.IsBound(address) {
+		if b.binder.IsBound(address) {
 			b.exchange(request, address, client)
 
 			return
@@ -161,7 +163,7 @@ func (b BaseConnectionHandler) checkDomain(request []byte, address string, clien
 }
 
 func (b BaseConnectionHandler) exchange(request []byte, address string, client net.Conn) {
-	err := b.bindManager.SendHost(address, client)
+	err := b.binder.Send(address, client)
 
 	if err != nil {
 		_ = client.Close()
@@ -171,7 +173,7 @@ func (b BaseConnectionHandler) exchange(request []byte, address string, client n
 		return
 	}
 
-	host, receiveErr := b.receiver.ReceiveClient(address)
+	host, receiveErr := b.binder.Receive(address)
 
 	if receiveErr != nil {
 		_ = client.Close()

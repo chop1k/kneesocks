@@ -9,7 +9,6 @@ import (
 
 type ErrorHandler interface {
 	HandleDialError(err error, address string, client net.Conn)
-	HandleConnectIOError(err error, address string, client net.Conn)
 	HandleConnectIOErrorWithHost(err error, address string, client net.Conn, host net.Conn)
 	HandleBindIOError(err error, address string, client net.Conn)
 	HandleBindIOErrorWithHost(err error, address string, client net.Conn, host net.Conn)
@@ -24,12 +23,9 @@ type ErrorHandler interface {
 	HandlePasswordReceiveRequestError(err error, client net.Conn)
 	HandleUnknownCommandError(command byte, address string, client net.Conn)
 	HandleParseMethodsError(err error, client net.Conn)
-	HandleSelectMethodsError(err error, client net.Conn)
+	HandleMethodSelectionError(err error, client net.Conn)
 	HandlePasswordResponseError(err error, user string, client net.Conn)
 	HandleUdpAddressParsingError(err error, client net.Conn)
-	HandleIPv4AddressNotAllowed(address string, client net.Conn)
-	HandleDomainAddressNotAllowed(address string, client net.Conn)
-	HandleIPv6AddressNotAllowed(address string, client net.Conn)
 }
 
 type BaseErrorHandler struct {
@@ -75,13 +71,6 @@ func (b BaseErrorHandler) HandleDialError(err error, address string, client net.
 		return
 	}
 
-	b.sender.SendFailAndClose(client)
-
-	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
-	b.logger.Connect.Failed(client.RemoteAddr().String(), address)
-}
-
-func (b BaseErrorHandler) HandleConnectIOError(err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
 	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
@@ -184,14 +173,14 @@ func (b BaseErrorHandler) HandleParseMethodsError(err error, client net.Conn) {
 	b.logger.Errors.ParseMethodsError(client.RemoteAddr().String(), err)
 }
 
-func (b BaseErrorHandler) HandleSelectMethodsError(err error, client net.Conn) {
+func (b BaseErrorHandler) HandleMethodSelectionError(err error, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
 	b.logger.Errors.SelectMethodsError(client.RemoteAddr().String(), err)
 }
 
 func (b BaseErrorHandler) HandlePasswordResponseError(err error, user string, client net.Conn) {
-	b.sender.SendFailAndClose(client)
+	_ = client.Close()
 
 	b.logger.Errors.PasswordResponseError(client.RemoteAddr().String(), user, err)
 }
@@ -200,22 +189,4 @@ func (b BaseErrorHandler) HandleUdpAddressParsingError(err error, client net.Con
 	b.sender.SendFailAndClose(client)
 
 	b.logger.Errors.UdpAddressParsingError(client.RemoteAddr().String(), err)
-}
-
-func (b BaseErrorHandler) HandleIPv4AddressNotAllowed(address string, client net.Conn) {
-	b.sender.SendAddressNotSupportedAndClose(client)
-
-	b.logger.Restrictions.IPv4AddressNotAllowed(client.RemoteAddr().String(), address)
-}
-
-func (b BaseErrorHandler) HandleDomainAddressNotAllowed(address string, client net.Conn) {
-	b.sender.SendAddressNotSupportedAndClose(client)
-
-	b.logger.Restrictions.DomainAddressNotAllowed(client.RemoteAddr().String(), address)
-}
-
-func (b BaseErrorHandler) HandleIPv6AddressNotAllowed(address string, client net.Conn) {
-	b.sender.SendAddressNotSupportedAndClose(client)
-
-	b.logger.Restrictions.IPv6AddressNotAllowed(client.RemoteAddr().String(), address)
 }

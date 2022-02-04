@@ -7,7 +7,7 @@ import (
 	v4a3 "socks/config/v4a"
 	v53 "socks/config/v5"
 	"socks/handlers"
-	helpers3 "socks/handlers/helpers"
+	helpers4 "socks/handlers/helpers"
 	v42 "socks/handlers/v4"
 	helpers5 "socks/handlers/v4/helpers"
 	v4a2 "socks/handlers/v4a"
@@ -20,6 +20,7 @@ import (
 	v4a4 "socks/logger/v4a"
 	v54 "socks/logger/v5"
 	"socks/managers"
+	helpers3 "socks/protocol"
 	"socks/protocol/auth/password"
 	v4 "socks/protocol/v4"
 	"socks/protocol/v4a"
@@ -37,20 +38,20 @@ func registerHandlers(builder di.Builder) {
 			v4Handler := ctn.Get("v4_handler").(v42.Handler)
 			v4aHandler := ctn.Get("v4a_handler").(v4a2.Handler)
 			v5Handler := ctn.Get("v5_handler").(v52.Handler)
-			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			tcpLogger := ctn.Get("tcp_logger").(tcp2.Logger)
 			receiver := ctn.Get("receiver").(helpers3.Receiver)
+			binder := ctn.Get("binder").(helpers4.Binder)
 
 			return handlers.NewBaseConnectionHandler(
 				streamHandler,
 				v4Handler,
 				v4aHandler,
 				v5Handler,
-				bindManager,
 				addressUtils,
 				tcpLogger,
 				receiver,
+				binder,
 			)
 		},
 	}
@@ -89,20 +90,19 @@ func registerHandlers(builder di.Builder) {
 }
 
 func registerHelpers(builder di.Builder) {
-	receiverDef := di.Def{
-		Name:  "receiver",
+	binderDef := di.Def{
+		Name:  "binder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("tcp_deadline_config").(tcp.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
 			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 
-			return helpers3.NewBaseReceiver(cfg, deadlineManager, bindManager)
+			return helpers4.NewBaseBinder(cfg, bindManager)
 		},
 	}
 
 	err := builder.Add(
-		receiverDef,
+		binderDef,
 	)
 
 	if err != nil {

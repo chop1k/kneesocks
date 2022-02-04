@@ -7,6 +7,7 @@ import (
 	v43 "socks/config/v4"
 	v53 "socks/config/v5"
 	"socks/managers"
+	"socks/protocol"
 	"socks/protocol/auth/password"
 	v4 "socks/protocol/v4"
 	"socks/protocol/v4a"
@@ -15,6 +16,35 @@ import (
 )
 
 func registerProtocol(builder di.Builder) {
+	deadlineDef := di.Def{
+		Name:  "deadline",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return protocol.NewBaseDeadline()
+		},
+	}
+
+	receiverDef := di.Def{
+		Name:  "receiver",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("tcp_deadline_config").(tcp.DeadlineConfig)
+			deadlineManager := ctn.Get("deadline").(protocol.Deadline)
+			bindManager := ctn.Get("bind_manager").(managers.BindManager)
+
+			return protocol.NewBaseReceiver(cfg, deadlineManager, bindManager)
+		},
+	}
+
+	err := builder.Add(
+		deadlineDef,
+		receiverDef,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
 	registerAuth(builder)
 	registerV4Protocol(builder)
 	registerV4aProtocol(builder)
@@ -47,7 +77,7 @@ func registerPasswordAuth(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			deadlineManager := ctn.Get("deadline").(protocol.Deadline)
 			parser := ctn.Get("auth_password_parser").(password.Parser)
 
 			return password.NewBaseReceiver(cfg, deadlineManager, parser)
@@ -59,7 +89,7 @@ func registerPasswordAuth(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			deadlineManager := ctn.Get("deadline").(protocol.Deadline)
 			builder := ctn.Get("auth_password_builder").(password.Builder)
 
 			return password.NewBaseSender(cfg, deadlineManager, builder)
@@ -101,7 +131,7 @@ func registerV4Protocol(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
 			cfg := ctn.Get("v4_deadline_config").(v43.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			deadlineManager := ctn.Get("deadline").(protocol.Deadline)
 			builder := ctn.Get("v4_builder").(v4.Builder)
 
 			return v4.NewBaseSender(
@@ -147,7 +177,7 @@ func registerV4aProtocol(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
 			cfg := ctn.Get("v4a_deadline_config").(v43.DeadlineConfig)
-			deadlineManager := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			deadlineManager := ctn.Get("deadline").(protocol.Deadline)
 			builder := ctn.Get("v4a_builder").(v4a.Builder)
 
 			return v4a.NewBaseSender(
@@ -194,7 +224,7 @@ func registerV5Protocol(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
-			deadline := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			deadline := ctn.Get("deadline").(protocol.Deadline)
 			parser := ctn.Get("v5_parser").(v5.Parser)
 
 			return v5.NewBaseReceiver(cfg, deadline, parser)
@@ -208,7 +238,7 @@ func registerV5Protocol(builder di.Builder) {
 			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
 			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
 			udpConfig := ctn.Get("udp_config").(udp.Config)
-			deadline := ctn.Get("deadline_manager").(managers.DeadlineManager)
+			deadline := ctn.Get("deadline").(protocol.Deadline)
 			builder := ctn.Get("v5_builder").(v5.Builder)
 
 			return v5.NewBaseSender(tcpConfig, udpConfig, cfg, deadline, builder)
