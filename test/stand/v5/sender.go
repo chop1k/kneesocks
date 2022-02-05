@@ -92,3 +92,7 @@ func (s Sender) SendConnectRequest(addressType byte, conn net.Conn) {
 func (s Sender) SendBindRequest(port uint16, addressType byte, conn net.Conn) {
 	s.sendRequest(2, addressType, port, conn)
 }
+
+func (s Sender) SendAssociateRequest(addressType byte, conn net.Conn) {
+	s.sendRequest(3, addressType, s.config.Server.ConnectPort, conn)
+}

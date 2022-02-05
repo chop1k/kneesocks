@@ -16,7 +16,7 @@ type UdpAssociationHandler interface {
 type BaseUdpAssociationHandler struct {
 	config                v5.Config
 	utils                 utils.AddressUtils
-	udpAssociationManager managers.UdpAssociationManager
+	udpAssociationManager managers.UdpClientManager
 	logger                v52.Logger
 	sender                v53.Sender
 	errorHandler          ErrorHandler
@@ -25,7 +25,7 @@ type BaseUdpAssociationHandler struct {
 func NewBaseUdpAssociationHandler(
 	config v5.Config,
 	utils utils.AddressUtils,
-	udpAssociationManager managers.UdpAssociationManager,
+	udpAssociationManager managers.UdpClientManager,
 	logger v52.Logger,
 	sender v53.Sender,
 	errorHandler ErrorHandler,
@@ -49,7 +49,11 @@ func (b BaseUdpAssociationHandler) HandleUdpAssociation(_ string, client net.Con
 		return
 	}
 
-	b.udpAssociationManager.Set(address, client.RemoteAddr())
+	err = b.udpAssociationManager.Add(address)
+
+	if err != nil {
+		panic(err)
+	}
 
 	b.udpSendResponse(address, client)
 }

@@ -15,11 +15,27 @@ func registerManagers(builder di.Builder) {
 		},
 	}
 
-	udpAssociationManagerDef := di.Def{
-		Name:  "udp_association_manager",
+	udpClientManagerDef := di.Def{
+		Name:  "udp_client_manager",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewUdpAssociationManager(), nil
+			return managers.NewUdpClientManager()
+		},
+	}
+
+	udpHostManagerDef := di.Def{
+		Name:  "udp_host_manager",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return managers.NewUdpHostManager()
+		},
+	}
+
+	udpBindManagerDef := di.Def{
+		Name:  "udp_bind_manager",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return managers.NewUdpBindManager()
 		},
 	}
 
@@ -45,7 +61,9 @@ func registerManagers(builder di.Builder) {
 
 	err := builder.Add(
 		bindManagerDef,
-		udpAssociationManagerDef,
+		udpClientManagerDef,
+		udpHostManagerDef,
+		udpBindManagerDef,
 		whitelistManagerDef,
 		blacklistManagerDef,
 	)

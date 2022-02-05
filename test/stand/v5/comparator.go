@@ -147,3 +147,23 @@ func (c Comparator) CompareSecondBindResponse(port uint16, addressType byte, con
 
 	require.Equal(c.t, expected, actual[:i])
 }
+
+func (c Comparator) CompareAssociateResponse(conn net.Conn) {
+	actual := make([]byte, 512)
+
+	i, err := conn.Read(actual)
+
+	require.NoError(c.t, err)
+
+	expected, buildErr := c.builder.BuildResponse(v5.ResponseChunk{
+		SocksVersion: 5,
+		ReplyCode:    0,
+		AddressType:  1,
+		Address:      "0.0.0.0",
+		Port:         c.config.Server.ConnectPort,
+	})
+
+	require.NoError(c.t, buildErr)
+
+	require.Equal(c.t, expected, actual[:i])
+}

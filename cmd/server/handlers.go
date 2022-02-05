@@ -62,14 +62,18 @@ func registerHandlers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			parser := ctn.Get("v5_parser").(v5.Parser)
 			builder := ctn.Get("v5_builder").(v5.Builder)
-			udpAssociationManager := ctn.Get("udp_association_manager").(managers.UdpAssociationManager)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+			clients := ctn.Get("udp_client_manager").(managers.UdpClientManager)
+			hosts := ctn.Get("udp_host_manager").(managers.UdpHostManager)
+			bound := ctn.Get("udp_bind_manager").(managers.UdpBindManager)
 
 			return handlers.NewBasePacketHandler(
 				parser,
 				builder,
-				udpAssociationManager,
 				addressUtils,
+				clients,
+				hosts,
+				bound,
 			), nil
 		},
 	}
@@ -518,14 +522,14 @@ func registerV5Handlers(builder di.Builder) {
 			cfg := ctn.Get("v5_config").(v53.Config)
 			v5Logger := ctn.Get("v5_logger").(v54.Logger)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-			udpAssociationManager := ctn.Get("udp_association_manager").(managers.UdpAssociationManager)
+			udpClientManager := ctn.Get("udp_client_manager").(managers.UdpClientManager)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 
 			return v52.NewBaseUdpAssociationHandler(
 				cfg,
 				addressUtils,
-				udpAssociationManager,
+				udpClientManager,
 				v5Logger,
 				sender,
 				errorHandler,
