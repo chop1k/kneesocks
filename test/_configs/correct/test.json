@@ -27,7 +27,14 @@
     },
     "Restrictions": {
       "Blacklist": [],
-      "Whitelist": []
+      "Whitelist": [],
+      "Rate": {
+        "MaxSimultaneousConnections": 100,
+        "HostReadBuffersPerSecond": 2048,
+        "HostWriteBuffersPerSecond": 2048,
+        "ClientReadBuffersPerSecond": 2048,
+        "ClientWriteBuffersPerSecond": 2048
+      }
     }
   },
   "SocksV4a": {
@@ -41,7 +48,14 @@
     },
     "Restrictions": {
       "Blacklist": [],
-      "Whitelist": []
+      "Whitelist": [],
+      "Rate": {
+        "MaxSimultaneousConnections": 100,
+        "HostReadBuffersPerSecond": 2048,
+        "HostWriteBuffersPerSecond": 2048,
+        "ClientReadBuffersPerSecond": 2048,
+        "ClientWriteBuffersPerSecond": 2048
+      }
     }
   },
   "SocksV5": {
@@ -70,14 +84,28 @@
         "Password": "test",
         "Restrictions": {
           "Blacklist": [],
-          "Whitelist": []
+          "Whitelist": [],
+          "Rate": {
+            "MaxSimultaneousConnections": 100,
+            "HostReadBuffersPerSecond": 2048,
+            "HostWriteBuffersPerSecond": 2048,
+            "ClientReadBuffersPerSecond": 2048,
+            "ClientWriteBuffersPerSecond": 2048
+          }
         }
       },
       "anonymous": {
         "Password": "",
         "Restrictions": {
           "Blacklist": [],
-          "Whitelist": []
+          "Whitelist": [],
+          "Rate": {
+            "MaxSimultaneousConnections": 100,
+            "HostReadBuffersPerSecond": 2048,
+            "HostWriteBuffersPerSecond": 2048,
+            "ClientReadBuffersPerSecond": 2048,
+            "ClientWriteBuffersPerSecond": 2048
+          }
         }
       }
     }

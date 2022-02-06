@@ -17,11 +17,6 @@ type User struct {
 	Restrictions Restrictions `validate:"required"`
 }
 
-type Restrictions struct {
-	WhiteList []string `validate:"required"`
-	BlackList []string `validate:"required"`
-}
-
 type SocksV5DeadlineConfig struct {
 	Selection        uint `validate:"required"`
 	Password         uint `validate:"required"`
