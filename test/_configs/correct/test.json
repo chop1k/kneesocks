@@ -29,11 +29,11 @@
       "Blacklist": [],
       "Whitelist": [],
       "Rate": {
-        "MaxSimultaneousConnections": 100,
-        "HostReadBuffersPerSecond": 2048,
-        "HostWriteBuffersPerSecond": 2048,
-        "ClientReadBuffersPerSecond": 2048,
-        "ClientWriteBuffersPerSecond": 2048
+        "MaxSimultaneousConnections": -1,
+        "HostReadBuffersPerSecond": -1,
+        "HostWriteBuffersPerSecond": -1,
+        "ClientReadBuffersPerSecond": -1,
+        "ClientWriteBuffersPerSecond": -1
       }
     }
   },
@@ -50,11 +50,11 @@
       "Blacklist": [],
       "Whitelist": [],
       "Rate": {
-        "MaxSimultaneousConnections": 100,
-        "HostReadBuffersPerSecond": 2048,
-        "HostWriteBuffersPerSecond": 2048,
-        "ClientReadBuffersPerSecond": 2048,
-        "ClientWriteBuffersPerSecond": 2048
+        "MaxSimultaneousConnections": -1,
+        "HostReadBuffersPerSecond": -1,
+        "HostWriteBuffersPerSecond": -1,
+        "ClientReadBuffersPerSecond": -1,
+        "ClientWriteBuffersPerSecond": -1
       }
     }
   },
@@ -86,11 +86,11 @@
           "Blacklist": [],
           "Whitelist": [],
           "Rate": {
-            "MaxSimultaneousConnections": 100,
-            "HostReadBuffersPerSecond": 2048,
-            "HostWriteBuffersPerSecond": 2048,
-            "ClientReadBuffersPerSecond": 2048,
-            "ClientWriteBuffersPerSecond": 2048
+            "MaxSimultaneousConnections": -1,
+            "HostReadBuffersPerSecond": -1,
+            "HostWriteBuffersPerSecond": -1,
+            "ClientReadBuffersPerSecond": -1,
+            "ClientWriteBuffersPerSecond": -1
           }
         }
       },
@@ -100,11 +100,11 @@
           "Blacklist": [],
           "Whitelist": [],
           "Rate": {
-            "MaxSimultaneousConnections": 100,
-            "HostReadBuffersPerSecond": 2048,
-            "HostWriteBuffersPerSecond": 2048,
-            "ClientReadBuffersPerSecond": 2048,
-            "ClientWriteBuffersPerSecond": 2048
+            "MaxSimultaneousConnections": 0,
+            "HostReadBuffersPerSecond": -1,
+            "HostWriteBuffersPerSecond": -1,
+            "ClientReadBuffersPerSecond": -1,
+            "ClientWriteBuffersPerSecond": -1
           }
         }
       }
