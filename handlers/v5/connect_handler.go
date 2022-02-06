@@ -5,7 +5,6 @@ import (
 	"socks/handlers/v5/helpers"
 	v52 "socks/logger/v5"
 	"socks/protocol/v5"
-	"socks/transfer"
 	"socks/utils"
 )
 
@@ -14,29 +13,29 @@ type ConnectHandler interface {
 }
 
 type BaseConnectHandler struct {
-	streamHandler transfer.StreamHandler
-	logger        v52.Logger
-	utils         utils.AddressUtils
-	sender        v5.Sender
-	errorHandler  ErrorHandler
-	dialer        helpers.Dialer
+	logger       v52.Logger
+	utils        utils.AddressUtils
+	sender       v5.Sender
+	errorHandler ErrorHandler
+	dialer       helpers.Dialer
+	transmitter  helpers.Transmitter
 }
 
 func NewBaseConnectHandler(
-	streamHandler transfer.StreamHandler,
 	logger v52.Logger,
 	addressUtils utils.AddressUtils,
 	sender v5.Sender,
 	errorHandler ErrorHandler,
 	dialer helpers.Dialer,
+	transmitter helpers.Transmitter,
 ) (BaseConnectHandler, error) {
 	return BaseConnectHandler{
-		streamHandler: streamHandler,
-		logger:        logger,
-		utils:         addressUtils,
-		sender:        sender,
-		errorHandler:  errorHandler,
-		dialer:        dialer,
+		logger:       logger,
+		utils:        addressUtils,
+		sender:       sender,
+		errorHandler: errorHandler,
+		dialer:       dialer,
+		transmitter:  transmitter,
 	}, nil
 }
 
@@ -49,10 +48,10 @@ func (b BaseConnectHandler) HandleConnect(name string, address string, client ne
 		return
 	}
 
-	b.connectSendResponse(address, host, client)
+	b.connectSendResponse(name, address, host, client)
 }
 
-func (b BaseConnectHandler) connectSendResponse(address string, host, client net.Conn) {
+func (b BaseConnectHandler) connectSendResponse(name string, address string, host, client net.Conn) {
 	addr, port, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
@@ -79,6 +78,5 @@ func (b BaseConnectHandler) connectSendResponse(address string, host, client net
 
 	b.logger.Connect.Successful(client.RemoteAddr().String(), host.RemoteAddr().String())
 
-	go b.streamHandler.ClientToHost(client, host)
-	b.streamHandler.HostToClient(client, host)
+	b.transmitter.TransferConnect(name, client, host)
 }

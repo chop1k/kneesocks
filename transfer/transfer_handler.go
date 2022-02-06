@@ -4,19 +4,14 @@ import (
 	"net"
 )
 
-type StreamHandler interface {
-	ClientToHost(client net.Conn, host net.Conn)
-	HostToClient(client net.Conn, host net.Conn)
+type BaseHandler struct {
 }
 
-type BaseStreamHandler struct {
+func NewBaseHandler() (BaseHandler, error) {
+	return BaseHandler{}, nil
 }
 
-func NewBaseStreamHandler() *BaseStreamHandler {
-	return &BaseStreamHandler{}
-}
-
-func (b BaseStreamHandler) ClientToHost(client, host net.Conn) {
+func (b BaseHandler) TransferToHost(client net.Conn, host net.Conn) {
 	for {
 		err := b.clientToHost(client, host)
 
@@ -29,7 +24,7 @@ func (b BaseStreamHandler) ClientToHost(client, host net.Conn) {
 	}
 }
 
-func (b BaseStreamHandler) HostToClient(client, host net.Conn) {
+func (b BaseHandler) TransferToClient(client net.Conn, host net.Conn) {
 	for {
 		err := b.hostToClient(client, host)
 
@@ -42,7 +37,7 @@ func (b BaseStreamHandler) HostToClient(client, host net.Conn) {
 	}
 }
 
-func (b BaseStreamHandler) clientToHost(client, host net.Conn) error {
+func (b BaseHandler) clientToHost(client, host net.Conn) error {
 	buffer := make([]byte, 512)
 
 	i, readErr := client.Read(buffer)
@@ -60,7 +55,7 @@ func (b BaseStreamHandler) clientToHost(client, host net.Conn) error {
 	return readErr
 }
 
-func (b BaseStreamHandler) hostToClient(client, host net.Conn) error {
+func (b BaseHandler) hostToClient(client, host net.Conn) error {
 	buffer := make([]byte, 512)
 
 	i, readErr := host.Read(buffer)

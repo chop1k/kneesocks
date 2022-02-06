@@ -11,13 +11,27 @@ var (
 )
 
 type BaseLimitedConn struct {
-	writesPerSecond uint
-	readsPerSecond  uint
+	writesPerSecond int
+	readsPerSecond  int
 	lastRead        int64
-	readsCollected  uint
+	readsCollected  int
 	lastWrite       int64
-	writesCollected uint
+	writesCollected int
 	conn            net.Conn
+}
+
+func NewBaseLimitedConn(writesPerSecond int, readsPerSecond int, conn net.Conn) *BaseLimitedConn {
+	now := time.Now().UTC()
+
+	return &BaseLimitedConn{
+		writesPerSecond: writesPerSecond,
+		readsPerSecond:  readsPerSecond,
+		lastRead:        now.Unix(),
+		readsCollected:  0,
+		lastWrite:       now.Unix(),
+		writesCollected: 0,
+		conn:            conn,
+	}
 }
 
 func (b BaseLimitedConn) LocalAddr() net.Addr {
@@ -40,21 +54,11 @@ func (b BaseLimitedConn) SetWriteDeadline(t time.Time) error {
 	return b.conn.SetWriteDeadline(t)
 }
 
-func NewBaseLimitedConn(writesPerSecond uint, readsPerSecond uint, conn net.Conn) *BaseLimitedConn {
-	now := time.Now().UTC()
-
-	return &BaseLimitedConn{
-		writesPerSecond: writesPerSecond,
-		readsPerSecond:  readsPerSecond,
-		lastRead:        now.Unix(),
-		readsCollected:  0,
-		lastWrite:       now.Unix(),
-		writesCollected: 0,
-		conn:            conn,
-	}
-}
-
 func (b *BaseLimitedConn) Write(p []byte) (n int, err error) {
+	if b.writesPerSecond <= 0 {
+		return b.conn.Write(p)
+	}
+
 	now := time.Now().UTC()
 
 	unix := now.Unix()
@@ -98,6 +102,10 @@ func (b *BaseLimitedConn) Write(p []byte) (n int, err error) {
 }
 
 func (b *BaseLimitedConn) Read(p []byte) (n int, err error) {
+	if b.readsPerSecond <= 0 {
+		return b.conn.Read(p)
+	}
+
 	now := time.Now().UTC()
 
 	unix := now.Unix()

@@ -201,10 +201,21 @@ func registerV4Config(builder di.Builder) {
 		},
 	}
 
+	restrictionsConfigDef := di.Def{
+		Name:  "v4_restrictions_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return v43.NewBaseRestrictionsConfig(cfg)
+		},
+	}
+
 	err := builder.Add(
 		loggerConfigDef,
 		deadlineDef,
 		configDef,
+		restrictionsConfigDef,
 	)
 
 	if err != nil {
@@ -243,10 +254,21 @@ func registerV4aConfig(builder di.Builder) {
 		},
 	}
 
+	restrictionsConfigDef := di.Def{
+		Name:  "v4a_restrictions_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return v4a3.NewBaseRestrictionsConfig(cfg)
+		},
+	}
+
 	err := builder.Add(
 		loggerConfigDef,
 		deadlineDef,
 		configDef,
+		restrictionsConfigDef,
 	)
 
 	if err != nil {
@@ -285,10 +307,21 @@ func registerV5Config(builder di.Builder) {
 		},
 	}
 
+	usersConfigDef := di.Def{
+		Name:  "users_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+
+			return v53.NewBaseUsersConfig(cfg)
+		},
+	}
+
 	err := builder.Add(
 		loggerConfigDef,
 		configDef,
 		deadlineDef,
+		usersConfigDef,
 	)
 
 	if err != nil {

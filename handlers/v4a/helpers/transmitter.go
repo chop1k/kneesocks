@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"net"
-	v4 "socks/config/v4"
+	"socks/config/v4a"
 	"socks/managers"
 	"socks/transfer"
 )
@@ -13,14 +13,14 @@ type Transmitter interface {
 }
 
 type BaseTransmitter struct {
-	config         v4.RestrictionsConfig
+	config         v4a.RestrictionsConfig
 	connectHandler transfer.ConnectHandler
 	bindHandler    transfer.BindHandler
 	bindRate       managers.BindRateManager
 }
 
 func NewBaseTransmitter(
-	config v4.RestrictionsConfig,
+	config v4a.RestrictionsConfig,
 	connectHandler transfer.ConnectHandler,
 	bindHandler transfer.BindHandler,
 	bindRate managers.BindRateManager,

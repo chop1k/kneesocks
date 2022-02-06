@@ -5,7 +5,6 @@ import (
 	"socks/handlers/v4a/helpers"
 	v4a2 "socks/logger/v4a"
 	"socks/protocol/v4a"
-	"socks/transfer"
 )
 
 type ConnectHandler interface {
@@ -13,26 +12,26 @@ type ConnectHandler interface {
 }
 
 type BaseConnectHandler struct {
-	streamHandler transfer.StreamHandler
-	logger        v4a2.Logger
-	sender        v4a.Sender
-	errorHandler  ErrorHandler
-	dialer        helpers.Dialer
+	logger       v4a2.Logger
+	sender       v4a.Sender
+	errorHandler ErrorHandler
+	dialer       helpers.Dialer
+	transmitter  helpers.Transmitter
 }
 
 func NewBaseConnectHandler(
-	streamHandler transfer.StreamHandler,
 	logger v4a2.Logger,
 	sender v4a.Sender,
 	errorHandler ErrorHandler,
 	dialer helpers.Dialer,
+	transmitter helpers.Transmitter,
 ) (BaseConnectHandler, error) {
 	return BaseConnectHandler{
-		streamHandler: streamHandler,
-		logger:        logger,
-		sender:        sender,
-		errorHandler:  errorHandler,
-		dialer:        dialer,
+		logger:       logger,
+		sender:       sender,
+		errorHandler: errorHandler,
+		dialer:       dialer,
+		transmitter:  transmitter,
 	}, nil
 }
 
@@ -59,6 +58,5 @@ func (b BaseConnectHandler) connectSendSuccess(address string, host net.Conn, cl
 
 	b.logger.Connect.Successful(client.RemoteAddr().String(), address)
 
-	go b.streamHandler.ClientToHost(client, host)
-	b.streamHandler.HostToClient(client, host)
+	b.transmitter.TransferConnect(client, host)
 }

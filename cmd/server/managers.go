@@ -15,6 +15,14 @@ func registerManagers(builder di.Builder) {
 		},
 	}
 
+	bindRateManagerDef := di.Def{
+		Name:  "bind_rate_manager",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return managers.NewBindRateManager()
+		},
+	}
+
 	udpClientManagerDef := di.Def{
 		Name:  "udp_client_manager",
 		Scope: di.App,
@@ -61,6 +69,7 @@ func registerManagers(builder di.Builder) {
 
 	err := builder.Add(
 		bindManagerDef,
+		bindRateManagerDef,
 		udpClientManagerDef,
 		udpHostManagerDef,
 		udpBindManagerDef,

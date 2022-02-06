@@ -1,16 +1,12 @@
 package handlers
 
 import (
-	"fmt"
 	"net"
-	"socks/handlers/helpers"
 	"socks/handlers/v4"
 	"socks/handlers/v4a"
 	"socks/handlers/v5"
 	tcp2 "socks/logger/tcp"
 	"socks/protocol"
-	"socks/transfer"
-	"socks/utils"
 )
 
 type ConnectionHandler interface {
@@ -18,35 +14,29 @@ type ConnectionHandler interface {
 }
 
 type BaseConnectionHandler struct {
-	streamHandler transfer.StreamHandler
-	v4Handler     v4.Handler
-	v4aHandler    v4a.Handler
-	v5Handler     v5.Handler
-	utils         utils.AddressUtils
-	logger        tcp2.Logger
-	receiver      protocol.Receiver
-	binder        helpers.Binder
+	v4Handler   v4.Handler
+	v4aHandler  v4a.Handler
+	v5Handler   v5.Handler
+	logger      tcp2.Logger
+	receiver    protocol.Receiver
+	bindHandler BindHandler
 }
 
 func NewBaseConnectionHandler(
-	streamHandler transfer.StreamHandler,
 	v4Handler v4.Handler,
 	v4aHandler v4a.Handler,
 	v5Handler v5.Handler,
-	utils utils.AddressUtils,
 	logger tcp2.Logger,
 	receiver protocol.Receiver,
-	binder helpers.Binder,
+	bindHandler BindHandler,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
-		streamHandler: streamHandler,
-		v5Handler:     v5Handler,
-		v4aHandler:    v4aHandler,
-		v4Handler:     v4Handler,
-		utils:         utils,
-		logger:        logger,
-		receiver:      receiver,
-		binder:        binder,
+		v5Handler:   v5Handler,
+		v4aHandler:  v4aHandler,
+		v4Handler:   v4Handler,
+		logger:      logger,
+		receiver:    receiver,
+		bindHandler: bindHandler,
 	}, nil
 }
 
@@ -66,7 +56,7 @@ func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
 
 func (b BaseConnectionHandler) checkProtocol(request []byte, client net.Conn) {
 	if len(request) < 3 {
-		b.checkBound(request, client)
+		b.bindHandler.Handle(request, client)
 
 		return
 	}
@@ -76,13 +66,13 @@ func (b BaseConnectionHandler) checkProtocol(request []byte, client net.Conn) {
 	} else if request[0] == 5 {
 		b.checkV5(request, client)
 	} else {
-		b.checkBound(request, client)
+		b.bindHandler.Handle(request, client)
 	}
 }
 
 func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
 	if len(request) < 9 {
-		b.checkBound(request, client)
+		b.bindHandler.Handle(request, client)
 
 		return
 	}
@@ -100,13 +90,13 @@ func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
 
 func (b BaseConnectionHandler) checkV5(request []byte, client net.Conn) {
 	if len(request) < 3 {
-		b.checkBound(request, client)
+		b.bindHandler.Handle(request, client)
 
 		return
 	}
 
 	if int(request[1])+2 != len(request) {
-		b.checkBound(request, client)
+		b.bindHandler.Handle(request, client)
 
 		return
 	}
@@ -114,87 +104,4 @@ func (b BaseConnectionHandler) checkV5(request []byte, client net.Conn) {
 	b.logger.Connection.ProtocolDetermined(client.RemoteAddr().String(), "socksV5")
 
 	b.v5Handler.Handle(request, client)
-}
-
-func (b BaseConnectionHandler) checkBound(request []byte, client net.Conn) {
-	addr := client.RemoteAddr().String()
-
-	if b.binder.IsBound(addr) {
-		b.exchange(request, addr, client)
-	} else {
-		b.checkDomain(request, addr, client)
-	}
-}
-
-func (b BaseConnectionHandler) checkDomain(request []byte, address string, client net.Conn) {
-	hostAddr, hostPort, parseErr := b.utils.ParseAddress(address)
-
-	if parseErr != nil {
-		_ = client.Close()
-
-		b.logger.Errors.AddressParseError(address, parseErr)
-
-		return
-	}
-
-	addresses, err := net.LookupAddr(hostAddr)
-
-	if err != nil {
-		_ = client.Close()
-
-		b.logger.Errors.LookupError(hostAddr, err)
-
-		return
-	}
-
-	for _, address := range addresses {
-		address = fmt.Sprintf("%s:%d", address, hostPort)
-
-		if b.binder.IsBound(address) {
-			b.exchange(request, address, client)
-
-			return
-		}
-	}
-
-	_ = client.Close()
-
-	b.logger.Connection.Denied(address)
-}
-
-func (b BaseConnectionHandler) exchange(request []byte, address string, client net.Conn) {
-	err := b.binder.Send(address, client)
-
-	if err != nil {
-		_ = client.Close()
-
-		b.logger.Errors.SendHostError(address, err)
-
-		return
-	}
-
-	host, receiveErr := b.binder.Receive(address)
-
-	if receiveErr != nil {
-		_ = client.Close()
-
-		b.logger.Errors.ReceiveClientError(address, receiveErr)
-
-		return
-	}
-
-	b.logger.Connection.Bound(client.RemoteAddr().String(), host.RemoteAddr().String())
-
-	_, err = host.Write(request)
-
-	if err != nil {
-		_ = client.Close()
-		_ = host.Close()
-
-		b.logger.Errors.WriteRequestError(client.RemoteAddr().String(), host.RemoteAddr().String(), err)
-
-		return
-	}
-
-	b.streamHandler.ClientToHost(client, host)
 }

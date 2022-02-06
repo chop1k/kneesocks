@@ -7,9 +7,9 @@ type Restrictions struct {
 }
 
 type RateRestrictions struct {
-	MaxSimultaneousConnections  uint `validate:"required"`
-	HostReadBuffersPerSecond    uint `validate:"required"`
-	HostWriteBuffersPerSecond   uint `validate:"required"`
-	ClientReadBuffersPerSecond  uint `validate:"required"`
-	ClientWriteBuffersPerSecond uint `validate:"required"`
+	MaxSimultaneousConnections  int `validate:"required"`
+	HostReadBuffersPerSecond    int `validate:"required"`
+	HostWriteBuffersPerSecond   int `validate:"required"`
+	ClientReadBuffersPerSecond  int `validate:"required"`
+	ClientWriteBuffersPerSecond int `validate:"required"`
 }

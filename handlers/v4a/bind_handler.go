@@ -5,7 +5,6 @@ import (
 	"socks/handlers/v4a/helpers"
 	v4a2 "socks/logger/v4a"
 	"socks/protocol/v4a"
-	"socks/transfer"
 	"socks/utils"
 )
 
@@ -14,29 +13,29 @@ type BindHandler interface {
 }
 
 type BaseBindHandler struct {
-	logger        v4a2.Logger
-	streamHandler transfer.StreamHandler
-	utils         utils.AddressUtils
-	sender        v4a.Sender
-	errorHandler  ErrorHandler
-	binder        helpers.Binder
+	logger       v4a2.Logger
+	utils        utils.AddressUtils
+	sender       v4a.Sender
+	errorHandler ErrorHandler
+	binder       helpers.Binder
+	transmitter  helpers.Transmitter
 }
 
 func NewBaseBindHandler(
 	logger v4a2.Logger,
-	streamHandler transfer.StreamHandler,
 	utils utils.AddressUtils,
 	sender v4a.Sender,
 	errorHandler ErrorHandler,
 	binder helpers.Binder,
+	transmitter helpers.Transmitter,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
-		logger:        logger,
-		streamHandler: streamHandler,
-		utils:         utils,
-		sender:        sender,
-		errorHandler:  errorHandler,
-		binder:        binder,
+		logger:       logger,
+		utils:        utils,
+		sender:       sender,
+		errorHandler: errorHandler,
+		binder:       binder,
+		transmitter:  transmitter,
 	}, nil
 }
 
@@ -141,5 +140,5 @@ func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string,
 
 	b.logger.Bind.Successful(client.RemoteAddr().String(), address)
 
-	b.streamHandler.ClientToHost(host, client)
+	b.transmitter.TransferBind(client, host)
 }
