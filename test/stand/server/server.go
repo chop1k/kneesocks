@@ -34,7 +34,7 @@ func (s Server) SendPictureRequest(picture byte, conn net.Conn) {
 
 	require.NoError(s.t, err)
 
-	s.picture.Compare(picture, conn)
+	s.picture.CompareUsingTcp(picture, conn)
 }
 
 func (s Server) SendBindRequest(picture byte, addressType byte, port uint16) {
@@ -54,20 +54,4 @@ func (s Server) SendBindRequest(picture byte, addressType byte, port uint16) {
 	_, err = conn.Write(buffer.Bytes())
 
 	require.NoError(s.t, err)
-}
-
-func (s Server) SendPictureRequestByUdp() {
-	addr, lookupErr := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", s.config.Socks.IPv4, s.config.Socks.UdpPort))
-
-	require.NoError(s.t, lookupErr)
-
-	conn, err := net.DialUDP("udp", nil, addr)
-
-	require.NoError(s.t, err)
-
-	_, err = conn.Write([]byte{255})
-
-	require.NoError(s.t, err)
-
-	s.picture.Compare(255, conn)
 }

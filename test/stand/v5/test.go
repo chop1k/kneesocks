@@ -7,11 +7,12 @@ import (
 )
 
 type Test struct {
-	_case   config.Case
-	t       *testing.T
-	auth    AuthTester
-	connect ConnectTester
-	bind    BindTester
+	_case     config.Case
+	t         *testing.T
+	auth      AuthTester
+	connect   ConnectTester
+	bind      BindTester
+	associate AssociationTester
 }
 
 func NewTest(
@@ -20,13 +21,15 @@ func NewTest(
 	auth AuthTester,
 	connect ConnectTester,
 	bind BindTester,
+	associate AssociationTester,
 ) (Test, error) {
 	return Test{
-		_case:   _case,
-		t:       t,
-		auth:    auth,
-		connect: connect,
-		bind:    bind,
+		_case:     _case,
+		t:         t,
+		auth:      auth,
+		connect:   connect,
+		bind:      bind,
+		associate: associate,
 	}, nil
 }
 
@@ -38,7 +41,7 @@ func (t Test) Start() {
 	} else if t._case.Command == "auth" {
 		t.auth.Test(t._case.Number)
 	} else if t._case.Command == "associate" {
-
+		t.associate.Test(t._case.Number)
 	} else {
 		require.Fail(t.t, "Unsupported command \"%s\".", t._case.Command)
 	}

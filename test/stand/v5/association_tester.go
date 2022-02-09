@@ -20,6 +20,26 @@ type AssociationTester struct {
 	picture    picture.Picture
 }
 
+func NewAssociationTester(
+	t *testing.T,
+	config config.Config,
+	sender Sender,
+	comparator Comparator,
+	server server.Server,
+	scope config.Scope,
+	picture picture.Picture,
+) (AssociationTester, error) {
+	return AssociationTester{
+		t:          t,
+		config:     config,
+		sender:     sender,
+		comparator: comparator,
+		server:     server,
+		scope:      scope,
+		picture:    picture,
+	}, nil
+}
+
 func (t AssociationTester) Test(number int) {
 	scope := t.scope.GetV5Associate(number)
 
@@ -32,5 +52,7 @@ func (t AssociationTester) Test(number int) {
 	t.sender.SendAssociateRequest(scope.AddressType, conn)
 	t.comparator.CompareAssociateResponse(conn)
 
-	t.server.SendPictureRequestByUdp()
+	udp := t.sender.SendPictureRequest(scope.Picture)
+
+	t.picture.CompareUsingUdp(scope.Picture, udp)
 }

@@ -10,6 +10,7 @@ type PacketLogger interface {
 	NotAllowedByBlacklist(address string)
 	HostUnreachable(address string)
 	NetworkUnreachable(address string)
+	InvalidFragment(address string)
 }
 
 type BasePacketLogger struct {
@@ -104,4 +105,16 @@ func (b BasePacketLogger) NetworkUnreachable(client string) {
 	e.
 		Str("client", client).
 		Msg("Network unreachable.")
+}
+
+func (b BasePacketLogger) InvalidFragment(address string) {
+	e := b.logger.Warn()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", address).
+		Msg("Invalid fragment, dropping the package.")
 }

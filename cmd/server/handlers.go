@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/sarulabs/di"
 	"socks/config/tcp"
+	udp2 "socks/config/udp"
 	v43 "socks/config/v4"
 	v4a3 "socks/config/v4a"
 	v53 "socks/config/v5"
@@ -16,6 +17,7 @@ import (
 	"socks/handlers/v5/authenticator"
 	"socks/handlers/v5/helpers"
 	tcp2 "socks/logger/tcp"
+	"socks/logger/udp"
 	v44 "socks/logger/v4"
 	v4a4 "socks/logger/v4a"
 	v54 "socks/logger/v5"
@@ -74,7 +76,8 @@ func registerHandlers(builder di.Builder) {
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			clients := ctn.Get("udp_client_manager").(managers.UdpClientManager)
 			hosts := ctn.Get("udp_host_manager").(managers.UdpHostManager)
-			bound := ctn.Get("udp_bind_manager").(managers.UdpBindManager)
+			logger := ctn.Get("udp_logger").(udp.Logger)
+			cfg := ctn.Get("udp_config").(udp2.Config)
 
 			return handlers.NewBasePacketHandler(
 				parser,
@@ -82,7 +85,8 @@ func registerHandlers(builder di.Builder) {
 				addressUtils,
 				clients,
 				hosts,
-				bound,
+				logger,
+				cfg,
 			), nil
 		},
 	}

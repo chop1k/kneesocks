@@ -1,6 +1,7 @@
 package v5
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"net"
 	"socks/protocol/auth/password"
@@ -95,4 +96,30 @@ func (s Sender) SendBindRequest(port uint16, addressType byte, conn net.Conn) {
 
 func (s Sender) SendAssociateRequest(addressType byte, conn net.Conn) {
 	s.sendRequest(3, addressType, s.config.Server.ConnectPort, conn)
+}
+
+func (s Sender) SendPictureRequest(picture byte) net.PacketConn {
+	addr, lookupErr := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", s.config.Socks.IPv4, s.config.Socks.UdpPort))
+
+	require.NoError(s.t, lookupErr)
+
+	conn, err := net.DialUDP("udp", nil, addr)
+
+	require.NoError(s.t, err)
+
+	request, buildErr := s.builder.BuildUdpRequest(v5.UdpRequest{
+		Fragment:    0,
+		AddressType: 1,
+		Address:     s.config.Server.IPv4,
+		Port:        s.config.Server.UdpPort,
+		Data:        []byte{picture},
+	})
+
+	require.NoError(s.t, buildErr)
+
+	_, err = conn.Write(request)
+
+	require.NoError(s.t, err)
+
+	return conn
 }

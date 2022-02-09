@@ -160,7 +160,7 @@ func (c Comparator) CompareAssociateResponse(conn net.Conn) {
 		ReplyCode:    0,
 		AddressType:  1,
 		Address:      "0.0.0.0",
-		Port:         c.config.Server.ConnectPort,
+		Port:         c.config.Socks.UdpPort,
 	})
 
 	require.NoError(c.t, buildErr)

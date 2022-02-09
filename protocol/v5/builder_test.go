@@ -136,3 +136,7 @@ func TestBaseBuilder_BuildMethods(t *testing.T) {
 func TestBaseBuilder_BuildRequest(t *testing.T) {
 	t.Skip("Not implemented.")
 }
+
+func TestBaseBuilder_BuildUdpRequest(t *testing.T) {
+	t.Skip("Not implemented.")
+}

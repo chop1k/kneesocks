@@ -231,7 +231,20 @@
         "Method": 2
       }
     ],
-    "Associate": []
+    "Associate": [
+      {
+        "Picture": 3,
+        "AddressType": 1
+      },
+      {
+        "Picture": 3,
+        "AddressType": 3
+      },
+      {
+        "Picture": 3,
+        "AddressType": 4
+      }
+    ]
   },
   "Socks": {
     "IPv4": "127.0.0.1",

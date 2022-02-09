@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	v5 "socks/protocol/v5"
 	"socks/test/stand/config"
 	"syscall"
 	"testing"
@@ -21,26 +22,43 @@ type Picture struct {
 	config config.Config
 	_case  config.Case
 	t      *testing.T
+	parser v5.Parser
 }
 
-func NewPicture(config config.Config, _case config.Case, t *testing.T) (Picture, error) {
-	return Picture{config: config, _case: _case, t: t}, nil
+func NewPicture(
+	config config.Config,
+	_case config.Case,
+	t *testing.T,
+	parser v5.Parser,
+) (Picture, error) {
+	return Picture{
+		config: config,
+		_case:  _case,
+		t:      t,
+		parser: parser,
+	}, nil
 }
 
-func (p Picture) Compare(picture byte, conn net.Conn) {
-	var path string
+func (p Picture) CompareUsingTcp(picture byte, conn net.Conn) {
+	p.compareUsingTcp(p.getPath(picture), picture, conn)
+}
 
+func (p Picture) CompareUsingUdp(picture byte, packet net.PacketConn) {
+	p.compareUsingUdp(p.getPath(picture), picture, packet)
+}
+
+func (p Picture) getPath(picture byte) string {
 	if picture == 1 {
-		path = p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "big-picture"))
+		return p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "big-picture"))
 	} else if picture == 2 {
-		path = p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "middle-picture"))
+		return p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "middle-picture"))
 	} else if picture == 3 {
-		path = p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "small-picture"))
+		return p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "small-picture"))
 	} else {
 		require.Fail(p.t, "Unknown picture %d. ", picture)
-	}
 
-	p.compare(path, picture, conn)
+		return ""
+	}
 }
 
 func (p Picture) generateFilePath(name string) string {
@@ -93,29 +111,65 @@ func (p Picture) randomString() string {
 	return string(s)
 }
 
-func (p Picture) compare(path string, picture byte, conn net.Conn) {
+func (p Picture) compareUsingTcp(path string, picture byte, conn net.Conn) {
+	writers, file, h := p.createWriter(path)
+
+	p.receivePictureUsingTcp(conn, writers)
+
+	p.compareHash(path, file, picture, h)
+}
+
+func (p Picture) compareUsingUdp(path string, picture byte, conn net.PacketConn) {
+	writers, file, h := p.createWriter(path)
+
+	p.receivePictureUsingUdp(conn, writers)
+
+	p.compareHash(path, file, picture, h)
+}
+
+func (p Picture) createWriter(path string) (io.Writer, *os.File, hash.Hash) {
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0777)
 
 	require.NoError(p.t, err)
 
 	h := sha256.New()
 
-	writers := io.MultiWriter(file, h)
+	return io.MultiWriter(file, h), file, h
+}
 
+func (p Picture) receivePictureUsingTcp(reader io.Reader, writer io.Writer) {
 	for {
 		buffer := make([]byte, 512)
 
-		i, err := conn.Read(buffer)
+		i, err := reader.Read(buffer)
 
 		if err != nil {
 			break
 		}
 
-		_, err = writers.Write(buffer[:i])
+		_, err = writer.Write(buffer[:i])
 
 		require.NoError(p.t, err)
 	}
+}
 
+func (p Picture) receivePictureUsingUdp(packet net.PacketConn, writer io.Writer) {
+	buffer := make([]byte, 60000)
+
+	i, _, err := packet.ReadFrom(buffer)
+
+	require.NoError(p.t, err)
+
+	chunk, parseErr := p.parser.ParseUdpRequest(buffer[:i])
+
+	require.NoError(p.t, parseErr)
+
+	_, err = writer.Write(chunk.Data)
+
+	require.NoError(p.t, err)
+}
+
+func (p Picture) compareHash(path string, file *os.File, picture byte, h hash.Hash) {
 	if picture == 1 {
 		require.Equal(p.t, p.config.Picture.BigPictureHash, fmt.Sprintf("%x", h.Sum(nil)))
 	} else if picture == 2 {
@@ -124,15 +178,13 @@ func (p Picture) compare(path string, picture byte, conn net.Conn) {
 		require.Equal(p.t, p.config.Picture.SmallPictureHash, fmt.Sprintf("%x", h.Sum(nil)))
 	}
 
-	p.cleanUp(path, file, h, conn)
+	p.cleanUp(path, file, h)
 }
 
-func (p Picture) cleanUp(path string, file *os.File, sha hash.Hash, conn net.Conn) {
+func (p Picture) cleanUp(path string, file *os.File, sha hash.Hash) {
 	sha.Reset()
 
 	require.NoError(p.t, file.Close())
 
 	require.NoError(p.t, os.Remove(path))
-
-	_ = conn.Close()
 }

@@ -14,29 +14,29 @@ type UdpAssociationHandler interface {
 }
 
 type BaseUdpAssociationHandler struct {
-	config                v5.Config
-	utils                 utils.AddressUtils
-	udpAssociationManager managers.UdpClientManager
-	logger                v52.Logger
-	sender                v53.Sender
-	errorHandler          ErrorHandler
+	config        v5.Config
+	utils         utils.AddressUtils
+	clientManager managers.UdpClientManager
+	logger        v52.Logger
+	sender        v53.Sender
+	errorHandler  ErrorHandler
 }
 
 func NewBaseUdpAssociationHandler(
 	config v5.Config,
 	utils utils.AddressUtils,
-	udpAssociationManager managers.UdpClientManager,
+	clientManager managers.UdpClientManager,
 	logger v52.Logger,
 	sender v53.Sender,
 	errorHandler ErrorHandler,
 ) (BaseUdpAssociationHandler, error) {
 	return BaseUdpAssociationHandler{
-		config:                config,
-		utils:                 utils,
-		udpAssociationManager: udpAssociationManager,
-		logger:                logger,
-		sender:                sender,
-		errorHandler:          errorHandler,
+		config:        config,
+		utils:         utils,
+		clientManager: clientManager,
+		logger:        logger,
+		sender:        sender,
+		errorHandler:  errorHandler,
 	}, nil
 }
 
@@ -49,10 +49,9 @@ func (b BaseUdpAssociationHandler) HandleUdpAssociation(_ string, client net.Con
 		return
 	}
 
-	err = b.udpAssociationManager.Add(address)
+	err = b.clientManager.Add(address)
 
 	if err != nil {
-		panic(err)
 	}
 
 	b.udpSendResponse(address, client)
@@ -79,5 +78,5 @@ func (b BaseUdpAssociationHandler) udpWaitForClose(address string, client net.Co
 
 	_ = client.Close()
 
-	b.udpAssociationManager.Remove(address)
+	b.clientManager.Remove(address)
 }

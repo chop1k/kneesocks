@@ -14,7 +14,10 @@
     "BindIP": "127.0.0.1",
     "BindPort": 1080,
     "BindZone": "",
-    "BufferSize": 65535
+    "BufferSize": 65535,
+    "Deadline": {
+      "Read": 30
+    }
   },
   "SocksV4": {
     "AllowConnect": true,

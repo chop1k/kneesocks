@@ -51,5 +51,5 @@ func (t BindTester) Test(number int) {
 	t.comparator.CompareConnectResponse(conn)
 	t.server.SendBindRequest(scope.Picture, 1, scope.Port)
 	t.comparator.CompareBindResponse(scope.Port, conn)
-	t.picture.Compare(scope.Picture, conn)
+	t.picture.CompareUsingTcp(scope.Picture, conn)
 }

@@ -105,16 +105,16 @@ func (s Server) listenUdp(address *net.UDPAddr) {
 func (s Server) Start() {
 	udpAddressV4 := &net.UDPAddr{
 		IP:   net.ParseIP(s.config.Udp.BindIPv4),
-		Port: int(s.config.Tcp.BindPort),
-		Zone: s.config.Tcp.BindZone,
+		Port: int(s.config.Udp.BindPort),
+		Zone: s.config.Udp.BindZone,
 	}
 
 	go s.listenUdp(udpAddressV4)
 
 	udpAddressV6 := &net.UDPAddr{
 		IP:   net.ParseIP(s.config.Udp.BindIPv6),
-		Port: int(s.config.Tcp.BindPort),
-		Zone: s.config.Tcp.BindZone,
+		Port: int(s.config.Udp.BindPort),
+		Zone: s.config.Udp.BindZone,
 	}
 
 	go s.listenUdp(udpAddressV6)

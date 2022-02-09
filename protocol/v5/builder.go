@@ -21,6 +21,7 @@ type Builder interface {
 	BuildResponse(chunk ResponseChunk) ([]byte, error)
 	BuildMethods(chunk MethodsChunk) ([]byte, error)
 	BuildRequest(chunk RequestChunk) ([]byte, error)
+	BuildUdpRequest(chunk UdpRequest) ([]byte, error)
 }
 
 type BaseBuilder struct {
@@ -152,6 +153,64 @@ func (b BaseBuilder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return buffer.Bytes(), nil
+}
+
+func (b BaseBuilder) BuildUdpRequest(chunk UdpRequest) ([]byte, error) {
+	buffer := bytes.Buffer{}
+
+	buffer.WriteByte(0)
+	buffer.WriteByte(0)
+	buffer.WriteByte(chunk.Fragment)
+	buffer.WriteByte(chunk.AddressType)
+
+	if chunk.AddressType == 1 {
+		ip := net.ParseIP(chunk.Address)
+
+		if ip == nil {
+			return nil, CannotParseIPError
+		}
+
+		ipv4 := ip.To4()
+
+		if ipv4 == nil {
+			return nil, CannotConvertIPToIPv4Error
+		}
+
+		buffer.Write(ipv4)
+	} else if chunk.AddressType == 3 {
+		if len(chunk.Address) > 256 {
+			return nil, DomainTooLongError
+		}
+
+		buffer.WriteByte(byte(len(chunk.Address)))
+		buffer.Write([]byte(chunk.Address))
+	} else if chunk.AddressType == 4 {
+		ip := net.ParseIP(chunk.Address)
+
+		if ip == nil {
+			return nil, CannotParseIPError
+		}
+
+		ipv6 := ip.To16()
+
+		if ipv6 == nil {
+			return nil, CannotConvertIPToIPv6Error
+		}
+
+		buffer.Write(ipv6)
+	} else {
+		return nil, UnknownAddressTypeError
+	}
+
+	err := binary.Write(&buffer, binary.BigEndian, chunk.Port)
+
+	if err != nil {
+		return nil, err
+	}
+
+	buffer.Write(chunk.Data)
 
 	return buffer.Bytes(), nil
 }

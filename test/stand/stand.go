@@ -15,6 +15,7 @@ import (
 	v4 "socks/test/stand/v4"
 	"socks/test/stand/v4a"
 	v5 "socks/test/stand/v5"
+	"socks/utils"
 	"testing"
 )
 
@@ -141,8 +142,9 @@ func (s Stand) registerPicture(builder di.Builder, t *testing.T) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
 			cfg := ctn.Get("config").(config.Config)
+			parser := ctn.Get("v5_parser").(v52.Parser)
 
-			return picture.NewPicture(cfg, _case, t)
+			return picture.NewPicture(cfg, _case, t, parser)
 		},
 	}
 
@@ -360,6 +362,14 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 }
 
 func (s Stand) registerV5(builder di.Builder, t *testing.T) {
+	addressUtilsDef := di.Def{
+		Name:  "address_utils",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return utils.NewUtils()
+		},
+	}
+
 	passwordBuilderDef := di.Def{
 		Name:  "v5_password_builder",
 		Scope: di.App,
@@ -373,6 +383,16 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			return v52.NewBaseBuilder()
+		},
+	}
+
+	parserDef := di.Def{
+		Name:  "v5_parser",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
+
+			return v52.NewBaseParser(addressUtils), nil
 		},
 	}
 
@@ -418,6 +438,22 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		},
 	}
 
+	associationTesterDef := di.Def{
+		Name:  "v5_association_tester",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			t := ctn.Get("t").(*testing.T)
+			cfg := ctn.Get("config").(config.Config)
+			srv := ctn.Get("server").(server.Server)
+			sender := ctn.Get("v5_sender").(v5.Sender)
+			compare := ctn.Get("v5_comparator").(v5.Comparator)
+			scope := ctn.Get("scope").(config.Scope)
+			pic := ctn.Get("picture").(picture.Picture)
+
+			return v5.NewAssociationTester(t, cfg, sender, compare, srv, scope, pic)
+		},
+	}
+
 	authTesterDef := di.Def{
 		Name:  "v5_auth_tester",
 		Scope: di.App,
@@ -457,23 +493,28 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 			auth := ctn.Get("v5_auth_tester").(v5.AuthTester)
 			connect := ctn.Get("v5_connect_tester").(v5.ConnectTester)
 			bind := ctn.Get("v5_bind_tester").(v5.BindTester)
+			associate := ctn.Get("v5_association_tester").(v5.AssociationTester)
 
-			return v5.NewTest(_case, t, auth, connect, bind)
+			return v5.NewTest(_case, t, auth, connect, bind, associate)
 		},
 	}
 
 	err := builder.Add(
+		addressUtilsDef,
 		passwordBuilderDef,
+		parserDef,
 		builderDef,
 		senderDef,
 		comparatorDef,
 		bindTesterDef,
+		associationTesterDef,
 		authTesterDef,
 		connectTesterDef,
 		testDef,
 	)
 
 	require.NoError(t, err)
+
 	s.start(builder.Build())
 }
 

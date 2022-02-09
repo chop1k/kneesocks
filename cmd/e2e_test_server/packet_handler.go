@@ -18,7 +18,7 @@ func NewPacketHandler(config Config, logger Logger) (PacketHandler, error) {
 }
 
 func (p PacketHandler) HandlePacket(picture byte, addr net.Addr, conn net.PacketConn) {
-	if picture != 255 {
+	if picture != 3 {
 		p.logger.InvalidPicture(addr.String(), picture)
 
 		return
