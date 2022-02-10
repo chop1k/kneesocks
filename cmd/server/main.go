@@ -32,7 +32,7 @@ func register(builder di.Builder) {
 func start(builder di.Builder) {
 	ctn := builder.Build()
 
-	serv := ctn.Get("server").(server.Server)
+	go ctn.Get("udp_server").(server.UdpServer).Listen()
 
-	serv.Start()
+	ctn.Get("tcp_server").(server.TcpServer).Listen()
 }

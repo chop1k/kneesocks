@@ -1,29 +1,39 @@
 package v4
 
-import "socks/config/tree"
+import (
+	"errors"
+	"github.com/Jeffail/gabs"
+)
 
 type Config interface {
-	IsConnectAllowed() bool
-	IsBindAllowed() bool
-	GetRestrictions() tree.Restrictions
+	IsConnectAllowed() (bool, error)
+	IsBindAllowed() (bool, error)
 }
 
 type BaseConfig struct {
-	config tree.Config
+	config gabs.Container
 }
 
-func NewBaseConfig(config tree.Config) (BaseConfig, error) {
+func NewBaseConfig(config gabs.Container) (BaseConfig, error) {
 	return BaseConfig{config: config}, nil
 }
 
-func (b BaseConfig) IsConnectAllowed() bool {
-	return b.config.SocksV4.AllowConnect
+func (b BaseConfig) IsConnectAllowed() (bool, error) {
+	allowed, ok := b.config.Path("SocksV4.AllowConnect").Data().(bool)
+
+	if !ok {
+		return false, errors.New("SocksV4.AllowConnect: Not specified or have invalid type. ")
+	}
+
+	return allowed, nil
 }
 
-func (b BaseConfig) IsBindAllowed() bool {
-	return b.config.SocksV4.AllowBind
-}
+func (b BaseConfig) IsBindAllowed() (bool, error) {
+	allowed, ok := b.config.Path("SocksV4.AllowBind").Data().(bool)
 
-func (b BaseConfig) GetRestrictions() tree.Restrictions {
-	return b.config.SocksV4.Restrictions
+	if !ok {
+		return false, errors.New("SocksV4.AllowBind: Not specified or have invalid type. ")
+	}
+
+	return allowed, nil
 }

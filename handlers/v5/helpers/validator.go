@@ -36,7 +36,13 @@ func NewBaseValidator(
 }
 
 func (b BaseValidator) ValidateRestrictions(command byte, name string, addressType byte, address string, client net.Conn) bool {
-	if !b.config.IsIPv4Allowed() && addressType == 1 {
+	ipV4Allowed, ipV4Err := b.config.IsIPv4Allowed()
+
+	if ipV4Err != nil {
+		panic(ipV4Err)
+	}
+
+	if !ipV4Allowed && addressType == 1 {
 		b.sender.SendAddressNotSupportedAndClose(client)
 
 		b.logger.Restrictions.IPv4AddressNotAllowed(client.RemoteAddr().String(), address)
@@ -44,7 +50,13 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 		return false
 	}
 
-	if !b.config.IsDomainAllowed() && addressType == 3 {
+	domainAllowed, domainErr := b.config.IsIPv4Allowed()
+
+	if domainErr != nil {
+		panic(domainErr)
+	}
+
+	if !domainAllowed && addressType == 3 {
 		b.sender.SendAddressNotSupportedAndClose(client)
 
 		b.logger.Restrictions.DomainAddressNotAllowed(client.RemoteAddr().String(), address)
@@ -52,7 +64,13 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 		return false
 	}
 
-	if !b.config.IsIPv6Allowed() && addressType == 4 {
+	ipV6Allowed, ipV6Err := b.config.IsIPv4Allowed()
+
+	if ipV6Err != nil {
+		panic(ipV6Err)
+	}
+
+	if !ipV6Allowed && addressType == 4 {
 		b.sender.SendAddressNotSupportedAndClose(client)
 
 		b.logger.Restrictions.IPv6AddressNotAllowed(client.RemoteAddr().String(), address)
@@ -60,7 +78,13 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 		return false
 	}
 
-	if !b.config.IsConnectAllowed() && command == 1 {
+	connectAllowed, connectErr := b.config.IsConnectAllowed()
+
+	if connectErr != nil {
+		panic(connectErr)
+	}
+
+	if !connectAllowed && command == 1 {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
@@ -68,7 +92,13 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 		return false
 	}
 
-	if !b.config.IsBindAllowed() && command == 2 {
+	bindAllowed, bindErr := b.config.IsBindAllowed()
+
+	if bindErr != nil {
+		panic(bindErr)
+	}
+
+	if !bindAllowed && command == 2 {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
@@ -76,7 +106,13 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 		return false
 	}
 
-	if !b.config.IsUdpAssociationAllowed() && command == 3 {
+	associationAllowed, associationErr := b.config.IsUdpAssociationAllowed()
+
+	if associationErr != nil {
+		panic(associationErr)
+	}
+
+	if !associationAllowed && command == 3 {
 		b.sender.SendConnectionNotAllowedAndClose(client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)

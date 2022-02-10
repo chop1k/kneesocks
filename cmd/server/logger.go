@@ -50,7 +50,7 @@ func registerZeroLog(builder di.Builder) {
 					TimeFormat: output.TimeFormat,
 				})
 			} else {
-				if err == config.ServerLoggerDisabledError {
+				if err == config.LoggerDisabledError {
 					return buildLogger(126, loggers)
 				}
 			}
@@ -64,7 +64,7 @@ func registerZeroLog(builder di.Builder) {
 
 				loggers = append(loggers, file)
 			} else {
-				if err == config.ServerLoggerDisabledError {
+				if err == config.LoggerDisabledError {
 					return buildLogger(126, loggers)
 				}
 			}

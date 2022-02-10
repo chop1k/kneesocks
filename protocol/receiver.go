@@ -29,7 +29,13 @@ func NewBaseReceiver(
 }
 
 func (b BaseReceiver) ReceiveWelcome(reader io.Reader) ([]byte, error) {
-	data, err := b.deadline.Read(b.config.GetWelcomeDeadline(), 263, reader)
+	deadline, configErr := b.config.GetWelcomeDeadline()
+
+	if configErr != nil {
+		return nil, configErr
+	}
+
+	data, err := b.deadline.Read(deadline, 263, reader)
 
 	if err != nil {
 		return nil, err

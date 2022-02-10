@@ -15,8 +15,8 @@ var (
 )
 
 type Deadline interface {
-	Read(deadline uint, bufferLength int, reader io.Reader) ([]byte, error)
-	Write(deadline uint, data []byte, writer io.Writer) error
+	Read(deadline time.Duration, bufferLength int, reader io.Reader) ([]byte, error)
+	Write(deadline time.Duration, data []byte, writer io.Writer) error
 }
 
 type BaseDeadline struct {
@@ -26,13 +26,13 @@ func NewBaseDeadline() (BaseDeadline, error) {
 	return BaseDeadline{}, nil
 }
 
-func (b BaseDeadline) Read(deadline uint, bufferLength int, reader io.Reader) ([]byte, error) {
+func (b BaseDeadline) Read(deadline time.Duration, bufferLength int, reader io.Reader) ([]byte, error) {
 	closed := false
 
 	read := make(chan []byte, 1)
 	err := make(chan error, 1)
 
-	timer := time.NewTimer(time.Second * time.Duration(deadline))
+	timer := time.NewTimer(deadline)
 
 	go func() {
 		buffer := make([]byte, bufferLength)
@@ -93,13 +93,13 @@ func (b BaseDeadline) readCleanUp(read chan []byte, err chan error, timer *time.
 	timer.Stop()
 }
 
-func (b BaseDeadline) Write(deadline uint, data []byte, writer io.Writer) error {
+func (b BaseDeadline) Write(deadline time.Duration, data []byte, writer io.Writer) error {
 	closed := false
 
 	done := make(chan bool, 1)
 	err := make(chan error, 1)
 
-	timer := time.NewTimer(time.Second * time.Duration(deadline))
+	timer := time.NewTimer(deadline)
 
 	go func() {
 		_, writeErr := writer.Write(data)

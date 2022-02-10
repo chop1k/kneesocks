@@ -1,24 +1,40 @@
 package tcp
 
-import "socks/config/tree"
+import (
+	"errors"
+	"github.com/Jeffail/gabs"
+	"time"
+)
 
 type DeadlineConfig interface {
-	GetExchangeDeadline() uint
-	GetWelcomeDeadline() uint
+	GetExchangeDeadline() (time.Duration, error)
+	GetWelcomeDeadline() (time.Duration, error)
 }
 
 type BaseDeadlineConfig struct {
-	tree tree.Config
+	config gabs.Container
 }
 
-func NewBaseDeadlineConfig(tree tree.Config) (BaseDeadlineConfig, error) {
-	return BaseDeadlineConfig{tree: tree}, nil
+func NewBaseDeadlineConfig(config gabs.Container) (BaseDeadlineConfig, error) {
+	return BaseDeadlineConfig{config: config}, nil
 }
 
-func (b BaseDeadlineConfig) GetExchangeDeadline() uint {
-	return b.tree.Tcp.Deadline.Exchange
+func (b BaseDeadlineConfig) GetExchangeDeadline() (time.Duration, error) {
+	deadline, ok := b.config.Path("Tcp.Deadline.Exchange").Data().(float64)
+
+	if !ok {
+		return 0, errors.New("Tcp.Deadline.Exchange: Not specified or have invalid type. ")
+	}
+
+	return time.Second * time.Duration(deadline), nil
 }
 
-func (b BaseDeadlineConfig) GetWelcomeDeadline() uint {
-	return b.tree.Tcp.Deadline.Welcome
+func (b BaseDeadlineConfig) GetWelcomeDeadline() (time.Duration, error) {
+	deadline, ok := b.config.Path("Tcp.Deadline.Welcome").Data().(float64)
+
+	if !ok {
+		return 0, errors.New("Tcp.Deadline.Welcome: Not specified or have invalid type. ")
+	}
+
+	return time.Second * time.Duration(deadline), nil
 }

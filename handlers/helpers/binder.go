@@ -4,7 +4,6 @@ import (
 	"net"
 	"socks/config/tcp"
 	"socks/managers"
-	"time"
 )
 
 type Binder interface {
@@ -39,7 +38,11 @@ func (b BaseBinder) Bind(address string) error {
 }
 
 func (b BaseBinder) Receive(address string) (net.Conn, error) {
-	deadline := time.Second * time.Duration(b.config.GetExchangeDeadline())
+	deadline, configErr := b.config.GetExchangeDeadline()
+
+	if configErr != nil {
+		return nil, configErr
+	}
 
 	return b.bindManager.ReceiveClient(address, deadline)
 }

@@ -29,6 +29,12 @@ func NewBaseSender(
 }
 
 func (b BaseSender) SendResponse(code byte, client net.Conn) error {
+	deadline, configErr := b.config.GetPasswordResponseDeadline()
+
+	if configErr != nil {
+		return configErr
+	}
+
 	chunk, err := b.builder.BuildResponse(ResponseChunk{
 		Version: 1,
 		Status:  code,
@@ -38,5 +44,5 @@ func (b BaseSender) SendResponse(code byte, client net.Conn) error {
 		return err
 	}
 
-	return b.deadline.Write(b.config.GetPasswordResponseDeadline(), chunk, client)
+	return b.deadline.Write(deadline, chunk, client)
 }

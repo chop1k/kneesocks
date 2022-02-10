@@ -13,14 +13,14 @@ var (
 )
 
 type BasePasswordAuthenticator struct {
-	config       v52.Config
+	config       v52.UsersConfig
 	errorHandler v5.ErrorHandler
 	sender       password.Sender
 	receiver     password.Receiver
 }
 
 func NewBasePasswordAuthenticator(
-	config v52.Config,
+	config v52.UsersConfig,
 	errorHandler v5.ErrorHandler,
 	sender password.Sender,
 	receiver password.Receiver,
@@ -42,20 +42,22 @@ func (b BasePasswordAuthenticator) Authenticate(client net.Conn) (string, error)
 		return "", err
 	}
 
-	for name, user := range b.config.GetUsers() {
-		if name != request.Name || user.Password != request.Password {
-			continue
-		}
+	user, configErr := b.config.GetUser(request.Name)
 
+	if configErr != nil {
+		return "", configErr
+	}
+
+	if user.Password == request.Password {
 		err := b.sender.SendResponse(0, client)
 
 		if err != nil {
-			b.errorHandler.HandlePasswordResponseError(err, name, client)
+			b.errorHandler.HandlePasswordResponseError(err, request.Name, client)
 
 			return "", err
 		}
 
-		return name, nil
+		return request.Name, nil
 	}
 
 	return "", UserNotFoundError

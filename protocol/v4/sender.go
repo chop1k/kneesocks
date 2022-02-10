@@ -14,14 +14,14 @@ type Sender interface {
 }
 
 type BaseSender struct {
-	tcpConfig tcp.Config
+	tcpConfig tcp.BindConfig
 	config    v42.DeadlineConfig
 	deadline  protocol.Deadline
 	builder   Builder
 }
 
 func NewBaseSender(
-	tcpConfig tcp.Config,
+	tcpConfig tcp.BindConfig,
 	config v42.DeadlineConfig,
 	deadline protocol.Deadline,
 	builder Builder,
@@ -44,13 +44,19 @@ func (b BaseSender) build(status byte, ip net.IP, port uint16) ([]byte, error) {
 }
 
 func (b BaseSender) send(status byte, ip net.IP, port uint16, client net.Conn) error {
+	deadline, configErr := b.config.GetResponseDeadline()
+
+	if configErr != nil {
+		return configErr
+	}
+
 	data, err := b.build(status, ip, port)
 
 	if err != nil {
 		return err
 	}
 
-	err = b.deadline.Write(b.config.GetResponseDeadline(), data, client)
+	err = b.deadline.Write(deadline, data, client)
 
 	if err == protocol.TimeoutError {
 		return err
@@ -60,12 +66,24 @@ func (b BaseSender) send(status byte, ip net.IP, port uint16, client net.Conn) e
 }
 
 func (b BaseSender) SendFailAndClose(client net.Conn) {
-	_ = b.send(91, net.IP{0, 0, 0, 0}, b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.send(91, net.IP{0, 0, 0, 0}, port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendSuccess(client net.Conn) error {
-	return b.send(90, net.IP{0, 0, 0, 0}, b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return b.send(90, net.IP{0, 0, 0, 0}, port, client)
 }
 
 func (b BaseSender) SendSuccessWithParameters(ip net.IP, port uint16, client net.Conn) error {

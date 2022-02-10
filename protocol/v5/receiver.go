@@ -29,7 +29,13 @@ func NewBaseReceiver(
 }
 
 func (b BaseReceiver) ReceiveRequest(reader io.Reader) (RequestChunk, error) {
-	chunk, err := b.deadline.Read(b.config.GetRequestDeadline(), 263, reader)
+	deadline, configErr := b.config.GetRequestDeadline()
+
+	if configErr != nil {
+		return RequestChunk{}, configErr
+	}
+
+	chunk, err := b.deadline.Read(deadline, 263, reader)
 
 	if err != nil {
 		return RequestChunk{}, err

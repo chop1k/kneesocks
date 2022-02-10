@@ -24,16 +24,16 @@ type Sender interface {
 }
 
 type BaseSender struct {
-	tcpConfig tcp.Config
-	udpConfig udp.Config
+	tcpConfig tcp.BindConfig
+	udpConfig udp.BindConfig
 	config    v52.DeadlineConfig
 	deadline  protocol.Deadline
 	builder   Builder
 }
 
 func NewBaseSender(
-	tcpConfig tcp.Config,
-	udpConfig udp.Config,
+	tcpConfig tcp.BindConfig,
+	udpConfig udp.BindConfig,
 	config v52.DeadlineConfig,
 	deadline protocol.Deadline,
 	builder Builder,
@@ -48,6 +48,12 @@ func NewBaseSender(
 }
 
 func (b BaseSender) SendMethodSelection(method byte, client net.Conn) error {
+	deadline, configErr := b.config.GetSelectionDeadline()
+
+	if configErr != nil {
+		return configErr
+	}
+
 	selection := MethodSelectionChunk{
 		SocksVersion: 5,
 		Method:       method,
@@ -59,10 +65,16 @@ func (b BaseSender) SendMethodSelection(method byte, client net.Conn) error {
 		return err
 	}
 
-	return b.deadline.Write(b.config.GetSelectionDeadline(), response, client)
+	return b.deadline.Write(deadline, response, client)
 }
 
 func (b BaseSender) responseWithCode(code byte, addrType byte, addr string, port uint16, client net.Conn) error {
+	deadline, configErr := b.config.GetResponseDeadline()
+
+	if configErr != nil {
+		return configErr
+	}
+
 	chunk := ResponseChunk{
 		SocksVersion: 5,
 		ReplyCode:    code,
@@ -77,7 +89,7 @@ func (b BaseSender) responseWithCode(code byte, addrType byte, addr string, port
 		return err
 	}
 
-	err = b.deadline.Write(b.config.GetResponseDeadline(), response, client)
+	err = b.deadline.Write(deadline, response, client)
 
 	if err != nil {
 		return err
@@ -123,51 +135,111 @@ func (b BaseSender) responseWithAddressNotSupported(addrType byte, addr string, 
 }
 
 func (b BaseSender) SendConnectionRefusedAndClose(client net.Conn) {
-	_ = b.responseWithConnectionRefused(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithConnectionRefused(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendTTLExpiredAndClose(client net.Conn) {
-	_ = b.responseWithTTLExpired(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithTTLExpired(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendNetworkUnreachableAndClose(client net.Conn) {
-	_ = b.responseWithNetworkUnreachable(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithNetworkUnreachable(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendHostUnreachableAndClose(client net.Conn) {
-	_ = b.responseWithHostUnreachable(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithHostUnreachable(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendFailAndClose(client net.Conn) {
-	_ = b.responseWithFail(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithFail(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendCommandNotSupportedAndClose(client net.Conn) {
-	_ = b.responseWithCommandNotSupported(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithCommandNotSupported(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendConnectionNotAllowedAndClose(client net.Conn) {
-	_ = b.responseWithNotAllowed(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithNotAllowed(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendAddressNotSupportedAndClose(client net.Conn) {
-	_ = b.responseWithAddressNotSupported(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	_ = b.responseWithAddressNotSupported(1, "0.0.0.0", port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendSuccessWithTcpPort(client net.Conn) error {
-	return b.responseWithSuccess(1, "0.0.0.0", b.tcpConfig.GetBindPort(), client)
+	port, err := b.tcpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return b.responseWithSuccess(1, "0.0.0.0", port, client)
 }
 
 func (b BaseSender) SendSuccessWithUdpPort(client net.Conn) error {
-	return b.responseWithSuccess(1, "0.0.0.0", b.udpConfig.GetBindPort(), client)
+	port, err := b.udpConfig.GetPort()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return b.responseWithSuccess(1, "0.0.0.0", port, client)
 }
 
 func (b BaseSender) SendSuccessWithParameters(addressType byte, address string, port uint16, client net.Conn) error {

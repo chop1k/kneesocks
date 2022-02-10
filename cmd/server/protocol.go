@@ -129,7 +129,7 @@ func registerV4Protocol(builder di.Builder) {
 		Name:  "v4_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
+			tcpConfig := ctn.Get("tcp_config").(tcp.BindConfig)
 			cfg := ctn.Get("v4_deadline_config").(v43.DeadlineConfig)
 			deadlineManager := ctn.Get("deadline").(protocol.Deadline)
 			builder := ctn.Get("v4_builder").(v4.Builder)
@@ -175,7 +175,7 @@ func registerV4aProtocol(builder di.Builder) {
 		Name:  "v4a_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
+			tcpConfig := ctn.Get("tcp_config").(tcp.BindConfig)
 			cfg := ctn.Get("v4a_deadline_config").(v43.DeadlineConfig)
 			deadlineManager := ctn.Get("deadline").(protocol.Deadline)
 			builder := ctn.Get("v4a_builder").(v4a.Builder)
@@ -236,8 +236,8 @@ func registerV5Protocol(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
-			tcpConfig := ctn.Get("tcp_config").(tcp.Config)
-			udpConfig := ctn.Get("udp_config").(udp.Config)
+			tcpConfig := ctn.Get("tcp_config").(tcp.BindConfig)
+			udpConfig := ctn.Get("udp_config").(udp.BindConfig)
 			deadline := ctn.Get("deadline").(protocol.Deadline)
 			builder := ctn.Get("v5_builder").(v5.Builder)
 

@@ -1,36 +1,41 @@
 package udp
 
-import "socks/config/tree"
+import (
+	"errors"
+	"github.com/Jeffail/gabs"
+)
 
-type Config interface {
-	GetBindIp() string
-	GetBindPort() uint16
-	GetBindZone() string
-	GetBufferSize() uint
+type BindConfig interface {
+	GetAddress() (string, error)
+	GetPort() (uint16, error)
 }
 
-type BaseConfig struct {
-	config tree.Config
+type BaseBindConfig struct {
+	config gabs.Container
 }
 
-func NewBaseConfig(config tree.Config) (BaseConfig, error) {
-	return BaseConfig{
+func NewBaseBindConfig(config gabs.Container) (BaseBindConfig, error) {
+	return BaseBindConfig{
 		config: config,
 	}, nil
 }
 
-func (b BaseConfig) GetBindIp() string {
-	return b.config.Udp.BindIp
+func (b BaseBindConfig) GetAddress() (string, error) {
+	address, ok := b.config.Path("Udp.Bind.Address").Data().(string)
+
+	if !ok {
+		return "", errors.New("Udp.Bind.Address: Not specified or have invalid type. ")
+	}
+
+	return address, nil
 }
 
-func (b BaseConfig) GetBindPort() uint16 {
-	return b.config.Udp.BindPort
-}
+func (b BaseBindConfig) GetPort() (uint16, error) {
+	port, ok := b.config.Path("Udp.Bind.Port").Data().(float64)
 
-func (b BaseConfig) GetBindZone() string {
-	return b.config.Udp.BindZone
-}
+	if !ok {
+		return 0, errors.New("Udp.Bind.Port: Not specified or have invalid type. ")
+	}
 
-func (b BaseConfig) GetBufferSize() uint {
-	return b.config.Udp.BufferSize
+	return uint16(port), nil
 }

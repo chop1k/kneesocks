@@ -1,8 +1,9 @@
 {
   "Tcp": {
-    "BindIP": "127.0.0.1",
-    "BindPort": 1080,
-    "BindZone": "",
+    "Bind": {
+      "Address": "127.0.0.1",
+      "Port": 1080
+    },
     "ClientBufferSize": 512,
     "HostBufferSize": 512,
     "Deadline": {
@@ -11,10 +12,13 @@
     }
   },
   "Udp": {
-    "BindIP": "127.0.0.1",
-    "BindPort": 1080,
-    "BindZone": "",
-    "BufferSize": 65535,
+    "Bind": {
+      "Address": "127.0.0.1",
+      "Port": 1080
+    },
+    "Buffer": {
+      "PacketSize": 65535
+    },
     "Deadline": {
       "Read": 30
     }

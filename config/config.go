@@ -1,6 +1,8 @@
 package config
 
-import "socks/config/tree"
+import (
+	"github.com/Jeffail/gabs"
+)
 
 type Config interface {
 	IsSocksV4Enabled() bool
@@ -9,21 +11,21 @@ type Config interface {
 }
 
 type BaseConfig struct {
-	config tree.Config
+	config gabs.Container
 }
 
-func NewBaseConfig(config tree.Config) BaseConfig {
+func NewBaseConfig(config gabs.Container) BaseConfig {
 	return BaseConfig{config: config}
 }
 
 func (b BaseConfig) IsSocksV4Enabled() bool {
-	return b.config.SocksV4 != nil
+	return b.config.ExistsP("SocksV4")
 }
 
 func (b BaseConfig) IsSocksV4aEnabled() bool {
-	return b.config.SocksV4a != nil
+	return b.config.ExistsP("SocksV4a")
 }
 
 func (b BaseConfig) IsSocksV5Enabled() bool {
-	return b.config.SocksV5 != nil
+	return b.config.ExistsP("SocksV5")
 }

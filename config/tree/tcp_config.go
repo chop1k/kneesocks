@@ -1,12 +1,19 @@
 package tree
 
 type TcpConfig struct {
-	BindIp           string `validate:"required,ip"`
-	BindPort         uint16 `validate:"required"`
-	BindZone         string
-	ClientBufferSize uint        `validate:"required"`
-	HostBufferSize   uint        `validate:"required"`
-	Deadline         TcpDeadline `validate:"required"`
+	Bind     TcpBindConfig   `validate:"required"`
+	Buffer   TcpBufferConfig `validate:"required"`
+	Deadline TcpDeadline     `validate:"required"`
+}
+
+type TcpBindConfig struct {
+	Address string `validate:"required"`
+	Port    uint16 `validate:"required"`
+}
+
+type TcpBufferConfig struct {
+	ClientSize uint `validate:"required"`
+	HostSize   uint `validate:"required"`
 }
 
 type TcpDeadline struct {

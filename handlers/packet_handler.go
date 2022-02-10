@@ -22,7 +22,8 @@ type BasePacketHandler struct {
 	clients managers.UdpClientManager
 	hosts   managers.UdpHostManager
 	logger  udp.Logger
-	config  udp2.Config
+	config  udp2.BindConfig
+	buffer  udp2.BufferConfig
 }
 
 func NewBasePacketHandler(
@@ -32,7 +33,8 @@ func NewBasePacketHandler(
 	clients managers.UdpClientManager,
 	hosts managers.UdpHostManager,
 	logger udp.Logger,
-	config udp2.Config,
+	config udp2.BindConfig,
+	buffer udp2.BufferConfig,
 ) BasePacketHandler {
 	return BasePacketHandler{
 		parser:  parser,
@@ -42,6 +44,7 @@ func NewBasePacketHandler(
 		hosts:   hosts,
 		logger:  logger,
 		config:  config,
+		buffer:  buffer,
 	}
 }
 
@@ -143,6 +146,12 @@ func (b BasePacketHandler) listen(client net.Addr, packet net.PacketConn, server
 	deadline := time.Second * 30
 
 	for {
+		size, configErr := b.buffer.GetPacketSize()
+
+		if configErr != nil {
+			panic(configErr)
+		}
+
 		deadlineErr := packet.SetReadDeadline(time.Now().Add(deadline))
 
 		if deadlineErr != nil {
@@ -151,7 +160,7 @@ func (b BasePacketHandler) listen(client net.Addr, packet net.PacketConn, server
 			break
 		}
 
-		buffer := make([]byte, b.config.GetBufferSize())
+		buffer := make([]byte, size)
 
 		i, address, err := packet.ReadFrom(buffer)
 

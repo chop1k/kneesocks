@@ -77,7 +77,8 @@ func registerHandlers(builder di.Builder) {
 			clients := ctn.Get("udp_client_manager").(managers.UdpClientManager)
 			hosts := ctn.Get("udp_host_manager").(managers.UdpHostManager)
 			logger := ctn.Get("udp_logger").(udp.Logger)
-			cfg := ctn.Get("udp_config").(udp2.Config)
+			cfg := ctn.Get("udp_config").(udp2.BindConfig)
+			buffer := ctn.Get("udp_buffer_config").(udp2.BufferConfig)
 
 			return handlers.NewBasePacketHandler(
 				parser,
@@ -87,6 +88,7 @@ func registerHandlers(builder di.Builder) {
 				hosts,
 				logger,
 				cfg,
+				buffer,
 			), nil
 		},
 	}
@@ -241,7 +243,7 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_blacklist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_config").(v43.Config)
+			cfg := ctn.Get("v4_restrictions_config").(v43.RestrictionsConfig)
 			whitelist := ctn.Get("blacklist_manager").(managers.BlacklistManager)
 
 			return helpers5.NewBaseBlacklist(cfg, whitelist)
@@ -289,7 +291,7 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_whitelist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_config").(v43.Config)
+			cfg := ctn.Get("v4_restrictions_config").(v43.RestrictionsConfig)
 			whitelist := ctn.Get("whitelist_manager").(managers.WhitelistManager)
 
 			return helpers5.NewBaseWhitelist(cfg, whitelist)
@@ -423,7 +425,7 @@ func registerV4aHelpers(builder di.Builder) {
 		Name:  "v4a_blacklist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4a_config").(v4a3.Config)
+			cfg := ctn.Get("v4a_restrictions_config").(v4a3.RestrictionsConfig)
 			whitelist := ctn.Get("blacklist_manager").(managers.BlacklistManager)
 
 			return helpers2.NewBaseBlacklist(cfg, whitelist)
@@ -471,7 +473,7 @@ func registerV4aHelpers(builder di.Builder) {
 		Name:  "v4a_whitelist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4a_config").(v4a3.Config)
+			cfg := ctn.Get("v4a_restrictions_config").(v4a3.RestrictionsConfig)
 			whitelist := ctn.Get("whitelist_manager").(managers.WhitelistManager)
 
 			return helpers2.NewBaseWhitelist(cfg, whitelist)
@@ -647,7 +649,7 @@ func registerAuthenticators(builder di.Builder) {
 		Name:  "password_authenticator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v5_config").(v53.Config)
+			cfg := ctn.Get("users_config").(v53.UsersConfig)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 			receiver := ctn.Get("auth_password_receiver").(password.Receiver)
 			sender := ctn.Get("auth_password_sender").(password.Sender)
@@ -695,7 +697,7 @@ func registerV5Helpers(builder di.Builder) {
 		Name:  "v5_blacklist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v5_config").(v53.Config)
+			cfg := ctn.Get("users_config").(v53.UsersConfig)
 			whitelist := ctn.Get("blacklist_manager").(managers.BlacklistManager)
 
 			return helpers.NewBaseBlacklist(cfg, whitelist)
@@ -743,7 +745,7 @@ func registerV5Helpers(builder di.Builder) {
 		Name:  "v5_whitelist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v5_config").(v53.Config)
+			cfg := ctn.Get("users_config").(v53.UsersConfig)
 			whitelist := ctn.Get("whitelist_manager").(managers.WhitelistManager)
 
 			return helpers.NewBaseWhitelist(cfg, whitelist)

@@ -29,7 +29,13 @@ func NewBaseReceiver(
 }
 
 func (b BaseReceiver) ReceiveRequest(client net.Conn) (RequestChunk, error) {
-	data, err := b.deadline.Read(b.config.GetPasswordDeadline(), 515, client)
+	deadline, configErr := b.config.GetPasswordDeadline()
+
+	if configErr != nil {
+		return RequestChunk{}, configErr
+	}
+
+	data, err := b.deadline.Read(deadline, 515, client)
 
 	if err != nil {
 		return RequestChunk{}, err

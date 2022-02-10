@@ -45,7 +45,13 @@ func NewBaseAuthenticationHandler(
 }
 
 func (b BaseAuthenticationHandler) HandleAuthentication(methods v5.MethodsChunk, client net.Conn) (string, error) {
-	for _, method := range b.config.GetAuthenticationMethods() {
+	_methods, err := b.config.GetAuthenticationMethods()
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, method := range _methods {
 		code := byte(255)
 
 		if method == "no-authentication" {

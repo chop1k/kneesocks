@@ -10,16 +10,20 @@ type Blacklist interface {
 }
 
 type BaseBlacklist struct {
-	config    v4a.Config
+	config    v4a.RestrictionsConfig
 	blacklist managers.BlacklistManager
 }
 
-func NewBaseBlacklist(config v4a.Config, blacklist managers.BlacklistManager) (BaseBlacklist, error) {
+func NewBaseBlacklist(config v4a.RestrictionsConfig, blacklist managers.BlacklistManager) (BaseBlacklist, error) {
 	return BaseBlacklist{config: config, blacklist: blacklist}, nil
 }
 
 func (b BaseBlacklist) IsBlacklisted(address string) bool {
-	restrictions := b.config.GetRestrictions()
+	blacklist, err := b.config.GetBlacklist()
 
-	return b.blacklist.IsBlacklisted(restrictions.BlackList, address)
+	if err != nil {
+		panic(err)
+	}
+
+	return b.blacklist.IsBlacklisted(blacklist, address)
 }

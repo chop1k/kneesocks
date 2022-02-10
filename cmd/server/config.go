@@ -2,12 +2,12 @@ package main
 
 import (
 	"errors"
+	"github.com/Jeffail/gabs"
 	"github.com/go-playground/validator/v10"
 	"github.com/sarulabs/di"
 	"os"
 	"socks/config"
 	"socks/config/tcp"
-	"socks/config/tree"
 	"socks/config/udp"
 	v43 "socks/config/v4"
 	v4a3 "socks/config/v4a"
@@ -19,7 +19,7 @@ func registerConfig(builder di.Builder) {
 		Name:  "config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return config.NewBaseConfig(cfg), nil
 		},
@@ -29,7 +29,7 @@ func registerConfig(builder di.Builder) {
 		Name:  "server_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return config.NewBaseServerLoggerConfig(cfg)
 		},
@@ -76,13 +76,14 @@ func registerTree(builder di.Builder) {
 	}
 
 	configTreeDef := di.Def{
-		Name:  "config_tree",
+		Name:  "config_container",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			validate := ctn.Get("validator").(validator.Validate)
 			configPath := ctn.Get("config_path").(string)
 
-			return tree.NewConfig(validate, configPath)
+			container, err := gabs.ParseJSONFile(configPath)
+
+			return *container, err
 		},
 	}
 
@@ -102,7 +103,7 @@ func registerTcpConfig(builder di.Builder) {
 		Name:  "tcp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return tcp.NewBaseLoggerConfig(cfg)
 		},
@@ -112,7 +113,7 @@ func registerTcpConfig(builder di.Builder) {
 		Name:  "tcp_deadline_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return tcp.NewBaseDeadlineConfig(cfg)
 		},
@@ -122,9 +123,9 @@ func registerTcpConfig(builder di.Builder) {
 		Name:  "tcp_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
-			return tcp.NewBaseConfig(cfg)
+			return tcp.NewBaseBindConfig(cfg)
 		},
 	}
 
@@ -140,11 +141,21 @@ func registerTcpConfig(builder di.Builder) {
 }
 
 func registerUdpConfig(builder di.Builder) {
+	bufferConfigDef := di.Def{
+		Name:  "udp_buffer_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_container").(gabs.Container)
+
+			return udp.NewBaseBufferConfig(cfg)
+		},
+	}
+
 	loggerConfigDef := di.Def{
 		Name:  "udp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return udp.NewBaseLoggerConfig(cfg)
 		},
@@ -154,13 +165,14 @@ func registerUdpConfig(builder di.Builder) {
 		Name:  "udp_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
-			return udp.NewBaseConfig(cfg)
+			return udp.NewBaseBindConfig(cfg)
 		},
 	}
 
 	err := builder.Add(
+		bufferConfigDef,
 		loggerConfigDef,
 		configDef,
 	)
@@ -175,7 +187,7 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v43.NewBaseLoggerConfig(cfg)
 		},
@@ -185,7 +197,7 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_deadline_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v43.NewBaseDeadlineConfig(cfg)
 		},
@@ -195,7 +207,7 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v43.NewBaseConfig(cfg)
 		},
@@ -205,7 +217,7 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_restrictions_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v43.NewBaseRestrictionsConfig(cfg)
 		},
@@ -228,7 +240,7 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v4a3.NewBaseLoggerConfig(cfg)
 		},
@@ -238,7 +250,7 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_deadline_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v4a3.NewBaseDeadlineConfig(cfg)
 		},
@@ -248,7 +260,7 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v4a3.NewBaseConfig(cfg)
 		},
@@ -258,7 +270,7 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_restrictions_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v4a3.NewBaseRestrictionsConfig(cfg)
 		},
@@ -281,7 +293,7 @@ func registerV5Config(builder di.Builder) {
 		Name:  "v5_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v53.NewBaseLoggerConfig(cfg)
 		},
@@ -291,7 +303,7 @@ func registerV5Config(builder di.Builder) {
 		Name:  "v5_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v53.NewBaseConfig(cfg)
 		},
@@ -301,7 +313,7 @@ func registerV5Config(builder di.Builder) {
 		Name:  "v5_deadline_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v53.NewBaseDeadlineConfig(cfg)
 		},
@@ -311,7 +323,7 @@ func registerV5Config(builder di.Builder) {
 		Name:  "users_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			cfg := ctn.Get("config_container").(gabs.Container)
 
 			return v53.NewBaseUsersConfig(cfg)
 		},

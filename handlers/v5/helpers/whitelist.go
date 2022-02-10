@@ -10,22 +10,24 @@ type Whitelist interface {
 }
 
 type BaseWhitelist struct {
-	config    v5.Config
+	config    v5.UsersConfig
 	whitelist managers.WhitelistManager
 }
 
-func NewBaseWhitelist(config v5.Config, whitelist managers.WhitelistManager) (BaseWhitelist, error) {
+func NewBaseWhitelist(config v5.UsersConfig, whitelist managers.WhitelistManager) (BaseWhitelist, error) {
 	return BaseWhitelist{config: config, whitelist: whitelist}, nil
 }
 
 func (b BaseWhitelist) IsWhitelisted(name string, address string) bool {
-	users := b.config.GetUsers()
+	restrictions, err := b.config.GetRestrictions(name)
 
-	user, ok := users[name]
-
-	if !ok {
-		return false
+	if err != nil {
+		panic(err)
 	}
 
-	return b.whitelist.IsWhitelisted(user.Restrictions.WhiteList, address)
+	//if !ok {
+	//	return false
+	//}
+
+	return b.whitelist.IsWhitelisted(restrictions.WhiteList, address)
 }

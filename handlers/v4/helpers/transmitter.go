@@ -34,15 +34,23 @@ func NewBaseTransmitter(
 }
 
 func (b BaseTransmitter) TransferConnect(client net.Conn, host net.Conn) {
-	rate := b.config.GetRate()
+	rate, err := b.config.GetRate()
+
+	if err != nil {
+		panic(err)
+	}
 
 	b.connectHandler.HandleClient(rate, client, host)
 }
 
 func (b BaseTransmitter) TransferBind(client net.Conn, host net.Conn) {
-	rate := b.config.GetRate()
+	rate, err := b.config.GetRate()
 
-	err := b.bindRate.Add(client.RemoteAddr().String(), rate)
+	if err != nil {
+		panic(err)
+	}
+
+	err = b.bindRate.Add(client.RemoteAddr().String(), rate)
 
 	if err != nil {
 		panic(err) // TODO: fix

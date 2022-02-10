@@ -36,7 +36,13 @@ func NewBaseValidator(
 }
 
 func (b BaseValidator) ValidateRestrictions(command byte, address string, client net.Conn) bool {
-	if !b.config.IsConnectAllowed() && command == 1 {
+	connectAllowed, connectErr := b.config.IsConnectAllowed()
+
+	if connectErr != nil {
+		panic(connectErr)
+	}
+
+	if !connectAllowed && command == 1 {
 		b.sender.SendFailAndClose(client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
@@ -44,7 +50,13 @@ func (b BaseValidator) ValidateRestrictions(command byte, address string, client
 		return false
 	}
 
-	if !b.config.IsBindAllowed() {
+	bindAllowed, bindErr := b.config.IsBindAllowed()
+
+	if bindErr != nil {
+		panic(bindErr)
+	}
+
+	if !bindAllowed && command == 2 {
 		b.sender.SendFailAndClose(client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
