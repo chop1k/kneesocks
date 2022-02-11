@@ -29,8 +29,7 @@
     "Deadline": {
       "Response": 2,
       "Connect": 60,
-      "Bind": 60,
-      "Transfer": 60
+      "Bind": 60
     },
     "Restrictions": {
       "Blacklist": [],
@@ -50,8 +49,7 @@
     "Deadline": {
       "Response": 2,
       "Connect": 60,
-      "Bind": 60,
-      "Transfer": 60
+      "Bind": 60
     },
     "Restrictions": {
       "Blacklist": [],
@@ -83,8 +81,7 @@
       "Request": 5,
       "Response": 10,
       "Connect": 60,
-      "Bind": 60,
-      "Transfer": 60
+      "Bind": 60
     },
     "Users": {
       "test": {

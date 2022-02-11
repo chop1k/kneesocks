@@ -34,7 +34,7 @@ func (b BaseBindLogger) Request(client string, address string) {
 }
 
 func (b BaseBindLogger) Failed(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -60,7 +60,7 @@ func (b BaseBindLogger) Successful(client string, address string) {
 }
 
 func (b BaseBindLogger) Timeout(client string, address string) {
-	e := b.logger.Error()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return

@@ -31,7 +31,7 @@ func (b BaseAuthLogger) Successful(client string, name string) {
 }
 
 func (b BaseAuthLogger) Failed(client string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return

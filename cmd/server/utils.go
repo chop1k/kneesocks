@@ -14,6 +14,14 @@ func registerUtils(builder di.Builder) {
 		},
 	}
 
+	bufferReaderDef := di.Def{
+		Name:  "buffer_reader",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return utils.NewBufferReader()
+		},
+	}
+
 	errorUtils := di.Def{
 		Name:  "error_utils",
 		Scope: di.App,
@@ -24,6 +32,7 @@ func registerUtils(builder di.Builder) {
 
 	err := builder.Add(
 		addressUtilsDef,
+		bufferReaderDef,
 		errorUtils,
 	)
 

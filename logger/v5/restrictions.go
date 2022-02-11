@@ -22,7 +22,7 @@ func NewBaseRestrictionsLogger(logger zerolog.Logger) (BaseRestrictionsLogger, e
 }
 
 func (b BaseRestrictionsLogger) NotAllowed(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -35,7 +35,7 @@ func (b BaseRestrictionsLogger) NotAllowed(client string, address string) {
 }
 
 func (b BaseRestrictionsLogger) NotAllowedByWhitelist(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -48,7 +48,7 @@ func (b BaseRestrictionsLogger) NotAllowedByWhitelist(client string, address str
 }
 
 func (b BaseRestrictionsLogger) NotAllowedByBlacklist(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return

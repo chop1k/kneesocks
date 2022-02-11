@@ -36,7 +36,7 @@ func (b BaseConnectLogger) Request(client string, address string) {
 }
 
 func (b BaseConnectLogger) Failed(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -62,7 +62,7 @@ func (b BaseConnectLogger) Successful(client string, address string) {
 }
 
 func (b BaseConnectLogger) Timeout(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -75,7 +75,7 @@ func (b BaseConnectLogger) Timeout(client string, address string) {
 }
 
 func (b BaseConnectLogger) Refused(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -88,7 +88,7 @@ func (b BaseConnectLogger) Refused(client string, address string) {
 }
 
 func (b BaseConnectLogger) HostUnreachable(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -101,7 +101,7 @@ func (b BaseConnectLogger) HostUnreachable(client string, address string) {
 }
 
 func (b BaseConnectLogger) NetworkUnreachable(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return

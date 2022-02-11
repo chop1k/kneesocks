@@ -1,41 +1,45 @@
 package protocol
 
 import (
-	"io"
+	"net"
 	"socks/config/tcp"
-	"socks/managers"
+	"socks/utils"
+	"time"
 )
 
 type Receiver interface {
-	ReceiveWelcome(reader io.Reader) ([]byte, error)
+	ReceiveWelcome(conn net.Conn) ([]byte, error)
 }
 
 type BaseReceiver struct {
-	config      tcp.DeadlineConfig
-	deadline    Deadline
-	bindManager managers.BindManager
+	config tcp.DeadlineConfig
+	buffer utils.BufferReader
 }
 
 func NewBaseReceiver(
 	config tcp.DeadlineConfig,
-	deadline Deadline,
-	bindManager managers.BindManager,
+	buffer utils.BufferReader,
 ) (BaseReceiver, error) {
 	return BaseReceiver{
-		config:      config,
-		deadline:    deadline,
-		bindManager: bindManager,
+		config: config,
+		buffer: buffer,
 	}, nil
 }
 
-func (b BaseReceiver) ReceiveWelcome(reader io.Reader) ([]byte, error) {
+func (b BaseReceiver) ReceiveWelcome(conn net.Conn) ([]byte, error) {
 	deadline, configErr := b.config.GetWelcomeDeadline()
 
 	if configErr != nil {
 		return nil, configErr
 	}
 
-	data, err := b.deadline.Read(deadline, 263, reader)
+	deadlineErr := conn.SetReadDeadline(time.Now().Add(deadline))
+
+	if deadlineErr != nil {
+		return nil, deadlineErr
+	}
+
+	data, err := b.buffer.Read(conn, 263)
 
 	if err != nil {
 		return nil, err

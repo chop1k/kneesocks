@@ -1,41 +1,48 @@
 package v5
 
 import (
-	"io"
+	"net"
 	v52 "socks/config/v5"
-	"socks/protocol"
+	"socks/utils"
+	"time"
 )
 
 type Receiver interface {
-	ReceiveRequest(reader io.Reader) (RequestChunk, error)
+	ReceiveRequest(conn net.Conn) (RequestChunk, error)
 }
 
 type BaseReceiver struct {
-	config   v52.DeadlineConfig
-	deadline protocol.Deadline
-	parser   Parser
+	config v52.DeadlineConfig
+	parser Parser
+	buffer utils.BufferReader
 }
 
 func NewBaseReceiver(
 	config v52.DeadlineConfig,
-	deadline protocol.Deadline,
 	parser Parser,
+	buffer utils.BufferReader,
 ) (BaseReceiver, error) {
 	return BaseReceiver{
-		config:   config,
-		deadline: deadline,
-		parser:   parser,
+		config: config,
+		parser: parser,
+		buffer: buffer,
 	}, nil
 }
 
-func (b BaseReceiver) ReceiveRequest(reader io.Reader) (RequestChunk, error) {
+func (b BaseReceiver) ReceiveRequest(conn net.Conn) (RequestChunk, error) {
 	deadline, configErr := b.config.GetRequestDeadline()
 
 	if configErr != nil {
 		return RequestChunk{}, configErr
 	}
 
-	chunk, err := b.deadline.Read(deadline, 263, reader)
+	deadlineErr := conn.SetReadDeadline(time.Now().Add(deadline))
+
+	if deadlineErr != nil {
+		return RequestChunk{}, deadlineErr
+	}
+
+	chunk, err := b.buffer.Read(conn, 263)
 
 	if err != nil {
 		return RequestChunk{}, err

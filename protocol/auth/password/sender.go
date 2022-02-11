@@ -3,7 +3,7 @@ package password
 import (
 	"net"
 	v5 "socks/config/v5"
-	"socks/protocol"
+	"time"
 )
 
 type Sender interface {
@@ -11,20 +11,17 @@ type Sender interface {
 }
 
 type BaseSender struct {
-	config   v5.DeadlineConfig
-	deadline protocol.Deadline
-	builder  Builder
+	config  v5.DeadlineConfig
+	builder Builder
 }
 
 func NewBaseSender(
 	config v5.DeadlineConfig,
-	deadline protocol.Deadline,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
-		config:   config,
-		deadline: deadline,
-		builder:  builder,
+		config:  config,
+		builder: builder,
 	}, nil
 }
 
@@ -33,6 +30,12 @@ func (b BaseSender) SendResponse(code byte, client net.Conn) error {
 
 	if configErr != nil {
 		return configErr
+	}
+
+	deadlineErr := client.SetWriteDeadline(time.Now().Add(deadline))
+
+	if deadlineErr != nil {
+		return deadlineErr
 	}
 
 	chunk, err := b.builder.BuildResponse(ResponseChunk{
@@ -44,5 +47,7 @@ func (b BaseSender) SendResponse(code byte, client net.Conn) error {
 		return err
 	}
 
-	return b.deadline.Write(deadline, chunk, client)
+	_, err = client.Write(chunk)
+
+	return err
 }

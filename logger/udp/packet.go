@@ -48,7 +48,7 @@ func (b BasePacketLogger) Denied(client string) {
 }
 
 func (b BasePacketLogger) NotAllowed(client string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -60,7 +60,7 @@ func (b BasePacketLogger) NotAllowed(client string) {
 }
 
 func (b BasePacketLogger) NotAllowedByWhitelist(client string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -72,7 +72,7 @@ func (b BasePacketLogger) NotAllowedByWhitelist(client string) {
 }
 
 func (b BasePacketLogger) NotAllowedByBlacklist(client string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -84,7 +84,7 @@ func (b BasePacketLogger) NotAllowedByBlacklist(client string) {
 }
 
 func (b BasePacketLogger) HostUnreachable(client string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return

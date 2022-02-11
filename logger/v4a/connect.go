@@ -36,7 +36,7 @@ func (b BaseConnectLogger) Request(client string, address string) {
 }
 
 func (b BaseConnectLogger) Failed(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -61,46 +61,8 @@ func (b BaseConnectLogger) Successful(client string, address string) {
 		Msg("Connect successful. ")
 }
 
-func (b BaseConnectLogger) ConnectNotAllowed(client string, address string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Str("host", address).
-		Msg("Connect not allowed due to ruleset. ")
-}
-
-func (b BaseConnectLogger) ConnectNotAllowedByWhitelist(client string, address string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Str("host", address).
-		Msg("Connect not allowed due to whitelist.")
-}
-
-func (b BaseConnectLogger) ConnectNotAllowedByBlacklist(client string, address string) {
-	e := b.logger.Info()
-
-	if !e.Enabled() {
-		return
-	}
-
-	e.
-		Str("client", client).
-		Str("host", address).
-		Msg("Connect not allowed due to blacklist.")
-}
 func (b BaseConnectLogger) HostUnreachable(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -113,7 +75,7 @@ func (b BaseConnectLogger) HostUnreachable(client string, address string) {
 }
 
 func (b BaseConnectLogger) Timeout(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -126,7 +88,7 @@ func (b BaseConnectLogger) Timeout(client string, address string) {
 }
 
 func (b BaseConnectLogger) NetworkUnreachable(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return
@@ -139,7 +101,7 @@ func (b BaseConnectLogger) NetworkUnreachable(client string, address string) {
 }
 
 func (b BaseConnectLogger) Refused(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return

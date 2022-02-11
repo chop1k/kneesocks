@@ -44,7 +44,7 @@ func (b BaseAssociationLogger) Successful(client string, address string) {
 }
 
 func (b BaseAssociationLogger) Failed(client string, address string) {
-	e := b.logger.Info()
+	e := b.logger.Warn()
 
 	if !e.Enabled() {
 		return

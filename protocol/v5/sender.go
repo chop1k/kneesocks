@@ -5,7 +5,7 @@ import (
 	"socks/config/tcp"
 	"socks/config/udp"
 	v52 "socks/config/v5"
-	"socks/protocol"
+	"time"
 )
 
 type Sender interface {
@@ -27,7 +27,6 @@ type BaseSender struct {
 	tcpConfig tcp.BindConfig
 	udpConfig udp.BindConfig
 	config    v52.DeadlineConfig
-	deadline  protocol.Deadline
 	builder   Builder
 }
 
@@ -35,14 +34,12 @@ func NewBaseSender(
 	tcpConfig tcp.BindConfig,
 	udpConfig udp.BindConfig,
 	config v52.DeadlineConfig,
-	deadline protocol.Deadline,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
 		tcpConfig: tcpConfig,
 		udpConfig: udpConfig,
 		config:    config,
-		deadline:  deadline,
 		builder:   builder,
 	}, nil
 }
@@ -52,6 +49,12 @@ func (b BaseSender) SendMethodSelection(method byte, client net.Conn) error {
 
 	if configErr != nil {
 		return configErr
+	}
+
+	deadlineErr := client.SetWriteDeadline(time.Now().Add(deadline))
+
+	if deadlineErr != nil {
+		return deadlineErr
 	}
 
 	selection := MethodSelectionChunk{
@@ -65,7 +68,9 @@ func (b BaseSender) SendMethodSelection(method byte, client net.Conn) error {
 		return err
 	}
 
-	return b.deadline.Write(deadline, response, client)
+	_, err = client.Write(response)
+
+	return err
 }
 
 func (b BaseSender) responseWithCode(code byte, addrType byte, addr string, port uint16, client net.Conn) error {
@@ -73,6 +78,12 @@ func (b BaseSender) responseWithCode(code byte, addrType byte, addr string, port
 
 	if configErr != nil {
 		return configErr
+	}
+
+	deadlineErr := client.SetWriteDeadline(time.Now().Add(deadline))
+
+	if deadlineErr != nil {
+		return deadlineErr
 	}
 
 	chunk := ResponseChunk{
@@ -89,13 +100,9 @@ func (b BaseSender) responseWithCode(code byte, addrType byte, addr string, port
 		return err
 	}
 
-	err = b.deadline.Write(deadline, response, client)
+	_, err = client.Write(response)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (b BaseSender) responseWithSuccess(addrType byte, addr string, port uint16, client net.Conn) error {

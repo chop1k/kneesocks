@@ -3,7 +3,7 @@ package v4a
 import (
 	"net"
 	"socks/logger/v4a"
-	"socks/protocol"
+	"socks/managers"
 	v4a2 "socks/protocol/v4a"
 	"socks/utils"
 )
@@ -113,7 +113,7 @@ func (b BaseErrorHandler) HandleBindManagerBindError(err error, address string, 
 func (b BaseErrorHandler) HandleBindManagerReceiveHostError(err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
-	if err == protocol.TimeoutError {
+	if err == managers.TimeoutError {
 		b.logger.Bind.Timeout(client.RemoteAddr().String(), address)
 	} else {
 		b.logger.Errors.ReceiveHostError(client.RemoteAddr().String(), address, err)
