@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 )
 
@@ -28,14 +29,16 @@ func NewServer(
 	}, nil
 }
 
-func (s Server) listenConnect(address *net.TCPAddr) {
-	listener, err := net.ListenTCP("tcp", address)
+func (s Server) listenConnect() {
+	address := fmt.Sprintf("%s:%d", s.config.Tcp.BindAddress, s.config.Tcp.ConnectPort)
+
+	listener, err := net.Listen("tcp", address)
 
 	if err != nil {
 		panic(err)
 	}
 
-	s.logger.ListenConnect(address.String())
+	s.logger.ListenConnect(address)
 
 	for {
 		conn, err := listener.Accept()
@@ -46,20 +49,22 @@ func (s Server) listenConnect(address *net.TCPAddr) {
 			continue
 		}
 
-		s.logger.Connection(conn.RemoteAddr().String(), address.String())
+		s.logger.Connection(conn.RemoteAddr().String(), address)
 
 		go s.connectHandler.HandleConnect(conn)
 	}
 }
 
-func (s Server) listenBind(address *net.TCPAddr) {
-	listener, err := net.ListenTCP("tcp", address)
+func (s Server) listenBind() {
+	address := fmt.Sprintf("%s:%d", s.config.Tcp.BindAddress, s.config.Tcp.BindPort)
+
+	listener, err := net.Listen("tcp", address)
 
 	if err != nil {
 		panic(err)
 	}
 
-	s.logger.ListenBind(address.String())
+	s.logger.ListenBind(address)
 
 	for {
 		conn, err := listener.Accept()
@@ -70,20 +75,22 @@ func (s Server) listenBind(address *net.TCPAddr) {
 			continue
 		}
 
-		s.logger.Connection(conn.RemoteAddr().String(), address.String())
+		s.logger.Connection(conn.RemoteAddr().String(), address)
 
 		go s.bindHandler.HandleBind(conn)
 	}
 }
 
-func (s Server) listenUdp(address *net.UDPAddr) {
-	listener, err := net.ListenUDP("udp", address)
+func (s Server) listenUdp() {
+	address := fmt.Sprintf("%s:%d", s.config.Udp.BindAddress, s.config.Udp.BindPort)
+
+	listener, err := net.ListenPacket("udp", address)
 
 	if err != nil {
 		panic(err)
 	}
 
-	s.logger.ListenUdp(address.String())
+	s.logger.ListenUdp(address)
 
 	for {
 		buf := make([]byte, 1024)
@@ -91,63 +98,20 @@ func (s Server) listenUdp(address *net.UDPAddr) {
 		_, addr, err := listener.ReadFrom(buf)
 
 		if err != nil {
-			s.logger.AcceptPacketError(address.String(), err)
+			s.logger.AcceptPacketError(address, err)
 
 			continue
 		}
 
-		s.logger.PacketAccepted(addr.String(), address.String())
+		s.logger.PacketAccepted(addr.String(), address)
 
 		go s.packetHandler.HandlePacket(buf[0], addr, listener)
 	}
 }
 
 func (s Server) Start() {
-	udpAddressV4 := &net.UDPAddr{
-		IP:   net.ParseIP(s.config.Udp.BindIPv4),
-		Port: int(s.config.Udp.BindPort),
-		Zone: s.config.Udp.BindZone,
-	}
+	go s.listenUdp()
+	go s.listenBind()
 
-	go s.listenUdp(udpAddressV4)
-
-	udpAddressV6 := &net.UDPAddr{
-		IP:   net.ParseIP(s.config.Udp.BindIPv6),
-		Port: int(s.config.Udp.BindPort),
-		Zone: s.config.Udp.BindZone,
-	}
-
-	go s.listenUdp(udpAddressV6)
-
-	connectAddressV4 := &net.TCPAddr{
-		IP:   net.ParseIP(s.config.Tcp.BindIPv4),
-		Port: int(s.config.Tcp.ConnectPort),
-		Zone: s.config.Tcp.BindZone,
-	}
-
-	go s.listenConnect(connectAddressV4)
-
-	connectAddressV6 := &net.TCPAddr{
-		IP:   net.ParseIP(s.config.Tcp.BindIPv6),
-		Port: int(s.config.Tcp.ConnectPort),
-		Zone: s.config.Tcp.BindZone,
-	}
-
-	go s.listenConnect(connectAddressV6)
-
-	bindAddressV4 := &net.TCPAddr{
-		IP:   net.ParseIP(s.config.Tcp.BindIPv4),
-		Port: int(s.config.Tcp.BindPort),
-		Zone: s.config.Tcp.BindZone,
-	}
-
-	go s.listenBind(bindAddressV4)
-
-	bindAddressV6 := &net.TCPAddr{
-		IP:   net.ParseIP(s.config.Tcp.BindIPv6),
-		Port: int(s.config.Tcp.BindPort),
-		Zone: s.config.Tcp.BindZone,
-	}
-
-	s.listenBind(bindAddressV6)
+	s.listenConnect()
 }

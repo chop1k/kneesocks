@@ -6,17 +6,13 @@
     "Zone": ""
   },
   "Tcp": {
-    "BindIPv4": "127.0.0.1",
-    "BindIPv6": "::1",
+    "BindAddress": "",
     "BindPort": 9000,
-    "BindZone": "",
     "ConnectPort": 9999
   },
   "Udp": {
-    "BindIPv4": "127.0.0.1",
-    "BindIPv6": "::1",
-    "BindPort": 9999,
-    "BindZone": ""
+    "BindAddress": "",
+    "BindPort": 9999
   },
   "Picture": {
     "BigPicturePath": "/home/chop1k/Pictures/Memes/Durka/Межгалактический-портал-в-дурку.gif",
