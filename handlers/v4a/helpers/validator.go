@@ -17,6 +17,7 @@ type BaseValidator struct {
 	blacklist Blacklist
 	sender    v4a3.Sender
 	logger    v4a2.Logger
+	limiter   Limiter
 }
 
 func NewBaseValidator(
@@ -25,6 +26,7 @@ func NewBaseValidator(
 	blacklist Blacklist,
 	sender v4a3.Sender,
 	logger v4a2.Logger,
+	limiter Limiter,
 ) (BaseValidator, error) {
 	return BaseValidator{
 		config:    config,
@@ -32,6 +34,7 @@ func NewBaseValidator(
 		blacklist: blacklist,
 		sender:    sender,
 		logger:    logger,
+		limiter:   limiter,
 	}, nil
 }
 
@@ -80,6 +83,16 @@ func (b BaseValidator) ValidateRestrictions(command byte, address string, client
 		b.sender.SendFailAndClose(client)
 
 		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
+
+		return false
+	}
+
+	limited := b.limiter.IsLimited()
+
+	if limited {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address) // TODO: log
 
 		return false
 	}

@@ -23,6 +23,7 @@ type BaseHandler struct {
 	sender                v5.Sender
 	receiver              v5.Receiver
 	validator             helpers.Validator
+	cleaner               helpers.Cleaner
 }
 
 func NewBaseHandler(
@@ -36,6 +37,7 @@ func NewBaseHandler(
 	sender v5.Sender,
 	receiver v5.Receiver,
 	validator helpers.Validator,
+	cleaner helpers.Cleaner,
 ) (BaseHandler, error) {
 	return BaseHandler{
 		parser:                parser,
@@ -48,6 +50,7 @@ func NewBaseHandler(
 		sender:                sender,
 		receiver:              receiver,
 		validator:             validator,
+		cleaner:               cleaner,
 	}, nil
 }
 
@@ -118,6 +121,12 @@ func (b BaseHandler) handleCommand(name string, chunk v5.RequestChunk, client ne
 		b.errorHandler.HandleUnknownCommandError(chunk.CommandCode, address, client)
 
 		return
+	}
+
+	err := b.cleaner.Clean(name)
+
+	if err != nil {
+		panic(err)
 	}
 }
 

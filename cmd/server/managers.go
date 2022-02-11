@@ -23,6 +23,14 @@ func registerManagers(builder di.Builder) {
 		},
 	}
 
+	connectionsManagerDef := di.Def{
+		Name:  "connections_manager",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return managers.NewConnectionsManager()
+		},
+	}
+
 	udpClientManagerDef := di.Def{
 		Name:  "udp_client_manager",
 		Scope: di.App,
@@ -62,6 +70,7 @@ func registerManagers(builder di.Builder) {
 	err := builder.Add(
 		bindManagerDef,
 		bindRateManagerDef,
+		connectionsManagerDef,
 		udpClientManagerDef,
 		udpHostManagerDef,
 		whitelistManagerDef,

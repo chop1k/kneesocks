@@ -20,6 +20,7 @@ type BaseHandler struct {
 	sender         v4.Sender
 	errorHandler   ErrorHandler
 	validator      helpers.Validator
+	cleaner        helpers.Cleaner
 }
 
 func NewBaseHandler(
@@ -30,6 +31,7 @@ func NewBaseHandler(
 	sender v4.Sender,
 	errorHandler ErrorHandler,
 	validator helpers.Validator,
+	cleaner helpers.Cleaner,
 ) (BaseHandler, error) {
 	return BaseHandler{
 		parser:         parser,
@@ -39,6 +41,7 @@ func NewBaseHandler(
 		sender:         sender,
 		errorHandler:   errorHandler,
 		validator:      validator,
+		cleaner:        cleaner,
 	}, nil
 }
 
@@ -63,6 +66,14 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 		b.handleBind(address, client)
 	} else {
 		b.sender.SendFailAndClose(client)
+
+		return
+	}
+
+	err = b.cleaner.Clean()
+
+	if err != nil {
+		panic(err)
 	}
 }
 

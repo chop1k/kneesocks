@@ -184,6 +184,7 @@ func registerV4Handlers(builder di.Builder) {
 			sender := ctn.Get("v4_sender").(v4.Sender)
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
 			validator := ctn.Get("v4_validator").(helpers5.Validator)
+			cleaner := ctn.Get("v4_cleaner").(helpers5.Cleaner)
 
 			return v42.NewBaseHandler(
 				parser,
@@ -193,6 +194,7 @@ func registerV4Handlers(builder di.Builder) {
 				sender,
 				errorHandler,
 				validator,
+				cleaner,
 			)
 		},
 	}
@@ -250,6 +252,16 @@ func registerV4Helpers(builder di.Builder) {
 		},
 	}
 
+	cleanerDef := di.Def{
+		Name:  "v4_cleaner",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
+
+			return helpers5.NewBaseCleaner(manager)
+		},
+	}
+
 	dialerDef := di.Def{
 		Name:  "v4_dialer",
 		Scope: di.App,
@@ -257,6 +269,17 @@ func registerV4Helpers(builder di.Builder) {
 			cfg := ctn.Get("v4_deadline_config").(v43.DeadlineConfig)
 
 			return helpers5.NewBaseDialer(cfg)
+		},
+	}
+
+	limiterDef := di.Def{
+		Name:  "v4_limiter",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4_restrictions_config").(v43.RestrictionsConfig)
+			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
+
+			return helpers5.NewBaseLimiter(cfg, manager)
 		},
 	}
 
@@ -282,8 +305,9 @@ func registerV4Helpers(builder di.Builder) {
 			blacklist := ctn.Get("v4_blacklist").(helpers5.Blacklist)
 			sender := ctn.Get("v4_sender").(v4.Sender)
 			logger := ctn.Get("v4_logger").(v44.Logger)
+			limiter := ctn.Get("v4_limiter").(helpers5.Limiter)
 
-			return helpers5.NewBaseValidator(cfg, whitelist, blacklist, sender, logger)
+			return helpers5.NewBaseValidator(cfg, whitelist, blacklist, sender, logger, limiter)
 		},
 	}
 
@@ -301,7 +325,9 @@ func registerV4Helpers(builder di.Builder) {
 	err := builder.Add(
 		binderDef,
 		blacklistDef,
+		cleanerDef,
 		dialerDef,
+		limiterDef,
 		transmitterDef,
 		validatorDef,
 		whitelistDef,
@@ -366,6 +392,7 @@ func registerV4aHandlers(builder di.Builder) {
 			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			errorHandler := ctn.Get("v4a_error_handler").(v4a2.ErrorHandler)
 			validator := ctn.Get("v4a_validator").(helpers2.Validator)
+			cleaner := ctn.Get("v4a_cleaner").(helpers2.Cleaner)
 
 			return v4a2.NewBaseHandler(
 				parser,
@@ -375,6 +402,7 @@ func registerV4aHandlers(builder di.Builder) {
 				sender,
 				errorHandler,
 				validator,
+				cleaner,
 			)
 		},
 	}
@@ -432,6 +460,16 @@ func registerV4aHelpers(builder di.Builder) {
 		},
 	}
 
+	cleanerDef := di.Def{
+		Name:  "v4a_cleaner",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
+
+			return helpers2.NewBaseCleaner(manager)
+		},
+	}
+
 	dialerDef := di.Def{
 		Name:  "v4a_dialer",
 		Scope: di.App,
@@ -439,6 +477,17 @@ func registerV4aHelpers(builder di.Builder) {
 			cfg := ctn.Get("v4a_deadline_config").(v4a3.DeadlineConfig)
 
 			return helpers2.NewBaseDialer(cfg)
+		},
+	}
+
+	limiterDef := di.Def{
+		Name:  "v4a_limiter",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("v4a_restrictions_config").(v4a3.RestrictionsConfig)
+			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
+
+			return helpers2.NewBaseLimiter(cfg, manager)
 		},
 	}
 
@@ -464,8 +513,9 @@ func registerV4aHelpers(builder di.Builder) {
 			blacklist := ctn.Get("v4a_blacklist").(helpers2.Blacklist)
 			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			logger := ctn.Get("v4a_logger").(v4a4.Logger)
+			limiter := ctn.Get("v4a_limiter").(helpers2.Limiter)
 
-			return helpers2.NewBaseValidator(cfg, whitelist, blacklist, sender, logger)
+			return helpers2.NewBaseValidator(cfg, whitelist, blacklist, sender, logger, limiter)
 		},
 	}
 
@@ -483,7 +533,9 @@ func registerV4aHelpers(builder di.Builder) {
 	err := builder.Add(
 		binderDef,
 		blacklistDef,
+		cleanerDef,
 		dialerDef,
+		limiterDef,
 		transmitterDef,
 		validatorDef,
 		whitelistDef,
@@ -595,6 +647,7 @@ func registerV5Handlers(builder di.Builder) {
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 			validator := ctn.Get("v5_validator").(helpers.Validator)
 			receiver := ctn.Get("v5_receiver").(v5.Receiver)
+			cleaner := ctn.Get("v5_cleaner").(helpers.Cleaner)
 
 			return v52.NewBaseHandler(
 				parser,
@@ -607,6 +660,7 @@ func registerV5Handlers(builder di.Builder) {
 				sender,
 				receiver,
 				validator,
+				cleaner,
 			)
 		},
 	}
@@ -704,6 +758,16 @@ func registerV5Helpers(builder di.Builder) {
 		},
 	}
 
+	cleanerDef := di.Def{
+		Name:  "v5_cleaner",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
+
+			return helpers.NewBaseCleaner(manager)
+		},
+	}
+
 	dialerDef := di.Def{
 		Name:  "v5_dialer",
 		Scope: di.App,
@@ -711,6 +775,17 @@ func registerV5Helpers(builder di.Builder) {
 			cfg := ctn.Get("v5_deadline_config").(v53.DeadlineConfig)
 
 			return helpers.NewBaseDialer(cfg)
+		},
+	}
+
+	limiterDef := di.Def{
+		Name:  "v5_limiter",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("users_config").(v53.UsersConfig)
+			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
+
+			return helpers.NewBaseLimiter(cfg, manager)
 		},
 	}
 
@@ -736,8 +811,9 @@ func registerV5Helpers(builder di.Builder) {
 			blacklist := ctn.Get("v5_blacklist").(helpers.Blacklist)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			logger := ctn.Get("v5_logger").(v54.Logger)
+			limiter := ctn.Get("v5_limiter").(helpers.Limiter)
 
-			return helpers.NewBaseValidator(cfg, whitelist, blacklist, sender, logger)
+			return helpers.NewBaseValidator(cfg, whitelist, blacklist, sender, logger, limiter)
 		},
 	}
 
@@ -755,7 +831,9 @@ func registerV5Helpers(builder di.Builder) {
 	err := builder.Add(
 		binderDef,
 		blacklistDef,
+		cleanerDef,
 		dialerDef,
+		limiterDef,
 		transmitterDef,
 		validatorDef,
 		whitelistDef,

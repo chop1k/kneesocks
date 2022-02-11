@@ -104,7 +104,7 @@
           "Blacklist": [],
           "Whitelist": [],
           "Rate": {
-            "MaxSimultaneousConnections": 0,
+            "MaxSimultaneousConnections": -1,
             "HostReadBuffersPerSecond": -1,
             "HostWriteBuffersPerSecond": -1,
             "ClientReadBuffersPerSecond": -1,
