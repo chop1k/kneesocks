@@ -3,6 +3,7 @@ package v4a
 import (
 	"fmt"
 	"net"
+	v4a2 "socks/config/v4a"
 	"socks/handlers/v4a/helpers"
 	v4a3 "socks/logger/v4a"
 	"socks/protocol/v4a"
@@ -21,6 +22,7 @@ type BaseHandler struct {
 	errorHandler   ErrorHandler
 	validator      helpers.Validator
 	cleaner        helpers.Cleaner
+	replicator     v4a2.ConfigReplicator
 }
 
 func NewBaseHandler(
@@ -32,6 +34,7 @@ func NewBaseHandler(
 	errorHandler ErrorHandler,
 	validator helpers.Validator,
 	cleaner helpers.Cleaner,
+	replicator v4a2.ConfigReplicator,
 ) (BaseHandler, error) {
 	return BaseHandler{
 		parser:         parser,
@@ -42,30 +45,33 @@ func NewBaseHandler(
 		errorHandler:   errorHandler,
 		validator:      validator,
 		cleaner:        cleaner,
+		replicator:     replicator,
 	}, nil
 }
 
 func (b BaseHandler) Handle(request []byte, client net.Conn) {
+	config := b.replicator.Copy()
+
 	chunk, err := b.parser.ParseRequest(request)
 
 	if err != nil {
-		b.errorHandler.HandleChunkParseError(err, client)
+		b.errorHandler.HandleChunkParseError(config, err, client)
 
 		return
 	}
 
 	address := fmt.Sprintf("%s:%d", chunk.Domain, chunk.DestinationPort)
 
-	if !b.validator.ValidateRestrictions(chunk.CommandCode, address, client) {
+	if !b.validator.ValidateRestrictions(config, chunk.CommandCode, address, client) {
 		return
 	}
 
 	if chunk.CommandCode == 1 {
-		b.handleConnect(address, client)
+		b.handleConnect(config, address, client)
 	} else if chunk.CommandCode == 2 {
-		b.handleBind(address, client)
+		b.handleBind(config, address, client)
 	} else {
-		b.sender.SendFailAndClose(client)
+		b.sender.SendFailAndClose(config, client)
 
 		return
 	}
@@ -73,14 +79,14 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 	b.cleaner.Clean()
 }
 
-func (b BaseHandler) handleConnect(address string, client net.Conn) {
+func (b BaseHandler) handleConnect(config v4a2.Config, address string, client net.Conn) {
 	b.logger.Connect.Request(client.RemoteAddr().String(), address)
 
-	b.connectHandler.HandleConnect(address, client)
+	b.connectHandler.HandleConnect(config, address, client)
 }
 
-func (b BaseHandler) handleBind(address string, client net.Conn) {
+func (b BaseHandler) handleBind(config v4a2.Config, address string, client net.Conn) {
 	b.logger.Bind.Request(client.RemoteAddr().String(), address)
 
-	b.bindHandler.HandleBind(address, client)
+	b.bindHandler.HandleBind(config, address, client)
 }

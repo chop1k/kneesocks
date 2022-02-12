@@ -16,7 +16,6 @@ type BaseConnectHandler struct {
 	logger       v42.Logger
 	sender       v4.Sender
 	errorHandler ErrorHandler
-	dialer       helpers.Dialer
 	transmitter  helpers.Transmitter
 }
 
@@ -24,20 +23,18 @@ func NewBaseConnectHandler(
 	logger v42.Logger,
 	sender v4.Sender,
 	errorHandler ErrorHandler,
-	dialer helpers.Dialer,
 	transmitter helpers.Transmitter,
 ) (BaseConnectHandler, error) {
 	return BaseConnectHandler{
 		logger:       logger,
 		sender:       sender,
 		errorHandler: errorHandler,
-		dialer:       dialer,
 		transmitter:  transmitter,
 	}, nil
 }
 
 func (b BaseConnectHandler) HandleConnect(config v43.Config, address string, client net.Conn) {
-	host, err := b.dialer.Dial(config, address)
+	host, err := net.DialTimeout("tcp4", address, config.Deadline.Connect)
 
 	if err != nil {
 		b.errorHandler.HandleDialError(config, err, address, client)

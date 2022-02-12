@@ -2,14 +2,16 @@ package v4a
 
 import (
 	"net"
+	v4a3 "socks/config/v4a"
 	"socks/handlers/v4a/helpers"
 	v4a2 "socks/logger/v4a"
+	"socks/managers"
 	"socks/protocol/v4a"
 	"socks/utils"
 )
 
 type BindHandler interface {
-	HandleBind(address string, client net.Conn)
+	HandleBind(config v4a3.Config, address string, client net.Conn)
 }
 
 type BaseBindHandler struct {
@@ -17,7 +19,7 @@ type BaseBindHandler struct {
 	utils        utils.AddressUtils
 	sender       v4a.Sender
 	errorHandler ErrorHandler
-	binder       helpers.Binder
+	bindManager  managers.BindManager
 	transmitter  helpers.Transmitter
 }
 
@@ -26,7 +28,7 @@ func NewBaseBindHandler(
 	utils utils.AddressUtils,
 	sender v4a.Sender,
 	errorHandler ErrorHandler,
-	binder helpers.Binder,
+	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
@@ -34,56 +36,56 @@ func NewBaseBindHandler(
 		utils:        utils,
 		sender:       sender,
 		errorHandler: errorHandler,
-		binder:       binder,
+		bindManager:  bindManager,
 		transmitter:  transmitter,
 	}, nil
 }
 
-func (b BaseBindHandler) HandleBind(address string, client net.Conn) {
-	err := b.binder.Bind(address)
+func (b BaseBindHandler) HandleBind(config v4a3.Config, address string, client net.Conn) {
+	err := b.bindManager.Bind(address)
 
 	if err != nil {
-		b.errorHandler.HandleBindManagerBindError(err, address, client)
+		b.errorHandler.HandleBindManagerBindError(config, err, address, client)
 
 		return
 	}
 
 	b.logger.Bind.Successful(client.RemoteAddr().String(), address)
 
-	b.bindSendFirstResponse(address, client)
+	b.bindSendFirstResponse(config, address, client)
 }
 
-func (b BaseBindHandler) bindSendFirstResponse(address string, client net.Conn) {
-	err := b.sender.SendSuccess(client)
+func (b BaseBindHandler) bindSendFirstResponse(config v4a3.Config, address string, client net.Conn) {
+	err := b.sender.SendSuccess(config, client)
 
 	if err != nil {
-		b.errorHandler.HandleBindIOError(err, address, client)
+		b.errorHandler.HandleBindIOError(config, err, address, client)
 
 		return
 	}
 
-	b.bindWait(address, client)
+	b.bindWait(config, address, client)
 
-	b.binder.Remove(address)
+	b.bindManager.Remove(address)
 }
 
-func (b BaseBindHandler) bindWait(address string, client net.Conn) {
-	host, err := b.binder.Receive(address)
+func (b BaseBindHandler) bindWait(config v4a3.Config, address string, client net.Conn) {
+	host, err := b.bindManager.ReceiveHost(address, config.Deadline.Bind)
 
 	if err != nil {
-		b.errorHandler.HandleBindManagerReceiveHostError(err, address, client)
+		b.errorHandler.HandleBindManagerReceiveHostError(config, err, address, client)
 
 		return
 	}
 
-	b.bindCheckAddress(address, host, client)
+	b.bindCheckAddress(config, address, host, client)
 }
 
-func (b BaseBindHandler) bindCheckAddress(address string, host net.Conn, client net.Conn) {
+func (b BaseBindHandler) bindCheckAddress(config v4a3.Config, address string, host net.Conn, client net.Conn) {
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.errorHandler.HandleAddressParsingError(parseErr, address, client, host)
+		b.errorHandler.HandleAddressParsingError(config, parseErr, address, client, host)
 
 		return
 	}
@@ -91,25 +93,25 @@ func (b BaseBindHandler) bindCheckAddress(address string, host net.Conn, client 
 	addrType, determineErr := b.utils.DetermineAddressType(hostAddr)
 
 	if determineErr != nil {
-		b.errorHandler.HandleAddressDeterminationError(determineErr, address, client, host)
+		b.errorHandler.HandleAddressDeterminationError(config, determineErr, address, client, host)
 
 		return
 	}
 
 	if addrType != 1 {
-		b.errorHandler.HandleInvalidAddressTypeError(address, client, host)
+		b.errorHandler.HandleInvalidAddressTypeError(config, address, client, host)
 
 		return
 	}
 
-	b.bindSendSecondResponse(address, hostAddr, uint16(hostPort), host, client)
+	b.bindSendSecondResponse(config, address, hostAddr, uint16(hostPort), host, client)
 }
 
-func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string, hostPort uint16, host net.Conn, client net.Conn) {
+func (b BaseBindHandler) bindSendSecondResponse(config v4a3.Config, address string, hostAddr string, hostPort uint16, host net.Conn, client net.Conn) {
 	ip := net.ParseIP(hostAddr)
 
 	if ip == nil {
-		b.errorHandler.HandleInvalidAddressTypeError(address, client, host)
+		b.errorHandler.HandleInvalidAddressTypeError(config, address, client, host)
 
 		return
 	}
@@ -117,20 +119,20 @@ func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string,
 	ip = ip.To4()
 
 	if ip == nil {
-		b.errorHandler.HandleInvalidAddressTypeError(address, client, host)
+		b.errorHandler.HandleInvalidAddressTypeError(config, address, client, host)
 
 		return
 	}
 
-	err := b.sender.SendSuccessWithParameters(ip, hostPort, client)
+	err := b.sender.SendSuccessWithParameters(config, ip, hostPort, client)
 
 	if err != nil {
-		b.errorHandler.HandleBindIOErrorWithHost(err, address, client, host)
+		b.errorHandler.HandleBindIOErrorWithHost(config, err, address, client, host)
 
 		return
 	}
 
-	err = b.binder.Send(address, client)
+	err = b.bindManager.SendClient(address, client)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerSendClientError(err, address, client, host)
@@ -140,7 +142,7 @@ func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string,
 
 	b.logger.Bind.Successful(client.RemoteAddr().String(), address)
 
-	err = b.transmitter.TransferBind(client, host)
+	err = b.transmitter.TransferBind(config, client, host)
 
 	if err != nil {
 		b.errorHandler.HandleTransferError(err, client, host)

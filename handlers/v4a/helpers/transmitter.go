@@ -8,51 +8,34 @@ import (
 )
 
 type Transmitter interface {
-	TransferConnect(client net.Conn, host net.Conn) error
-	TransferBind(client net.Conn, host net.Conn) error
+	TransferConnect(config v4a.Config, client net.Conn, host net.Conn)
+	TransferBind(config v4a.Config, client net.Conn, host net.Conn) error
 }
 
 type BaseTransmitter struct {
-	config         v4a.RestrictionsConfig
 	connectHandler transfer.ConnectHandler
 	bindHandler    transfer.BindHandler
 	bindRate       managers.BindRateManager
 }
 
 func NewBaseTransmitter(
-	config v4a.RestrictionsConfig,
 	connectHandler transfer.ConnectHandler,
 	bindHandler transfer.BindHandler,
 	bindRate managers.BindRateManager,
 ) (BaseTransmitter, error) {
 	return BaseTransmitter{
-		config:         config,
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
 		bindRate:       bindRate,
 	}, nil
 }
 
-func (b BaseTransmitter) TransferConnect(client net.Conn, host net.Conn) error {
-	rate, err := b.config.GetRate()
-
-	if err != nil {
-		return err
-	}
-
-	b.connectHandler.HandleClient(rate, client, host)
-
-	return nil
+func (b BaseTransmitter) TransferConnect(config v4a.Config, client net.Conn, host net.Conn) {
+	b.connectHandler.HandleClient(config.Restrictions.Rate, client, host)
 }
 
-func (b BaseTransmitter) TransferBind(client net.Conn, host net.Conn) error {
-	rate, err := b.config.GetRate()
-
-	if err != nil {
-		return err
-	}
-
-	err = b.bindRate.Add(client.RemoteAddr().String(), rate)
+func (b BaseTransmitter) TransferBind(config v4a.Config, client net.Conn, host net.Conn) error {
+	err := b.bindRate.Add(client.RemoteAddr().String(), config.Restrictions.Rate)
 
 	if err != nil {
 		return err

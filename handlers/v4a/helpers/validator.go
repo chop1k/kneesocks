@@ -4,32 +4,30 @@ import (
 	"net"
 	"socks/config/v4a"
 	v4a2 "socks/logger/v4a"
+	"socks/managers"
 	v4a3 "socks/protocol/v4a"
 )
 
 type Validator interface {
-	ValidateRestrictions(command byte, address string, client net.Conn) bool
+	ValidateRestrictions(config v4a.Config, command byte, address string, client net.Conn) bool
 }
 
 type BaseValidator struct {
-	config    v4a.Config
-	whitelist Whitelist
-	blacklist Blacklist
+	whitelist managers.WhitelistManager
+	blacklist managers.BlacklistManager
 	sender    v4a3.Sender
 	logger    v4a2.Logger
 	limiter   Limiter
 }
 
 func NewBaseValidator(
-	config v4a.Config,
-	whitelist Whitelist,
-	blacklist Blacklist,
+	whitelist managers.WhitelistManager,
+	blacklist managers.BlacklistManager,
 	sender v4a3.Sender,
 	logger v4a2.Logger,
 	limiter Limiter,
 ) (BaseValidator, error) {
 	return BaseValidator{
-		config:    config,
 		whitelist: whitelist,
 		blacklist: blacklist,
 		sender:    sender,
@@ -38,83 +36,41 @@ func NewBaseValidator(
 	}, nil
 }
 
-func (b BaseValidator) ValidateRestrictions(command byte, address string, client net.Conn) bool {
-	connectAllowed, connectErr := b.config.IsConnectAllowed()
-
-	if connectErr != nil {
-		panic(connectErr)
-	}
-
-	if !connectAllowed && command == 1 {
-		b.sender.SendFailAndClose(client)
+func (b BaseValidator) ValidateRestrictions(config v4a.Config, command byte, address string, client net.Conn) bool {
+	if !config.AllowConnect && command == 1 {
+		b.sender.SendFailAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	bindAllowed, bindErr := b.config.IsBindAllowed()
-
-	if bindErr != nil {
-		panic(bindErr)
-	}
-
-	if !bindAllowed && command == 2 {
-		b.sender.SendFailAndClose(client)
+	if !config.AllowBind && command == 2 {
+		b.sender.SendFailAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	whitelisted, whitelistErr := b.whitelist.IsWhitelisted(address)
-
-	if whitelistErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Errors.ConfigError(client.RemoteAddr().String(), whitelistErr)
-
-		return false
-	}
-
-	if whitelisted {
-		b.sender.SendFailAndClose(client)
+	if b.whitelist.IsWhitelisted(config.Restrictions.WhiteList, address) {
+		b.sender.SendFailAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	blacklisted, blacklistErr := b.blacklist.IsBlacklisted(address)
-
-	if blacklistErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Errors.ConfigError(client.RemoteAddr().String(), blacklistErr)
-
-		return false
-	}
-
-	if blacklisted {
-		b.sender.SendFailAndClose(client)
+	if b.blacklist.IsBlacklisted(config.Restrictions.BlackList, address) {
+		b.sender.SendFailAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	limited, limitedErr := b.limiter.IsLimited()
-
-	if limitedErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Errors.ConfigError(client.RemoteAddr().String(), limitedErr)
-
-		return false
-	}
-
-	if limited {
-		b.sender.SendFailAndClose(client)
+	if b.limiter.IsLimited(config) {
+		b.sender.SendFailAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowedByConnectionLimits(client.RemoteAddr().String(), address)
 

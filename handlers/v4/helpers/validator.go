@@ -4,6 +4,7 @@ import (
 	"net"
 	v4 "socks/config/v4"
 	v42 "socks/logger/v4"
+	"socks/managers"
 	v43 "socks/protocol/v4"
 )
 
@@ -12,16 +13,16 @@ type Validator interface {
 }
 
 type BaseValidator struct {
-	whitelist Whitelist
-	blacklist Blacklist
+	whitelist managers.WhitelistManager
+	blacklist managers.BlacklistManager
 	sender    v43.Sender
 	logger    v42.Logger
 	limiter   Limiter
 }
 
 func NewBaseValidator(
-	whitelist Whitelist,
-	blacklist Blacklist,
+	whitelist managers.WhitelistManager,
+	blacklist managers.BlacklistManager,
 	sender v43.Sender,
 	logger v42.Logger,
 	limiter Limiter,
@@ -52,9 +53,7 @@ func (b BaseValidator) ValidateRestrictions(config v4.Config, command byte, addr
 		return false
 	}
 
-	whitelisted := b.whitelist.IsWhitelisted(config, address)
-
-	if whitelisted {
+	if b.whitelist.IsWhitelisted(config.Restrictions.WhiteList, address) {
 		b.sender.SendFailAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
@@ -62,9 +61,7 @@ func (b BaseValidator) ValidateRestrictions(config v4.Config, command byte, addr
 		return false
 	}
 
-	blacklisted := b.blacklist.IsBlacklisted(config, address)
-
-	if blacklisted {
+	if b.blacklist.IsBlacklisted(config.Restrictions.BlackList, address) {
 		b.sender.SendFailAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)

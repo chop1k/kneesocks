@@ -22,7 +22,7 @@ type BaseHandler struct {
 	errorHandler   ErrorHandler
 	validator      helpers.Validator
 	cleaner        helpers.Cleaner
-	builder        v42.ConfigBuilder
+	replicator     v42.ConfigReplicator
 }
 
 func NewBaseHandler(
@@ -34,7 +34,7 @@ func NewBaseHandler(
 	errorHandler ErrorHandler,
 	validator helpers.Validator,
 	cleaner helpers.Cleaner,
-	builder v42.ConfigBuilder,
+	replicator v42.ConfigReplicator,
 ) (BaseHandler, error) {
 	return BaseHandler{
 		parser:         parser,
@@ -45,12 +45,12 @@ func NewBaseHandler(
 		errorHandler:   errorHandler,
 		validator:      validator,
 		cleaner:        cleaner,
-		builder:        builder,
+		replicator:     replicator,
 	}, nil
 }
 
 func (b BaseHandler) Handle(request []byte, client net.Conn) {
-	config := b.builder.Build()
+	config := b.replicator.Copy()
 
 	chunk, err := b.parser.ParseRequest(request)
 

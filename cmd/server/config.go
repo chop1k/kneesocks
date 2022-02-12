@@ -195,41 +195,11 @@ func registerV4Config(builder di.Builder) {
 		},
 	}
 
-	//deadlineDef := di.Def{
-	//	Name:  "v4_deadline_config",
-	//	Scope: di.App,
-	//	Build: func(ctn di.Container) (interface{}, error) {
-	//		cfg := ctn.Get("config_container").(gabs.Container)
-	//
-	//		return v43.NewBaseDeadlineConfig(cfg)
-	//	},
-	//}
-	//
-	//configDef := di.Def{
-	//	Name:  "v4_config",
-	//	Scope: di.App,
-	//	Build: func(ctn di.Container) (interface{}, error) {
-	//		cfg := ctn.Get("config_container").(gabs.Container)
-	//
-	//		return v43.NewBaseConfig(cfg)
-	//	},
-	//}
-	//
-	//restrictionsConfigDef := di.Def{
-	//	Name:  "v4_restrictions_config",
-	//	Scope: di.App,
-	//	Build: func(ctn di.Container) (interface{}, error) {
-	//		cfg := ctn.Get("config_container").(gabs.Container)
-	//
-	//		return v43.NewBaseRestrictionsConfig(cfg)
-	//	},
-	//}
-
-	builderDef := di.Def{
-		Name:  "v4_config_builder",
+	replicatorDef := di.Def{
+		Name:  "v4_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v43.NewConfigBuilder(v43.Config{
+			return v43.NewConfigReplicator(v43.Config{
 				AllowConnect: true,
 				AllowBind:    true,
 				Deadline: v43.DeadlineConfig{
@@ -254,10 +224,7 @@ func registerV4Config(builder di.Builder) {
 
 	err := builder.Add(
 		loggerConfigDef,
-		//deadlineDef,
-		//configDef,
-		//restrictionsConfigDef,
-		builderDef,
+		replicatorDef,
 	)
 
 	if err != nil {
@@ -276,41 +243,36 @@ func registerV4aConfig(builder di.Builder) {
 		},
 	}
 
-	deadlineDef := di.Def{
-		Name:  "v4a_deadline_config",
+	replicatorDef := di.Def{
+		Name:  "v4a_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v4a3.NewBaseDeadlineConfig(cfg)
-		},
-	}
-
-	configDef := di.Def{
-		Name:  "v4a_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v4a3.NewBaseConfig(cfg)
-		},
-	}
-
-	restrictionsConfigDef := di.Def{
-		Name:  "v4a_restrictions_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v4a3.NewBaseRestrictionsConfig(cfg)
+			return v4a3.NewConfigReplicator(v4a3.Config{
+				AllowConnect: true,
+				AllowBind:    true,
+				Deadline: v4a3.DeadlineConfig{
+					Response: time.Second * 5,
+					Connect:  time.Second * 5,
+					Bind:     time.Second * 5,
+				},
+				Restrictions: tree.Restrictions{
+					WhiteList: []string{},
+					BlackList: []string{},
+					Rate: tree.RateRestrictions{
+						MaxSimultaneousConnections:  -1,
+						HostReadBuffersPerSecond:    -1,
+						HostWriteBuffersPerSecond:   -1,
+						ClientReadBuffersPerSecond:  -1,
+						ClientWriteBuffersPerSecond: -1,
+					},
+				},
+			})
 		},
 	}
 
 	err := builder.Add(
 		loggerConfigDef,
-		deadlineDef,
-		configDef,
-		restrictionsConfigDef,
+		replicatorDef,
 	)
 
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	v43 "socks/config/v4"
 	"socks/handlers/v4/helpers"
 	v42 "socks/logger/v4"
+	"socks/managers"
 	"socks/protocol/v4"
 	"socks/utils"
 )
@@ -18,7 +19,7 @@ type BaseBindHandler struct {
 	utils        utils.AddressUtils
 	sender       v4.Sender
 	errorHandler ErrorHandler
-	binder       helpers.Binder
+	bindManager  managers.BindManager
 	transmitter  helpers.Transmitter
 }
 
@@ -27,7 +28,7 @@ func NewBaseBindHandler(
 	utils utils.AddressUtils,
 	sender v4.Sender,
 	errorHandler ErrorHandler,
-	binder helpers.Binder,
+	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
@@ -35,13 +36,13 @@ func NewBaseBindHandler(
 		utils:        utils,
 		sender:       sender,
 		errorHandler: errorHandler,
-		binder:       binder,
+		bindManager:  bindManager,
 		transmitter:  transmitter,
 	}, nil
 }
 
 func (b BaseBindHandler) HandleBind(config v43.Config, address string, client net.Conn) {
-	err := b.binder.Bind(address)
+	err := b.bindManager.Bind(address)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerBindError(config, err, address, client)
@@ -65,11 +66,11 @@ func (b BaseBindHandler) bindSendFirstResponse(config v43.Config, address string
 
 	b.bindWait(config, address, client)
 
-	b.binder.Remove(address)
+	b.bindManager.Remove(address)
 }
 
 func (b BaseBindHandler) bindWait(config v43.Config, address string, client net.Conn) {
-	host, err := b.binder.Receive(config, address)
+	host, err := b.bindManager.ReceiveHost(address, config.Deadline.Bind)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerReceiveHostError(config, err, address, client)
@@ -131,7 +132,7 @@ func (b BaseBindHandler) bindSendSecondResponse(config v43.Config, address strin
 		return
 	}
 
-	err = b.binder.Send(address, client)
+	err = b.bindManager.SendClient(address, client)
 
 	if err != nil {
 		b.errorHandler.HandleBindManagerSendClientError(err, address, client, host)
