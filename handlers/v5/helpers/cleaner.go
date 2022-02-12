@@ -6,7 +6,7 @@ import (
 )
 
 type Cleaner interface {
-	Clean(name string) error
+	Clean(name string)
 }
 
 type BaseCleaner struct {
@@ -17,10 +17,8 @@ func NewBaseCleaner(manager *managers.ConnectionsManager) (BaseCleaner, error) {
 	return BaseCleaner{manager: manager}, nil
 }
 
-func (b BaseCleaner) Clean(name string) error {
+func (b BaseCleaner) Clean(name string) {
 	id := fmt.Sprintf("v5.%s", name)
 
 	b.manager.Decrement(id)
-
-	return nil
 }

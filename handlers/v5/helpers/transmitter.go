@@ -9,8 +9,8 @@ import (
 )
 
 type Transmitter interface {
-	TransferConnect(name string, client net.Conn, host net.Conn)
-	TransferBind(name string, client net.Conn, host net.Conn)
+	TransferConnect(name string, client net.Conn, host net.Conn) error
+	TransferBind(name string, client net.Conn, host net.Conn) error
 }
 
 type BaseTransmitter struct {
@@ -34,7 +34,7 @@ func NewBaseTransmitter(
 	}, nil
 }
 
-func (b BaseTransmitter) TransferConnect(name string, client net.Conn, host net.Conn) {
+func (b BaseTransmitter) TransferConnect(name string, client net.Conn, host net.Conn) error {
 	rate, err := b.config.GetRate(name)
 
 	if err != nil && err == v5.UserNotExistsError {
@@ -45,12 +45,16 @@ func (b BaseTransmitter) TransferConnect(name string, client net.Conn, host net.
 			ClientReadBuffersPerSecond:  -1,
 			ClientWriteBuffersPerSecond: -1,
 		}
+	} else if err != nil {
+		return err
 	}
 
 	b.connectHandler.HandleClient(rate, client, host)
+
+	return nil
 }
 
-func (b BaseTransmitter) TransferBind(name string, client net.Conn, host net.Conn) {
+func (b BaseTransmitter) TransferBind(name string, client net.Conn, host net.Conn) error {
 	rate, err := b.config.GetRate(name)
 
 	if err != nil && err == v5.UserNotExistsError {
@@ -61,15 +65,19 @@ func (b BaseTransmitter) TransferBind(name string, client net.Conn, host net.Con
 			ClientReadBuffersPerSecond:  -1,
 			ClientWriteBuffersPerSecond: -1,
 		}
+	} else if err != nil {
+		return err
 	}
 
 	err = b.bindRate.Add(client.RemoteAddr().String(), rate)
 
 	if err != nil {
-		panic(err) // TODO: fix
+		return err
 	}
 
 	defer b.bindRate.Remove(client.RemoteAddr().String())
 
 	b.bindHandler.HandleClient(client, host)
+
+	return nil
 }

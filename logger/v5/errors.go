@@ -17,6 +17,7 @@ type ErrorsLogger interface {
 	ReceiveHostError(client string, address string, err error)
 	SendClientError(client string, host string, address string, err error)
 	BindError(client string, address string, err error)
+	ConfigError(client string, err error)
 }
 
 type BaseErrorsLogger struct {
@@ -221,4 +222,17 @@ func (b BaseErrorsLogger) BindError(client string, address string, err error) {
 		Str("address", address).
 		Err(err).
 		Msg("Cannot handle v5 request due to bind error. ")
+}
+
+func (b BaseErrorsLogger) ConfigError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Got config error.")
 }

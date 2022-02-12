@@ -6,7 +6,7 @@ import (
 )
 
 type Limiter interface {
-	IsLimited() bool
+	IsLimited() (bool, error)
 }
 
 type BaseLimiter struct {
@@ -24,15 +24,15 @@ func NewBaseLimiter(
 	}, nil
 }
 
-func (b BaseLimiter) IsLimited() bool {
+func (b BaseLimiter) IsLimited() (bool, error) {
 	limit, err := b.config.GetRate()
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
 	if limit.MaxSimultaneousConnections <= 0 {
-		return false
+		return false, nil
 	}
 
 	b.manager.Increment("v4a.anonymous")
@@ -42,8 +42,8 @@ func (b BaseLimiter) IsLimited() bool {
 	if limited {
 		b.manager.Decrement("v4a.anonymous")
 
-		return true
+		return true, nil
 	} else {
-		return false
+		return false, nil
 	}
 }

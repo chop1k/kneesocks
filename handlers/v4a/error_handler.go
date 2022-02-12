@@ -20,6 +20,7 @@ type ErrorHandler interface {
 	HandleBindManagerReceiveHostError(err error, address string, client net.Conn)
 	HandleBindManagerSendClientError(err error, address string, client net.Conn, host net.Conn)
 	HandleChunkParseError(err error, client net.Conn)
+	HandleTransferError(err error, client net.Conn, host net.Conn)
 }
 
 type BaseErrorHandler struct {
@@ -131,4 +132,11 @@ func (b BaseErrorHandler) HandleChunkParseError(err error, client net.Conn) {
 	b.sender.SendFailAndClose(client)
 
 	b.logger.Errors.ParseError(client.RemoteAddr().String(), err)
+}
+
+func (b BaseErrorHandler) HandleTransferError(err error, client net.Conn, host net.Conn) {
+	_ = client.Close()
+	_ = host.Close()
+
+	b.logger.Errors.ConfigError(client.RemoteAddr().String(), err)
 }

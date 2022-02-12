@@ -67,7 +67,15 @@ func (b BaseValidator) ValidateRestrictions(command byte, address string, client
 		return false
 	}
 
-	whitelisted := b.whitelist.IsWhitelisted(address)
+	whitelisted, whitelistErr := b.whitelist.IsWhitelisted(address)
+
+	if whitelistErr != nil {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.Errors.ConfigError(client.RemoteAddr().String(), whitelistErr)
+
+		return false
+	}
 
 	if whitelisted {
 		b.sender.SendFailAndClose(client)
@@ -77,7 +85,15 @@ func (b BaseValidator) ValidateRestrictions(command byte, address string, client
 		return false
 	}
 
-	blacklisted := b.blacklist.IsBlacklisted(address)
+	blacklisted, blacklistErr := b.blacklist.IsBlacklisted(address)
+
+	if blacklistErr != nil {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.Errors.ConfigError(client.RemoteAddr().String(), blacklistErr)
+
+		return false
+	}
 
 	if blacklisted {
 		b.sender.SendFailAndClose(client)
@@ -87,12 +103,20 @@ func (b BaseValidator) ValidateRestrictions(command byte, address string, client
 		return false
 	}
 
-	limited := b.limiter.IsLimited()
+	limited, limitedErr := b.limiter.IsLimited()
+
+	if limitedErr != nil {
+		b.sender.SendFailAndClose(client)
+
+		b.logger.Errors.ConfigError(client.RemoteAddr().String(), limitedErr)
+
+		return false
+	}
 
 	if limited {
 		b.sender.SendFailAndClose(client)
 
-		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address) // TODO: log
+		b.logger.Restrictions.NotAllowedByConnectionLimits(client.RemoteAddr().String(), address)
 
 		return false
 	}

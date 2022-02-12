@@ -8,25 +8,22 @@ import (
 )
 
 type Sender interface {
-	SendFailAndClose(client net.Conn)
-	SendSuccess(client net.Conn) error
-	SendSuccessWithParameters(ip net.IP, port uint16, client net.Conn) error
+	SendFailAndClose(config v42.Config, client net.Conn)
+	SendSuccess(config v42.Config, client net.Conn) error
+	SendSuccessWithParameters(config v42.Config, ip net.IP, port uint16, client net.Conn) error
 }
 
 type BaseSender struct {
 	tcpConfig tcp.BindConfig
-	config    v42.DeadlineConfig
 	builder   Builder
 }
 
 func NewBaseSender(
 	tcpConfig tcp.BindConfig,
-	config v42.DeadlineConfig,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
 		tcpConfig: tcpConfig,
-		config:    config,
 		builder:   builder,
 	}, nil
 }
@@ -40,14 +37,8 @@ func (b BaseSender) build(status byte, ip net.IP, port uint16) ([]byte, error) {
 	})
 }
 
-func (b BaseSender) send(status byte, ip net.IP, port uint16, client net.Conn) error {
-	deadline, configErr := b.config.GetResponseDeadline()
-
-	if configErr != nil {
-		return configErr
-	}
-
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(deadline))
+func (b BaseSender) send(config v42.Config, status byte, ip net.IP, port uint16, client net.Conn) error {
+	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Response))
 
 	if deadlineErr != nil {
 		return deadlineErr
@@ -68,27 +59,27 @@ func (b BaseSender) send(status byte, ip net.IP, port uint16, client net.Conn) e
 	return nil
 }
 
-func (b BaseSender) SendFailAndClose(client net.Conn) {
+func (b BaseSender) SendFailAndClose(config v42.Config, client net.Conn) {
 	port, err := b.tcpConfig.GetPort()
 
 	if err != nil {
 		panic(err)
 	}
 
-	_ = b.send(91, net.IP{0, 0, 0, 0}, port, client)
+	_ = b.send(config, 91, net.IP{0, 0, 0, 0}, port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendSuccess(client net.Conn) error {
+func (b BaseSender) SendSuccess(config v42.Config, client net.Conn) error {
 	port, err := b.tcpConfig.GetPort()
 
 	if err != nil {
 		panic(err)
 	}
 
-	return b.send(90, net.IP{0, 0, 0, 0}, port, client)
+	return b.send(config, 90, net.IP{0, 0, 0, 0}, port, client)
 }
 
-func (b BaseSender) SendSuccessWithParameters(ip net.IP, port uint16, client net.Conn) error {
-	return b.send(90, ip, port, client)
+func (b BaseSender) SendSuccessWithParameters(config v42.Config, ip net.IP, port uint16, client net.Conn) error {
+	return b.send(config, 90, ip, port, client)
 }

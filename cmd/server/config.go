@@ -8,10 +8,12 @@ import (
 	"os"
 	"socks/config"
 	"socks/config/tcp"
+	"socks/config/tree"
 	"socks/config/udp"
 	v43 "socks/config/v4"
 	v4a3 "socks/config/v4a"
 	v53 "socks/config/v5"
+	"time"
 )
 
 func registerConfig(builder di.Builder) {
@@ -193,41 +195,69 @@ func registerV4Config(builder di.Builder) {
 		},
 	}
 
-	deadlineDef := di.Def{
-		Name:  "v4_deadline_config",
+	//deadlineDef := di.Def{
+	//	Name:  "v4_deadline_config",
+	//	Scope: di.App,
+	//	Build: func(ctn di.Container) (interface{}, error) {
+	//		cfg := ctn.Get("config_container").(gabs.Container)
+	//
+	//		return v43.NewBaseDeadlineConfig(cfg)
+	//	},
+	//}
+	//
+	//configDef := di.Def{
+	//	Name:  "v4_config",
+	//	Scope: di.App,
+	//	Build: func(ctn di.Container) (interface{}, error) {
+	//		cfg := ctn.Get("config_container").(gabs.Container)
+	//
+	//		return v43.NewBaseConfig(cfg)
+	//	},
+	//}
+	//
+	//restrictionsConfigDef := di.Def{
+	//	Name:  "v4_restrictions_config",
+	//	Scope: di.App,
+	//	Build: func(ctn di.Container) (interface{}, error) {
+	//		cfg := ctn.Get("config_container").(gabs.Container)
+	//
+	//		return v43.NewBaseRestrictionsConfig(cfg)
+	//	},
+	//}
+
+	builderDef := di.Def{
+		Name:  "v4_config_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v43.NewBaseDeadlineConfig(cfg)
-		},
-	}
-
-	configDef := di.Def{
-		Name:  "v4_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v43.NewBaseConfig(cfg)
-		},
-	}
-
-	restrictionsConfigDef := di.Def{
-		Name:  "v4_restrictions_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v43.NewBaseRestrictionsConfig(cfg)
+			return v43.NewConfigBuilder(v43.Config{
+				AllowConnect: true,
+				AllowBind:    true,
+				Deadline: v43.DeadlineConfig{
+					Response: time.Second * 5,
+					Connect:  time.Second * 5,
+					Bind:     time.Second * 5,
+				},
+				Restrictions: tree.Restrictions{
+					WhiteList: []string{},
+					BlackList: []string{},
+					Rate: tree.RateRestrictions{
+						MaxSimultaneousConnections:  -1,
+						HostReadBuffersPerSecond:    -1,
+						HostWriteBuffersPerSecond:   -1,
+						ClientReadBuffersPerSecond:  -1,
+						ClientWriteBuffersPerSecond: -1,
+					},
+				},
+			})
 		},
 	}
 
 	err := builder.Add(
 		loggerConfigDef,
-		deadlineDef,
-		configDef,
-		restrictionsConfigDef,
+		//deadlineDef,
+		//configDef,
+		//restrictionsConfigDef,
+		builderDef,
 	)
 
 	if err != nil {

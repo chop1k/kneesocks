@@ -11,6 +11,7 @@ type ErrorsLogger interface {
 	BindError(client string, address string, err error)
 	ReceiveHostError(client string, address string, err error)
 	SendClientError(client string, host string, address string, err error)
+	ConfigError(client string, err error)
 }
 
 type BaseErrorsLogger struct {
@@ -135,4 +136,17 @@ func (b BaseErrorsLogger) SendClientError(client string, host string, address st
 		Str("address", address).
 		Err(err).
 		Msg("Cannot handle v4a request due to bind error in bind manager.")
+}
+
+func (b BaseErrorsLogger) ConfigError(client string, err error) {
+	e := b.logger.Error()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Err(err).
+		Msg("Got config error.")
 }

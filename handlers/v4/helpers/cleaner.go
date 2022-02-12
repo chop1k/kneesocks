@@ -5,7 +5,7 @@ import (
 )
 
 type Cleaner interface {
-	Clean() error
+	Clean()
 }
 
 type BaseCleaner struct {
@@ -16,8 +16,6 @@ func NewBaseCleaner(manager *managers.ConnectionsManager) (BaseCleaner, error) {
 	return BaseCleaner{manager: manager}, nil
 }
 
-func (b BaseCleaner) Clean() error {
+func (b BaseCleaner) Clean() {
 	b.manager.Decrement("v4.anonymous")
-
-	return nil
 }

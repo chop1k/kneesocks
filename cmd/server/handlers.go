@@ -185,6 +185,7 @@ func registerV4Handlers(builder di.Builder) {
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
 			validator := ctn.Get("v4_validator").(helpers5.Validator)
 			cleaner := ctn.Get("v4_cleaner").(helpers5.Cleaner)
+			builder := ctn.Get("v4_config_builder").(v43.ConfigBuilder)
 
 			return v42.NewBaseHandler(
 				parser,
@@ -195,6 +196,7 @@ func registerV4Handlers(builder di.Builder) {
 				errorHandler,
 				validator,
 				cleaner,
+				builder,
 			)
 		},
 	}
@@ -234,10 +236,9 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_binder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_deadline_config").(v4a3.DeadlineConfig)
 			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 
-			return helpers5.NewBaseBinder(cfg, bindManager)
+			return helpers5.NewBaseBinder(bindManager)
 		},
 	}
 
@@ -245,10 +246,9 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_blacklist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_restrictions_config").(v43.RestrictionsConfig)
 			whitelist := ctn.Get("blacklist_manager").(managers.BlacklistManager)
 
-			return helpers5.NewBaseBlacklist(cfg, whitelist)
+			return helpers5.NewBaseBlacklist(whitelist)
 		},
 	}
 
@@ -266,9 +266,7 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_dialer",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_deadline_config").(v43.DeadlineConfig)
-
-			return helpers5.NewBaseDialer(cfg)
+			return helpers5.NewBaseDialer()
 		},
 	}
 
@@ -276,10 +274,9 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_limiter",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_restrictions_config").(v43.RestrictionsConfig)
 			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
 
-			return helpers5.NewBaseLimiter(cfg, manager)
+			return helpers5.NewBaseLimiter(manager)
 		},
 	}
 
@@ -287,12 +284,11 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_transmitter",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_restrictions_config").(v43.RestrictionsConfig)
 			connect := ctn.Get("transfer_connect_handler").(transfer.ConnectHandler)
 			bind := ctn.Get("transfer_bind_handler").(transfer.BindHandler)
 			bindRate := ctn.Get("bind_rate_manager").(managers.BindRateManager)
 
-			return helpers5.NewBaseTransmitter(cfg, connect, bind, bindRate)
+			return helpers5.NewBaseTransmitter(connect, bind, bindRate)
 		},
 	}
 
@@ -300,14 +296,13 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_validator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_config").(v43.Config)
 			whitelist := ctn.Get("v4_whitelist").(helpers5.Whitelist)
 			blacklist := ctn.Get("v4_blacklist").(helpers5.Blacklist)
 			sender := ctn.Get("v4_sender").(v4.Sender)
 			logger := ctn.Get("v4_logger").(v44.Logger)
 			limiter := ctn.Get("v4_limiter").(helpers5.Limiter)
 
-			return helpers5.NewBaseValidator(cfg, whitelist, blacklist, sender, logger, limiter)
+			return helpers5.NewBaseValidator(whitelist, blacklist, sender, logger, limiter)
 		},
 	}
 
@@ -315,10 +310,9 @@ func registerV4Helpers(builder di.Builder) {
 		Name:  "v4_whitelist",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_restrictions_config").(v43.RestrictionsConfig)
 			whitelist := ctn.Get("whitelist_manager").(managers.WhitelistManager)
 
-			return helpers5.NewBaseWhitelist(cfg, whitelist)
+			return helpers5.NewBaseWhitelist(whitelist)
 		},
 	}
 

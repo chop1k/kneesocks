@@ -6,38 +6,31 @@ import (
 )
 
 type Limiter interface {
-	IsLimited() bool
+	IsLimited(config v4.Config) bool
 }
 
 type BaseLimiter struct {
-	config  v4.RestrictionsConfig
 	manager *managers.ConnectionsManager
 }
 
 func NewBaseLimiter(
-	config v4.RestrictionsConfig,
 	manager *managers.ConnectionsManager,
 ) (BaseLimiter, error) {
 	return BaseLimiter{
-		config:  config,
 		manager: manager,
 	}, nil
 }
 
-func (b BaseLimiter) IsLimited() bool {
-	limit, err := b.config.GetRate()
+func (b BaseLimiter) IsLimited(config v4.Config) bool {
+	rate := config.Restrictions.Rate
 
-	if err != nil {
-		panic(err)
-	}
-
-	if limit.MaxSimultaneousConnections <= 0 {
+	if rate.MaxSimultaneousConnections <= 0 {
 		return false
 	}
 
 	b.manager.Increment("v4.anonymous")
 
-	limited := b.manager.IsExceed("v4.anonymous", limit.MaxSimultaneousConnections)
+	limited := b.manager.IsExceed("v4.anonymous", rate.MaxSimultaneousConnections)
 
 	if limited {
 		b.manager.Decrement("v4.anonymous")

@@ -6,7 +6,7 @@ import (
 )
 
 type Blacklist interface {
-	IsBlacklisted(address string) bool
+	IsBlacklisted(address string) (bool, error)
 }
 
 type BaseBlacklist struct {
@@ -18,12 +18,12 @@ func NewBaseBlacklist(config v4a.RestrictionsConfig, blacklist managers.Blacklis
 	return BaseBlacklist{config: config, blacklist: blacklist}, nil
 }
 
-func (b BaseBlacklist) IsBlacklisted(address string) bool {
+func (b BaseBlacklist) IsBlacklisted(address string) (bool, error) {
 	blacklist, err := b.config.GetBlacklist()
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
-	return b.blacklist.IsBlacklisted(blacklist, address)
+	return b.blacklist.IsBlacklisted(blacklist, address), nil
 }

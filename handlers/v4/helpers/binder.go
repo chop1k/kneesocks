@@ -8,22 +8,19 @@ import (
 
 type Binder interface {
 	Bind(address string) error
-	Receive(address string) (net.Conn, error)
+	Receive(config v4.Config, address string) (net.Conn, error)
 	Send(address string, conn net.Conn) error
 	Remove(address string)
 }
 
 type BaseBinder struct {
-	config      v4.DeadlineConfig
 	bindManager managers.BindManager
 }
 
 func NewBaseBinder(
-	config v4.DeadlineConfig,
 	bindManager managers.BindManager,
 ) (BaseBinder, error) {
 	return BaseBinder{
-		config:      config,
 		bindManager: bindManager,
 	}, nil
 }
@@ -32,14 +29,8 @@ func (b BaseBinder) Bind(address string) error {
 	return b.bindManager.Bind(address)
 }
 
-func (b BaseBinder) Receive(address string) (net.Conn, error) {
-	deadline, err := b.config.GetBindDeadline()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return b.bindManager.ReceiveHost(address, deadline)
+func (b BaseBinder) Receive(config v4.Config, address string) (net.Conn, error) {
+	return b.bindManager.ReceiveHost(address, config.Deadline.Bind)
 }
 
 func (b BaseBinder) Send(address string, conn net.Conn) error {

@@ -123,11 +123,7 @@ func (b BaseHandler) handleCommand(name string, chunk v5.RequestChunk, client ne
 		return
 	}
 
-	err := b.cleaner.Clean(name)
-
-	if err != nil {
-		panic(err)
-	}
+	b.cleaner.Clean(name)
 }
 
 func (b BaseHandler) handleConnect(name string, address string, client net.Conn) {

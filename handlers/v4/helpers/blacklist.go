@@ -6,30 +6,21 @@ import (
 )
 
 type Blacklist interface {
-	IsBlacklisted(address string) bool
+	IsBlacklisted(config v4.Config, address string) bool
 }
 
 type BaseBlacklist struct {
-	config    v4.RestrictionsConfig
 	blacklist managers.BlacklistManager
 }
 
 func NewBaseBlacklist(
-	config v4.RestrictionsConfig,
 	blacklist managers.BlacklistManager,
 ) (BaseBlacklist, error) {
 	return BaseBlacklist{
-		config:    config,
 		blacklist: blacklist,
 	}, nil
 }
 
-func (b BaseBlacklist) IsBlacklisted(address string) bool {
-	blacklist, err := b.config.GetBlacklist()
-
-	if err != nil {
-		return false
-	}
-
-	return b.blacklist.IsBlacklisted(blacklist, address)
+func (b BaseBlacklist) IsBlacklisted(config v4.Config, address string) bool {
+	return b.blacklist.IsBlacklisted(config.Restrictions.BlackList, address)
 }

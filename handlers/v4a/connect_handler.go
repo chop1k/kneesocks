@@ -58,5 +58,11 @@ func (b BaseConnectHandler) connectSendSuccess(address string, host net.Conn, cl
 
 	b.logger.Connect.Successful(client.RemoteAddr().String(), address)
 
-	b.transmitter.TransferConnect(client, host)
+	err = b.transmitter.TransferConnect(client, host)
+
+	if err != nil {
+		b.errorHandler.HandleTransferError(err, client, host)
+
+		return
+	}
 }

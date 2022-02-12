@@ -8,55 +8,42 @@ import (
 )
 
 type Transmitter interface {
-	TransferConnect(client net.Conn, host net.Conn)
-	TransferBind(client net.Conn, host net.Conn)
+	TransferConnect(config v4.Config, client net.Conn, host net.Conn)
+	TransferBind(config v4.Config, client net.Conn, host net.Conn) error
 }
 
 type BaseTransmitter struct {
-	config         v4.RestrictionsConfig
 	connectHandler transfer.ConnectHandler
 	bindHandler    transfer.BindHandler
 	bindRate       managers.BindRateManager
 }
 
 func NewBaseTransmitter(
-	config v4.RestrictionsConfig,
 	connectHandler transfer.ConnectHandler,
 	bindHandler transfer.BindHandler,
 	bindRate managers.BindRateManager,
 ) (BaseTransmitter, error) {
 	return BaseTransmitter{
-		config:         config,
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
 		bindRate:       bindRate,
 	}, nil
 }
 
-func (b BaseTransmitter) TransferConnect(client net.Conn, host net.Conn) {
-	rate, err := b.config.GetRate()
-
-	if err != nil {
-		panic(err)
-	}
-
-	b.connectHandler.HandleClient(rate, client, host)
+func (b BaseTransmitter) TransferConnect(config v4.Config, client net.Conn, host net.Conn) {
+	b.connectHandler.HandleClient(config.Restrictions.Rate, client, host)
 }
 
-func (b BaseTransmitter) TransferBind(client net.Conn, host net.Conn) {
-	rate, err := b.config.GetRate()
+func (b BaseTransmitter) TransferBind(config v4.Config, client net.Conn, host net.Conn) error {
+	err := b.bindRate.Add(client.RemoteAddr().String(), config.Restrictions.Rate)
 
 	if err != nil {
-		panic(err)
-	}
-
-	err = b.bindRate.Add(client.RemoteAddr().String(), rate)
-
-	if err != nil {
-		panic(err) // TODO: fix
+		return err
 	}
 
 	defer b.bindRate.Remove(client.RemoteAddr().String())
 
 	b.bindHandler.HandleClient(client, host)
+
+	return nil
 }

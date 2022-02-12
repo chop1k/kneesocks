@@ -8,8 +8,8 @@ import (
 )
 
 type Transmitter interface {
-	TransferConnect(client net.Conn, host net.Conn)
-	TransferBind(client net.Conn, host net.Conn)
+	TransferConnect(client net.Conn, host net.Conn) error
+	TransferBind(client net.Conn, host net.Conn) error
 }
 
 type BaseTransmitter struct {
@@ -33,30 +33,34 @@ func NewBaseTransmitter(
 	}, nil
 }
 
-func (b BaseTransmitter) TransferConnect(client net.Conn, host net.Conn) {
+func (b BaseTransmitter) TransferConnect(client net.Conn, host net.Conn) error {
 	rate, err := b.config.GetRate()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	b.connectHandler.HandleClient(rate, client, host)
+
+	return nil
 }
 
-func (b BaseTransmitter) TransferBind(client net.Conn, host net.Conn) {
+func (b BaseTransmitter) TransferBind(client net.Conn, host net.Conn) error {
 	rate, err := b.config.GetRate()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = b.bindRate.Add(client.RemoteAddr().String(), rate)
 
 	if err != nil {
-		panic(err) // TODO: fix
+		return err
 	}
 
 	defer b.bindRate.Remove(client.RemoteAddr().String())
 
 	b.bindHandler.HandleClient(client, host)
+
+	return nil
 }

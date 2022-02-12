@@ -70,11 +70,7 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 		return
 	}
 
-	err = b.cleaner.Clean()
-
-	if err != nil {
-		panic(err)
-	}
+	b.cleaner.Clean()
 }
 
 func (b BaseHandler) handleConnect(address string, client net.Conn) {

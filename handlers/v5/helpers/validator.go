@@ -42,7 +42,11 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 	ipV4Allowed, ipV4Err := b.config.IsIPv4Allowed()
 
 	if ipV4Err != nil {
-		panic(ipV4Err)
+		b.sender.SendFailAndClose(client)
+
+		b.logger.Errors.ConfigError(client.RemoteAddr().String(), ipV4Err)
+
+		return false
 	}
 
 	if !ipV4Allowed && addressType == 1 {
@@ -56,7 +60,11 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 	domainAllowed, domainErr := b.config.IsIPv4Allowed()
 
 	if domainErr != nil {
-		panic(domainErr)
+		b.sender.SendFailAndClose(client)
+
+		b.logger.Errors.ConfigError(client.RemoteAddr().String(), ipV4Err)
+
+		return false
 	}
 
 	if !domainAllowed && addressType == 3 {
@@ -70,7 +78,11 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 	ipV6Allowed, ipV6Err := b.config.IsIPv4Allowed()
 
 	if ipV6Err != nil {
-		panic(ipV6Err)
+		b.sender.SendFailAndClose(client)
+
+		b.logger.Errors.ConfigError(client.RemoteAddr().String(), ipV4Err)
+
+		return false
 	}
 
 	if !ipV6Allowed && addressType == 4 {
@@ -133,7 +145,11 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 		return false
 	}
 
-	blacklisted := b.blacklist.IsBlacklisted(name, address)
+	blacklisted, blacklistErr := b.blacklist.IsBlacklisted(name, address)
+
+	if blacklistErr != nil {
+		panic(blacklisted)
+	}
 
 	if blacklisted {
 		b.sender.SendConnectionNotAllowedAndClose(client)
@@ -143,7 +159,11 @@ func (b BaseValidator) ValidateRestrictions(command byte, name string, addressTy
 		return false
 	}
 
-	limited := b.limiter.IsLimited(name)
+	limited, limitedErr := b.limiter.IsLimited(name)
+
+	if limitedErr != nil {
+		panic(limitedErr)
+	}
 
 	if limited {
 		b.sender.SendFailAndClose(client)

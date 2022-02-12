@@ -6,7 +6,7 @@ import (
 )
 
 type Whitelist interface {
-	IsWhitelisted(address string) bool
+	IsWhitelisted(address string) (bool, error)
 }
 
 type BaseWhitelist struct {
@@ -18,12 +18,12 @@ func NewBaseWhitelist(config v4a.RestrictionsConfig, whitelist managers.Whitelis
 	return BaseWhitelist{config: config, whitelist: whitelist}, nil
 }
 
-func (b BaseWhitelist) IsWhitelisted(address string) bool {
+func (b BaseWhitelist) IsWhitelisted(address string) (bool, error) {
 	whitelist, err := b.config.GetWhitelist()
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
-	return b.whitelist.IsWhitelisted(whitelist, address)
+	return b.whitelist.IsWhitelisted(whitelist, address), nil
 }

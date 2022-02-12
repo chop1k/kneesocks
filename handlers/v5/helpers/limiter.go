@@ -8,7 +8,7 @@ import (
 )
 
 type Limiter interface {
-	IsLimited(name string) bool
+	IsLimited(name string) (bool, error)
 }
 
 type BaseLimiter struct {
@@ -26,7 +26,7 @@ func NewBaseLimiter(
 	}, nil
 }
 
-func (b BaseLimiter) IsLimited(name string) bool {
+func (b BaseLimiter) IsLimited(name string) (bool, error) {
 	limit, err := b.config.GetRate(name)
 
 	if err != nil && err == v5.UserNotExistsError {
@@ -38,11 +38,11 @@ func (b BaseLimiter) IsLimited(name string) bool {
 			ClientWriteBuffersPerSecond: -1,
 		}
 	} else if err != nil {
-		panic(err)
+		return false, err
 	}
 
 	if limit.MaxSimultaneousConnections <= 0 {
-		return false
+		return false, nil
 	}
 
 	id := fmt.Sprintf("v5.%s", name)
@@ -54,8 +54,8 @@ func (b BaseLimiter) IsLimited(name string) bool {
 	if limited {
 		b.manager.Decrement(id)
 
-		return true
+		return true, nil
 	} else {
-		return false
+		return false, nil
 	}
 }

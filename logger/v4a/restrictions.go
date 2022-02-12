@@ -6,6 +6,7 @@ type RestrictionsLogger interface {
 	NotAllowed(client string, address string)
 	NotAllowedByWhitelist(client string, address string)
 	NotAllowedByBlacklist(client string, address string)
+	NotAllowedByConnectionLimits(client string, address string)
 }
 
 type BaseRestrictionsLogger struct {
@@ -55,4 +56,17 @@ func (b BaseRestrictionsLogger) NotAllowedByBlacklist(client string, address str
 		Str("client", client).
 		Str("host", address).
 		Msg("Not allowed due to blacklist.")
+}
+
+func (b BaseRestrictionsLogger) NotAllowedByConnectionLimits(client string, address string) {
+	e := b.logger.Warn()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Not allowed due to maximum simultaneous connections.")
 }

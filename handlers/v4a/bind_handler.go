@@ -140,5 +140,11 @@ func (b BaseBindHandler) bindSendSecondResponse(address string, hostAddr string,
 
 	b.logger.Bind.Successful(client.RemoteAddr().String(), address)
 
-	b.transmitter.TransferBind(client, host)
+	err = b.transmitter.TransferBind(client, host)
+
+	if err != nil {
+		b.errorHandler.HandleTransferError(err, client, host)
+
+		return
+	}
 }

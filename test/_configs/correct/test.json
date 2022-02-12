@@ -1,7 +1,7 @@
 {
   "Tcp": {
     "Bind": {
-      "Address": "127.0.0.1",
+      "Address": "",
       "Port": 1080
     },
     "ClientBufferSize": 512,
@@ -13,7 +13,7 @@
   },
   "Udp": {
     "Bind": {
-      "Address": "127.0.0.1",
+      "Address": "",
       "Port": 1080
     },
     "Buffer": {
@@ -115,24 +115,6 @@
     }
   },
   "Log": {
-    "Server": {
-      "Level": 0,
-      "Console": {
-        "TimeFormat": "2006-01-02 15:04:05"
-      }
-    },
-    "Tcp": {
-      "Level": 0,
-      "Console": {
-        "TimeFormat": "2006-01-02 15:04:05"
-      }
-    },
-    "Udp": {
-      "Level": 0,
-      "Console": {
-        "TimeFormat": "2006-01-02 15:04:05"
-      }
-    },
     "SocksV4": {
       "Level": 0,
       "Console": {
