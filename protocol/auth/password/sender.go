@@ -7,32 +7,23 @@ import (
 )
 
 type Sender interface {
-	SendResponse(code byte, client net.Conn) error
+	SendResponse(config v5.Config, code byte, client net.Conn) error
 }
 
 type BaseSender struct {
-	config  v5.DeadlineConfig
 	builder Builder
 }
 
 func NewBaseSender(
-	config v5.DeadlineConfig,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
-		config:  config,
 		builder: builder,
 	}, nil
 }
 
-func (b BaseSender) SendResponse(code byte, client net.Conn) error {
-	deadline, configErr := b.config.GetPasswordResponseDeadline()
-
-	if configErr != nil {
-		return configErr
-	}
-
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(deadline))
+func (b BaseSender) SendResponse(config v5.Config, code byte, client net.Conn) error {
+	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.PasswordResponse))
 
 	if deadlineErr != nil {
 		return deadlineErr

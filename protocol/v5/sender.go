@@ -9,49 +9,40 @@ import (
 )
 
 type Sender interface {
-	SendMethodSelection(method byte, client net.Conn) error
-	SendConnectionRefusedAndClose(client net.Conn)
-	SendTTLExpiredAndClose(client net.Conn)
-	SendNetworkUnreachableAndClose(client net.Conn)
-	SendHostUnreachableAndClose(client net.Conn)
-	SendCommandNotSupportedAndClose(client net.Conn)
-	SendAddressNotSupportedAndClose(client net.Conn)
-	SendConnectionNotAllowedAndClose(client net.Conn)
-	SendFailAndClose(client net.Conn)
-	SendSuccessWithTcpPort(client net.Conn) error
-	SendSuccessWithUdpPort(client net.Conn) error
-	SendSuccessWithParameters(addressType byte, address string, port uint16, client net.Conn) error
+	SendMethodSelection(config v52.Config, method byte, client net.Conn) error
+	SendConnectionRefusedAndClose(config v52.Config, client net.Conn)
+	SendTTLExpiredAndClose(config v52.Config, client net.Conn)
+	SendNetworkUnreachableAndClose(config v52.Config, client net.Conn)
+	SendHostUnreachableAndClose(config v52.Config, client net.Conn)
+	SendCommandNotSupportedAndClose(config v52.Config, client net.Conn)
+	SendAddressNotSupportedAndClose(config v52.Config, client net.Conn)
+	SendConnectionNotAllowedAndClose(config v52.Config, client net.Conn)
+	SendFailAndClose(config v52.Config, client net.Conn)
+	SendSuccessWithTcpPort(config v52.Config, client net.Conn) error
+	SendSuccessWithUdpPort(config v52.Config, client net.Conn) error
+	SendSuccessWithParameters(config v52.Config, addressType byte, address string, port uint16, client net.Conn) error
 }
 
 type BaseSender struct {
 	tcpConfig tcp.BindConfig
 	udpConfig udp.BindConfig
-	config    v52.DeadlineConfig
 	builder   Builder
 }
 
 func NewBaseSender(
 	tcpConfig tcp.BindConfig,
 	udpConfig udp.BindConfig,
-	config v52.DeadlineConfig,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
 		tcpConfig: tcpConfig,
 		udpConfig: udpConfig,
-		config:    config,
 		builder:   builder,
 	}, nil
 }
 
-func (b BaseSender) SendMethodSelection(method byte, client net.Conn) error {
-	deadline, configErr := b.config.GetSelectionDeadline()
-
-	if configErr != nil {
-		return configErr
-	}
-
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(deadline))
+func (b BaseSender) SendMethodSelection(config v52.Config, method byte, client net.Conn) error {
+	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Selection))
 
 	if deadlineErr != nil {
 		return deadlineErr
@@ -73,14 +64,8 @@ func (b BaseSender) SendMethodSelection(method byte, client net.Conn) error {
 	return err
 }
 
-func (b BaseSender) responseWithCode(code byte, addrType byte, addr string, port uint16, client net.Conn) error {
-	deadline, configErr := b.config.GetResponseDeadline()
-
-	if configErr != nil {
-		return configErr
-	}
-
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(deadline))
+func (b BaseSender) responseWithCode(config v52.Config, code byte, addrType byte, addr string, port uint16, client net.Conn) error {
+	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Response))
 
 	if deadlineErr != nil {
 		return deadlineErr
@@ -105,150 +90,90 @@ func (b BaseSender) responseWithCode(code byte, addrType byte, addr string, port
 	return err
 }
 
-func (b BaseSender) responseWithSuccess(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(0, addrType, addr, port, client)
+func (b BaseSender) responseWithSuccess(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 0, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithFail(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(1, addrType, addr, port, client)
+func (b BaseSender) responseWithFail(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 1, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithNotAllowed(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(2, addrType, addr, port, client)
+func (b BaseSender) responseWithNotAllowed(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 2, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithNetworkUnreachable(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(3, addrType, addr, port, client)
+func (b BaseSender) responseWithNetworkUnreachable(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 3, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithHostUnreachable(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(4, addrType, addr, port, client)
+func (b BaseSender) responseWithHostUnreachable(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 4, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithConnectionRefused(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(5, addrType, addr, port, client)
+func (b BaseSender) responseWithConnectionRefused(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 5, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithTTLExpired(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(6, addrType, addr, port, client)
+func (b BaseSender) responseWithTTLExpired(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 6, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithCommandNotSupported(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(7, addrType, addr, port, client)
+func (b BaseSender) responseWithCommandNotSupported(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 7, addrType, addr, port, client)
 }
 
-func (b BaseSender) responseWithAddressNotSupported(addrType byte, addr string, port uint16, client net.Conn) error {
-	return b.responseWithCode(8, addrType, addr, port, client)
+func (b BaseSender) responseWithAddressNotSupported(config v52.Config, addrType byte, addr string, port uint16, client net.Conn) error {
+	return b.responseWithCode(config, 8, addrType, addr, port, client)
 }
 
-func (b BaseSender) SendConnectionRefusedAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithConnectionRefused(1, "0.0.0.0", port, client)
+func (b BaseSender) SendConnectionRefusedAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithConnectionRefused(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendTTLExpiredAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithTTLExpired(1, "0.0.0.0", port, client)
+func (b BaseSender) SendTTLExpiredAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithTTLExpired(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendNetworkUnreachableAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithNetworkUnreachable(1, "0.0.0.0", port, client)
+func (b BaseSender) SendNetworkUnreachableAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithNetworkUnreachable(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendHostUnreachableAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithHostUnreachable(1, "0.0.0.0", port, client)
+func (b BaseSender) SendHostUnreachableAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithHostUnreachable(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendFailAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithFail(1, "0.0.0.0", port, client)
+func (b BaseSender) SendFailAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithFail(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendCommandNotSupportedAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithCommandNotSupported(1, "0.0.0.0", port, client)
+func (b BaseSender) SendCommandNotSupportedAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithCommandNotSupported(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendConnectionNotAllowedAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithNotAllowed(1, "0.0.0.0", port, client)
+func (b BaseSender) SendConnectionNotAllowedAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithNotAllowed(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendAddressNotSupportedAndClose(client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.responseWithAddressNotSupported(1, "0.0.0.0", port, client)
+func (b BaseSender) SendAddressNotSupportedAndClose(config v52.Config, client net.Conn) {
+	_ = b.responseWithAddressNotSupported(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendSuccessWithTcpPort(client net.Conn) error {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	return b.responseWithSuccess(1, "0.0.0.0", port, client)
+func (b BaseSender) SendSuccessWithTcpPort(config v52.Config, client net.Conn) error {
+	return b.responseWithSuccess(config, 1, "0.0.0.0", b.tcpConfig.Port, client)
 }
 
-func (b BaseSender) SendSuccessWithUdpPort(client net.Conn) error {
-	port, err := b.udpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	return b.responseWithSuccess(1, "0.0.0.0", port, client)
+func (b BaseSender) SendSuccessWithUdpPort(config v52.Config, client net.Conn) error {
+	return b.responseWithSuccess(config, 1, "0.0.0.0", b.udpConfig.Port, client)
 }
 
-func (b BaseSender) SendSuccessWithParameters(addressType byte, address string, port uint16, client net.Conn) error {
-	return b.responseWithSuccess(addressType, address, port, client)
+func (b BaseSender) SendSuccessWithParameters(config v52.Config, addressType byte, address string, port uint16, client net.Conn) error {
+	return b.responseWithSuccess(config, addressType, address, port, client)
 }

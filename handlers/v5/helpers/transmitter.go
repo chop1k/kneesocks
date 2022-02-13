@@ -9,35 +9,34 @@ import (
 )
 
 type Transmitter interface {
-	TransferConnect(name string, client net.Conn, host net.Conn) error
-	TransferBind(name string, client net.Conn, host net.Conn) error
+	TransferConnect(config v5.Config, name string, client net.Conn, host net.Conn)
+	TransferBind(config v5.Config, name string, client net.Conn, host net.Conn) error
 }
 
 type BaseTransmitter struct {
-	config         v5.UsersConfig
 	connectHandler transfer.ConnectHandler
 	bindHandler    transfer.BindHandler
 	bindRate       managers.BindRateManager
 }
 
 func NewBaseTransmitter(
-	config v5.UsersConfig,
 	connectHandler transfer.ConnectHandler,
 	bindHandler transfer.BindHandler,
 	bindRate managers.BindRateManager,
 ) (BaseTransmitter, error) {
 	return BaseTransmitter{
-		config:         config,
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
 		bindRate:       bindRate,
 	}, nil
 }
 
-func (b BaseTransmitter) TransferConnect(name string, client net.Conn, host net.Conn) error {
-	rate, err := b.config.GetRate(name)
+func (b BaseTransmitter) TransferConnect(config v5.Config, name string, client net.Conn, host net.Conn) {
+	var rate tree.RateRestrictions
 
-	if err != nil && err == v5.UserNotExistsError {
+	user, ok := config.Users[name]
+
+	if !ok {
 		rate = tree.RateRestrictions{
 			MaxSimultaneousConnections:  -1,
 			HostReadBuffersPerSecond:    -1,
@@ -45,19 +44,19 @@ func (b BaseTransmitter) TransferConnect(name string, client net.Conn, host net.
 			ClientReadBuffersPerSecond:  -1,
 			ClientWriteBuffersPerSecond: -1,
 		}
-	} else if err != nil {
-		return err
+	} else {
+		rate = user.Restrictions.Rate
 	}
 
 	b.connectHandler.HandleClient(rate, client, host)
-
-	return nil
 }
 
-func (b BaseTransmitter) TransferBind(name string, client net.Conn, host net.Conn) error {
-	rate, err := b.config.GetRate(name)
+func (b BaseTransmitter) TransferBind(config v5.Config, name string, client net.Conn, host net.Conn) error {
+	var rate tree.RateRestrictions
 
-	if err != nil && err == v5.UserNotExistsError {
+	user, ok := config.Users[name]
+
+	if !ok {
 		rate = tree.RateRestrictions{
 			MaxSimultaneousConnections:  -1,
 			HostReadBuffersPerSecond:    -1,
@@ -65,11 +64,11 @@ func (b BaseTransmitter) TransferBind(name string, client net.Conn, host net.Con
 			ClientReadBuffersPerSecond:  -1,
 			ClientWriteBuffersPerSecond: -1,
 		}
-	} else if err != nil {
-		return err
+	} else {
+		rate = user.Restrictions.Rate
 	}
 
-	err = b.bindRate.Add(client.RemoteAddr().String(), rate)
+	err := b.bindRate.Add(client.RemoteAddr().String(), rate)
 
 	if err != nil {
 		return err

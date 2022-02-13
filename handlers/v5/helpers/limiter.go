@@ -8,28 +8,27 @@ import (
 )
 
 type Limiter interface {
-	IsLimited(name string) (bool, error)
+	IsLimited(config v5.Config, name string) bool
 }
 
 type BaseLimiter struct {
-	config  v5.UsersConfig
 	manager *managers.ConnectionsManager
 }
 
 func NewBaseLimiter(
-	config v5.UsersConfig,
 	manager *managers.ConnectionsManager,
 ) (BaseLimiter, error) {
 	return BaseLimiter{
-		config:  config,
 		manager: manager,
 	}, nil
 }
 
-func (b BaseLimiter) IsLimited(name string) (bool, error) {
-	limit, err := b.config.GetRate(name)
+func (b BaseLimiter) IsLimited(config v5.Config, name string) bool {
+	var limit tree.RateRestrictions
 
-	if err != nil && err == v5.UserNotExistsError {
+	user, ok := config.Users[name]
+
+	if !ok {
 		limit = tree.RateRestrictions{
 			MaxSimultaneousConnections:  -1,
 			HostReadBuffersPerSecond:    -1,
@@ -37,12 +36,12 @@ func (b BaseLimiter) IsLimited(name string) (bool, error) {
 			ClientReadBuffersPerSecond:  -1,
 			ClientWriteBuffersPerSecond: -1,
 		}
-	} else if err != nil {
-		return false, err
+	} else {
+		limit = user.Restrictions.Rate
 	}
 
 	if limit.MaxSimultaneousConnections <= 0 {
-		return false, nil
+		return false
 	}
 
 	id := fmt.Sprintf("v5.%s", name)
@@ -54,8 +53,8 @@ func (b BaseLimiter) IsLimited(name string) (bool, error) {
 	if limited {
 		b.manager.Decrement(id)
 
-		return true, nil
+		return true
 	} else {
-		return false, nil
+		return false
 	}
 }

@@ -5,13 +5,11 @@ import (
 	"github.com/sarulabs/di"
 	"io"
 	"os"
-	"socks/config"
 	"socks/config/tcp"
 	"socks/config/udp"
 	v43 "socks/config/v4"
 	v4a3 "socks/config/v4a"
 	v53 "socks/config/v5"
-	"socks/logger"
 	tcp2 "socks/logger/tcp"
 	udp2 "socks/logger/udp"
 	v4 "socks/logger/v4"
@@ -28,49 +26,6 @@ func registerZeroLog(builder di.Builder) {
 			Timestamp().
 			Logger().
 			Level(zerolog.Level(level)), nil
-	}
-
-	serverDef := di.Def{
-		Name:  "server_zero_logger",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("server_logger_config").(config.ServerLoggerConfig)
-
-			level, err := cfg.GetLevel()
-
-			var loggers []io.Writer
-
-			if err != nil {
-				return buildLogger(126, loggers)
-			}
-
-			if output, err := cfg.GetConsoleOutput(); err == nil {
-				loggers = append(loggers, zerolog.ConsoleWriter{
-					Out:        os.Stdout,
-					TimeFormat: output.TimeFormat,
-				})
-			} else {
-				if err == config.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-
-				if err != nil {
-					return nil, err
-				}
-
-				loggers = append(loggers, file)
-			} else {
-				if err == config.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			return buildLogger(level, loggers)
-		},
 	}
 
 	tcpDef := di.Def{
@@ -289,7 +244,6 @@ func registerZeroLog(builder di.Builder) {
 	}
 
 	err := builder.Add(
-		serverDef,
 		tcpDef,
 		udpDef,
 		v4Def,
@@ -304,24 +258,6 @@ func registerZeroLog(builder di.Builder) {
 }
 
 func registerLogger(builder di.Builder) {
-	serverLoggerDef := di.Def{
-		Name:  "server_logger",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			zero := ctn.Get("server_zero_logger").(zerolog.Logger)
-
-			return logger.NewBaseServerLogger(zero)
-		},
-	}
-
-	err := builder.Add(
-		serverLoggerDef,
-	)
-
-	if err != nil {
-		panic(err)
-	}
-
 	registerTcpLogger(builder)
 	registerUdpLogger(builder)
 	registerV4Logger(builder)

@@ -6,6 +6,7 @@ type RestrictionsLogger interface {
 	NotAllowed(client string, address string)
 	NotAllowedByWhitelist(client string, address string)
 	NotAllowedByBlacklist(client string, address string)
+	NotAllowedByConnectionLimits(client string, address string)
 	IPv4AddressNotAllowed(client string, address string)
 	DomainAddressNotAllowed(client string, address string)
 	IPv6AddressNotAllowed(client string, address string)
@@ -58,6 +59,19 @@ func (b BaseRestrictionsLogger) NotAllowedByBlacklist(client string, address str
 		Str("client", client).
 		Str("host", address).
 		Msg("Not allowed due to blacklist.")
+}
+
+func (b BaseRestrictionsLogger) NotAllowedByConnectionLimits(client string, address string) {
+	e := b.logger.Warn()
+
+	if !e.Enabled() {
+		return
+	}
+
+	e.
+		Str("client", client).
+		Str("host", address).
+		Msg("Not allowed due to maximum simultaneous connections.")
 }
 
 func (b BaseRestrictionsLogger) IPv4AddressNotAllowed(client string, address string) {

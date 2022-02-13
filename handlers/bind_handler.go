@@ -3,48 +3,49 @@ package handlers
 import (
 	"fmt"
 	"net"
-	"socks/handlers/helpers"
+	tcp2 "socks/config/tcp"
 	"socks/logger/tcp"
+	"socks/managers"
 	"socks/transfer"
 	"socks/utils"
 )
 
 type BindHandler interface {
-	Handle(request []byte, host net.Conn)
+	Handle(config tcp2.DeadlineConfig, request []byte, host net.Conn)
 }
 
 type BaseBindHandler struct {
-	utils  utils.AddressUtils
-	binder helpers.Binder
-	logger tcp.Logger
-	bind   transfer.BindHandler
+	utils       utils.AddressUtils
+	logger      tcp.Logger
+	bind        transfer.BindHandler
+	bindManager managers.BindManager
 }
 
 func NewBaseBindHandler(
 	utils utils.AddressUtils,
-	binder helpers.Binder,
 	logger tcp.Logger,
 	bind transfer.BindHandler,
+	bindManager managers.BindManager,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
-		utils:  utils,
-		binder: binder,
-		logger: logger,
-		bind:   bind,
+		utils:       utils,
+		logger:      logger,
+		bind:        bind,
+		bindManager: bindManager,
 	}, nil
 }
 
-func (b BaseBindHandler) Handle(request []byte, host net.Conn) {
+func (b BaseBindHandler) Handle(config tcp2.DeadlineConfig, request []byte, host net.Conn) {
 	addr := host.RemoteAddr().String()
 
-	if b.binder.IsBound(addr) {
-		b.exchange(request, addr, host)
+	if b.bindManager.IsBound(addr) {
+		b.exchange(config, request, addr, host)
 	} else {
-		b.checkDomain(request, addr, host)
+		b.checkDomain(config, request, addr, host)
 	}
 }
 
-func (b BaseBindHandler) checkDomain(request []byte, address string, host net.Conn) {
+func (b BaseBindHandler) checkDomain(config tcp2.DeadlineConfig, request []byte, address string, host net.Conn) {
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(address)
 
 	if parseErr != nil {
@@ -68,8 +69,8 @@ func (b BaseBindHandler) checkDomain(request []byte, address string, host net.Co
 	for _, address := range addresses {
 		address = fmt.Sprintf("%s:%d", address, hostPort)
 
-		if b.binder.IsBound(address) {
-			b.exchange(request, address, host)
+		if b.bindManager.IsBound(address) {
+			b.exchange(config, request, address, host)
 
 			return
 		}
@@ -80,8 +81,8 @@ func (b BaseBindHandler) checkDomain(request []byte, address string, host net.Co
 	b.logger.Connection.Denied(address)
 }
 
-func (b BaseBindHandler) exchange(request []byte, address string, host net.Conn) {
-	err := b.binder.Send(address, host)
+func (b BaseBindHandler) exchange(config tcp2.DeadlineConfig, request []byte, address string, host net.Conn) {
+	err := b.bindManager.SendHost(address, host)
 
 	if err != nil {
 		_ = host.Close()
@@ -91,7 +92,7 @@ func (b BaseBindHandler) exchange(request []byte, address string, host net.Conn)
 		return
 	}
 
-	client, receiveErr := b.binder.Receive(address)
+	client, receiveErr := b.bindManager.ReceiveClient(address, config.Exchange)
 
 	if receiveErr != nil {
 		_ = host.Close()

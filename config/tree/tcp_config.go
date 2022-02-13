@@ -7,7 +7,7 @@ type TcpConfig struct {
 }
 
 type TcpBindConfig struct {
-	Address string `validate:"required"`
+	Address string
 	Port    uint16 `validate:"required"`
 }
 

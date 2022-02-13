@@ -4,32 +4,30 @@ import (
 	"net"
 	v5 "socks/config/v5"
 	v52 "socks/logger/v5"
+	"socks/managers"
 	v53 "socks/protocol/v5"
 )
 
 type Validator interface {
-	ValidateRestrictions(command byte, name string, addressType byte, address string, client net.Conn) bool
+	ValidateRestrictions(config v5.Config, command byte, name string, addressType byte, address string, client net.Conn) bool
 }
 
 type BaseValidator struct {
-	config    v5.Config
-	whitelist Whitelist
-	blacklist Blacklist
+	whitelist managers.WhitelistManager
+	blacklist managers.BlacklistManager
 	sender    v53.Sender
 	logger    v52.Logger
 	limiter   Limiter
 }
 
 func NewBaseValidator(
-	config v5.Config,
-	whitelist Whitelist,
-	blacklist Blacklist,
+	whitelist managers.WhitelistManager,
+	blacklist managers.BlacklistManager,
 	sender v53.Sender,
 	logger v52.Logger,
 	limiter Limiter,
 ) (BaseValidator, error) {
 	return BaseValidator{
-		config:    config,
 		whitelist: whitelist,
 		blacklist: blacklist,
 		sender:    sender,
@@ -38,137 +36,87 @@ func NewBaseValidator(
 	}, nil
 }
 
-func (b BaseValidator) ValidateRestrictions(command byte, name string, addressType byte, address string, client net.Conn) bool {
-	ipV4Allowed, ipV4Err := b.config.IsIPv4Allowed()
-
-	if ipV4Err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Errors.ConfigError(client.RemoteAddr().String(), ipV4Err)
-
-		return false
-	}
-
-	if !ipV4Allowed && addressType == 1 {
-		b.sender.SendAddressNotSupportedAndClose(client)
+func (b BaseValidator) ValidateRestrictions(config v5.Config, command byte, name string, addressType byte, address string, client net.Conn) bool {
+	if !config.AllowIPv4 && addressType == 1 {
+		b.sender.SendAddressNotSupportedAndClose(config, client)
 
 		b.logger.Restrictions.IPv4AddressNotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	domainAllowed, domainErr := b.config.IsIPv4Allowed()
-
-	if domainErr != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Errors.ConfigError(client.RemoteAddr().String(), ipV4Err)
-
-		return false
-	}
-
-	if !domainAllowed && addressType == 3 {
-		b.sender.SendAddressNotSupportedAndClose(client)
+	if !config.AllowDomain && addressType == 3 {
+		b.sender.SendAddressNotSupportedAndClose(config, client)
 
 		b.logger.Restrictions.DomainAddressNotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	ipV6Allowed, ipV6Err := b.config.IsIPv4Allowed()
-
-	if ipV6Err != nil {
-		b.sender.SendFailAndClose(client)
-
-		b.logger.Errors.ConfigError(client.RemoteAddr().String(), ipV4Err)
-
-		return false
-	}
-
-	if !ipV6Allowed && addressType == 4 {
-		b.sender.SendAddressNotSupportedAndClose(client)
+	if !config.AllowIPv6 && addressType == 4 {
+		b.sender.SendAddressNotSupportedAndClose(config, client)
 
 		b.logger.Restrictions.IPv6AddressNotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	connectAllowed, connectErr := b.config.IsConnectAllowed()
-
-	if connectErr != nil {
-		panic(connectErr)
-	}
-
-	if !connectAllowed && command == 1 {
-		b.sender.SendConnectionNotAllowedAndClose(client)
+	if !config.AllowConnect && command == 1 {
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	bindAllowed, bindErr := b.config.IsBindAllowed()
-
-	if bindErr != nil {
-		panic(bindErr)
-	}
-
-	if !bindAllowed && command == 2 {
-		b.sender.SendConnectionNotAllowedAndClose(client)
+	if !config.AllowBind && command == 2 {
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	associationAllowed, associationErr := b.config.IsUdpAssociationAllowed()
-
-	if associationErr != nil {
-		panic(associationErr)
-	}
-
-	if !associationAllowed && command == 3 {
-		b.sender.SendConnectionNotAllowedAndClose(client)
+	if !config.AllowUdpAssociation && command == 3 {
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	whitelisted := b.whitelist.IsWhitelisted(name, address)
+	user, ok := config.Users[name]
+
+	if !ok {
+		return true
+	}
+
+	whitelisted := b.whitelist.IsWhitelisted(user.Restrictions.WhiteList, address)
 
 	if whitelisted {
-		b.sender.SendConnectionNotAllowedAndClose(client)
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowedByWhitelist(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	blacklisted, blacklistErr := b.blacklist.IsBlacklisted(name, address)
-
-	if blacklistErr != nil {
-		panic(blacklisted)
-	}
+	blacklisted := b.blacklist.IsBlacklisted(user.Restrictions.BlackList, address)
 
 	if blacklisted {
-		b.sender.SendConnectionNotAllowedAndClose(client)
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
 
 		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address)
 
 		return false
 	}
 
-	limited, limitedErr := b.limiter.IsLimited(name)
-
-	if limitedErr != nil {
-		panic(limitedErr)
-	}
+	limited := b.limiter.IsLimited(config, name)
 
 	if limited {
-		b.sender.SendFailAndClose(client)
+		b.sender.SendFailAndClose(config, client)
 
-		b.logger.Restrictions.NotAllowedByBlacklist(client.RemoteAddr().String(), address) // TODO: log
+		b.logger.Restrictions.NotAllowedByConnectionLimits(client.RemoteAddr().String(), address)
 
 		return false
 	}

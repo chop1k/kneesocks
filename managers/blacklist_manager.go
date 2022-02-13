@@ -2,7 +2,6 @@ package managers
 
 import (
 	"regexp"
-	"socks/logger"
 )
 
 type BlacklistManager interface {
@@ -10,15 +9,10 @@ type BlacklistManager interface {
 }
 
 type BaseBlacklistManager struct {
-	logger logger.ServerLogger
 }
 
-func NewBaseBlacklistManager(
-	logger logger.ServerLogger,
-) (BaseBlacklistManager, error) {
-	return BaseBlacklistManager{
-		logger: logger,
-	}, nil
+func NewBaseBlacklistManager() (BaseBlacklistManager, error) {
+	return BaseBlacklistManager{}, nil
 }
 
 func (b BaseBlacklistManager) IsBlacklisted(list []string, address string) bool {
@@ -26,8 +20,6 @@ func (b BaseBlacklistManager) IsBlacklisted(list []string, address string) bool 
 		matched, err := regexp.MatchString(pattern, address)
 
 		if err != nil {
-			b.logger.BlacklistMatchError(address, pattern, err)
-
 			continue
 		}
 

@@ -50,7 +50,13 @@ func NewBaseHandler(
 }
 
 func (b BaseHandler) Handle(request []byte, client net.Conn) {
-	config := b.replicator.Copy()
+	configPointer := b.replicator.Copy()
+
+	if configPointer == nil {
+		// TODO: do
+	}
+
+	config := *configPointer
 
 	chunk, err := b.parser.ParseRequest(request)
 

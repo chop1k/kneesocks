@@ -13,15 +13,14 @@ var (
 )
 
 type Authenticator interface {
-	Authenticate(client net.Conn) (string, error)
+	Authenticate(config v52.Config, client net.Conn) (string, error)
 }
 
 type AuthenticationHandler interface {
-	HandleAuthentication(methods v5.MethodsChunk, client net.Conn) (string, error)
+	HandleAuthentication(config v52.Config, methods v5.MethodsChunk, client net.Conn) (string, error)
 }
 
 type BaseAuthenticationHandler struct {
-	config       v52.Config
 	errorHandler ErrorHandler
 	password     Authenticator
 	noAuth       Authenticator
@@ -29,14 +28,12 @@ type BaseAuthenticationHandler struct {
 }
 
 func NewBaseAuthenticationHandler(
-	config v52.Config,
 	errorHandler ErrorHandler,
 	password Authenticator,
 	noAuth Authenticator,
 	sender v5.Sender,
 ) BaseAuthenticationHandler {
 	return BaseAuthenticationHandler{
-		config:       config,
 		errorHandler: errorHandler,
 		password:     password,
 		noAuth:       noAuth,
@@ -44,12 +41,8 @@ func NewBaseAuthenticationHandler(
 	}
 }
 
-func (b BaseAuthenticationHandler) HandleAuthentication(methods v5.MethodsChunk, client net.Conn) (string, error) {
-	_methods, err := b.config.GetAuthenticationMethods()
-
-	if err != nil {
-		panic(err)
-	}
+func (b BaseAuthenticationHandler) HandleAuthentication(config v52.Config, methods v5.MethodsChunk, client net.Conn) (string, error) {
+	_methods := config.AuthenticationMethodsAllowed
 
 	for _, method := range _methods {
 		code := byte(255)
@@ -67,30 +60,30 @@ func (b BaseAuthenticationHandler) HandleAuthentication(methods v5.MethodsChunk,
 				continue
 			}
 
-			return b.selectMethod(code, client)
+			return b.selectMethod(config, code, client)
 		}
 	}
 
-	_ = b.sender.SendMethodSelection(255, client)
+	_ = b.sender.SendMethodSelection(config, 255, client)
 
 	return "", NoAuthenticationMethodsProvidedError
 }
 
-func (b BaseAuthenticationHandler) selectMethod(code byte, client net.Conn) (string, error) {
-	err := b.sender.SendMethodSelection(code, client)
+func (b BaseAuthenticationHandler) selectMethod(config v52.Config, code byte, client net.Conn) (string, error) {
+	err := b.sender.SendMethodSelection(config, code, client)
 
 	if err != nil {
-		b.errorHandler.HandleMethodSelectionError(err, client)
+		b.errorHandler.HandleMethodSelectionError(config, err, client)
 
 		return "", err
 	}
 
 	if code == 0 {
-		return b.noAuth.Authenticate(client)
+		return b.noAuth.Authenticate(config, client)
 	} else if code == 2 {
-		return b.password.Authenticate(client)
+		return b.password.Authenticate(config, client)
 	} else {
-		_ = b.sender.SendMethodSelection(255, client)
+		_ = b.sender.SendMethodSelection(config, 255, client)
 
 		return "", MethodUnsupportedError
 	}

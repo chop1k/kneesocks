@@ -2,14 +2,16 @@ package v5
 
 import (
 	"net"
+	v53 "socks/config/v5"
 	"socks/handlers/v5/helpers"
 	v52 "socks/logger/v5"
+	"socks/managers"
 	"socks/protocol/v5"
 	"socks/utils"
 )
 
 type BindHandler interface {
-	HandleBind(name string, address string, client net.Conn)
+	HandleBind(config v53.Config, name string, address string, client net.Conn)
 }
 
 type BaseBindHandler struct {
@@ -17,7 +19,7 @@ type BaseBindHandler struct {
 	logger       v52.Logger
 	sender       v5.Sender
 	errorHandler ErrorHandler
-	binder       helpers.Binder
+	bindManager  managers.BindManager
 	transmitter  helpers.Transmitter
 }
 
@@ -26,7 +28,7 @@ func NewBaseBindHandler(
 	logger v52.Logger,
 	sender v5.Sender,
 	errorHandler ErrorHandler,
-	binder helpers.Binder,
+	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
 ) (BaseBindHandler, error) {
 	return BaseBindHandler{
@@ -34,56 +36,56 @@ func NewBaseBindHandler(
 		logger:       logger,
 		sender:       sender,
 		errorHandler: errorHandler,
-		binder:       binder,
+		bindManager:  bindManager,
 		transmitter:  transmitter,
 	}, nil
 }
 
-func (b BaseBindHandler) HandleBind(name string, address string, client net.Conn) {
-	err := b.binder.Bind(address)
+func (b BaseBindHandler) HandleBind(config v53.Config, name string, address string, client net.Conn) {
+	err := b.bindManager.Bind(address)
 
 	if err != nil {
-		b.errorHandler.HandleBindManagerBindError(err, address, client)
+		b.errorHandler.HandleBindManagerBindError(config, err, address, client)
 
 		return
 	}
 
 	b.logger.Bind.Successful(client.RemoteAddr().String(), address)
 
-	b.bindSendFirstResponse(name, address, client)
+	b.bindSendFirstResponse(config, name, address, client)
 }
 
-func (b BaseBindHandler) bindSendFirstResponse(name string, address string, client net.Conn) {
-	err := b.sender.SendSuccessWithTcpPort(client)
+func (b BaseBindHandler) bindSendFirstResponse(config v53.Config, name string, address string, client net.Conn) {
+	err := b.sender.SendSuccessWithTcpPort(config, client)
 
 	if err != nil {
-		b.errorHandler.HandleBindIOError(err, address, client)
+		b.errorHandler.HandleBindIOError(config, err, address, client)
 
 		return
 	}
 
-	b.bindWait(name, address, client)
+	b.bindWait(config, name, address, client)
 
-	b.binder.Remove(address)
+	b.bindManager.Remove(address)
 }
 
-func (b BaseBindHandler) bindWait(name string, address string, client net.Conn) {
-	host, err := b.binder.Receive(address)
+func (b BaseBindHandler) bindWait(config v53.Config, name string, address string, client net.Conn) {
+	host, err := b.bindManager.ReceiveHost(address, config.Deadline.Bind)
 
 	if err != nil {
-		b.errorHandler.HandleBindManagerReceiveHostError(err, address, client)
+		b.errorHandler.HandleBindManagerReceiveHostError(config, err, address, client)
 
 		return
 	}
 
-	b.bindCheckAddress(name, address, host, client)
+	b.bindCheckAddress(config, name, address, host, client)
 }
 
-func (b BaseBindHandler) bindCheckAddress(name string, address string, host, client net.Conn) {
+func (b BaseBindHandler) bindCheckAddress(config v53.Config, name string, address string, host, client net.Conn) {
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.errorHandler.HandleAddressParsingError(parseErr, address, client, host)
+		b.errorHandler.HandleAddressParsingError(config, parseErr, address, client, host)
 
 		return
 	}
@@ -91,32 +93,38 @@ func (b BaseBindHandler) bindCheckAddress(name string, address string, host, cli
 	addrType, determineErr := b.utils.DetermineAddressType(hostAddr)
 
 	if determineErr != nil {
-		b.errorHandler.HandleAddressDeterminationError(determineErr, address, client, host)
+		b.errorHandler.HandleAddressDeterminationError(config, determineErr, address, client, host)
 
 		return
 	}
 
-	b.sendSecondResponse(name, address, addrType, hostAddr, uint16(hostPort), host, client)
+	b.sendSecondResponse(config, name, address, addrType, hostAddr, uint16(hostPort), host, client)
 }
 
-func (b BaseBindHandler) sendSecondResponse(name string, address string, addrType byte, hostAddress string, hostPort uint16, host, client net.Conn) {
-	err := b.sender.SendSuccessWithParameters(addrType, hostAddress, hostPort, client)
+func (b BaseBindHandler) sendSecondResponse(config v53.Config, name string, address string, addrType byte, hostAddress string, hostPort uint16, host, client net.Conn) {
+	err := b.sender.SendSuccessWithParameters(config, addrType, hostAddress, hostPort, client)
 
 	if err != nil {
-		b.errorHandler.HandleBindIOErrorWithHost(err, address, client, host)
+		b.errorHandler.HandleBindIOErrorWithHost(config, err, address, client, host)
 
 		return
 	}
 
-	err = b.binder.Send(address, client)
+	err = b.bindManager.SendClient(address, client)
 
 	if err != nil {
-		b.errorHandler.HandleBindManagerSendClientError(err, address, client, host)
+		b.errorHandler.HandleBindManagerSendClientError(config, err, address, client, host)
 
 		return
 	}
 
 	b.logger.Bind.Bound(client.RemoteAddr().String(), host.RemoteAddr().String())
 
-	b.transmitter.TransferConnect(name, client, host)
+	err = b.transmitter.TransferBind(config, name, client, host)
+
+	if err != nil {
+		b.errorHandler.HandleTransferError(err, client, host)
+
+		return
+	}
 }

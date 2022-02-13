@@ -2,7 +2,6 @@ package managers
 
 import (
 	"regexp"
-	"socks/logger"
 )
 
 type WhitelistManager interface {
@@ -10,15 +9,10 @@ type WhitelistManager interface {
 }
 
 type BaseWhitelistManager struct {
-	logger logger.ServerLogger
 }
 
-func NewBaseWhitelistManager(
-	logger logger.ServerLogger,
-) (BaseWhitelistManager, error) {
-	return BaseWhitelistManager{
-		logger: logger,
-	}, nil
+func NewBaseWhitelistManager() (BaseWhitelistManager, error) {
+	return BaseWhitelistManager{}, nil
 }
 
 func (b BaseWhitelistManager) IsWhitelisted(list []string, address string) bool {
@@ -30,8 +24,6 @@ func (b BaseWhitelistManager) IsWhitelisted(list []string, address string) bool 
 		matched, err := regexp.MatchString(pattern, address)
 
 		if err != nil {
-			b.logger.WhitelistMatchError(address, pattern, err)
-
 			continue
 		}
 

@@ -16,7 +16,7 @@ func registerServer(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			connectionHandler := ctn.Get("connection_handler").(handlers.ConnectionHandler)
-			cfg := ctn.Get("tcp_config").(tcp.BindConfig)
+			cfg := ctn.Get("tcp_base_config").(tcp.Config).Bind
 			logger := ctn.Get("tcp_logger").(tcp2.Logger)
 
 			return server.NewTcpServer(
@@ -32,15 +32,15 @@ func registerServer(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			packetHandler := ctn.Get("packet_handler").(handlers.PacketHandler)
-			cfg := ctn.Get("udp_config").(udp.BindConfig)
+			cfg := ctn.Get("udp_base_config").(udp.Config).Bind
 			logger := ctn.Get("udp_logger").(udp2.Logger)
-			buffer := ctn.Get("udp_buffer_config").(udp.BufferConfig)
+			replicator := ctn.Get("udp_config_replicator").(udp.ConfigReplicator)
 
 			return server.NewUdpServer(
-				cfg,
 				logger,
 				packetHandler,
-				buffer,
+				cfg,
+				replicator,
 			)
 		},
 	}

@@ -10,11 +10,10 @@ import (
 )
 
 type UdpAssociationHandler interface {
-	HandleUdpAssociation(name string, client net.Conn)
+	HandleUdpAssociation(config v5.Config, name string, client net.Conn)
 }
 
 type BaseUdpAssociationHandler struct {
-	config        v5.Config
 	utils         utils.AddressUtils
 	clientManager managers.UdpClientManager
 	logger        v52.Logger
@@ -23,7 +22,6 @@ type BaseUdpAssociationHandler struct {
 }
 
 func NewBaseUdpAssociationHandler(
-	config v5.Config,
 	utils utils.AddressUtils,
 	clientManager managers.UdpClientManager,
 	logger v52.Logger,
@@ -31,7 +29,6 @@ func NewBaseUdpAssociationHandler(
 	errorHandler ErrorHandler,
 ) (BaseUdpAssociationHandler, error) {
 	return BaseUdpAssociationHandler{
-		config:        config,
 		utils:         utils,
 		clientManager: clientManager,
 		logger:        logger,
@@ -40,11 +37,11 @@ func NewBaseUdpAssociationHandler(
 	}, nil
 }
 
-func (b BaseUdpAssociationHandler) HandleUdpAssociation(_ string, client net.Conn) {
+func (b BaseUdpAssociationHandler) HandleUdpAssociation(config v5.Config, _ string, client net.Conn) {
 	address, _, err := b.utils.ParseAddress(client.RemoteAddr().String())
 
 	if err != nil {
-		b.errorHandler.HandleUdpAddressParsingError(err, client)
+		b.errorHandler.HandleUdpAddressParsingError(config, err, client)
 
 		return
 	}
@@ -54,14 +51,14 @@ func (b BaseUdpAssociationHandler) HandleUdpAssociation(_ string, client net.Con
 	if err != nil {
 	}
 
-	b.udpSendResponse(address, client)
+	b.udpSendResponse(config, address, client)
 }
 
-func (b BaseUdpAssociationHandler) udpSendResponse(address string, client net.Conn) {
-	err := b.sender.SendSuccessWithUdpPort(client)
+func (b BaseUdpAssociationHandler) udpSendResponse(config v5.Config, address string, client net.Conn) {
+	err := b.sender.SendSuccessWithUdpPort(config, client)
 
 	if err != nil {
-		b.errorHandler.HandleUdpAssociationError(err, address, client)
+		b.errorHandler.HandleUdpAssociationError(config, err, address, client)
 
 		return
 	}

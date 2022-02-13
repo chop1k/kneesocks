@@ -9,44 +9,28 @@ import (
 )
 
 type UdpServer struct {
-	config        udp.BindConfig
 	logger        udp2.Logger
 	packetHandler handlers.PacketHandler
-	buffer        udp.BufferConfig
+	bindConfig    udp.BindConfig
+	replicator    udp.ConfigReplicator
 }
 
 func NewUdpServer(
-	config udp.BindConfig,
 	logger udp2.Logger,
 	packetHandler handlers.PacketHandler,
-	buffer udp.BufferConfig,
+	bindConfig udp.BindConfig,
+	replicator udp.ConfigReplicator,
 ) (UdpServer, error) {
 	return UdpServer{
-		config:        config,
 		logger:        logger,
 		packetHandler: packetHandler,
-		buffer:        buffer,
+		bindConfig:    bindConfig,
+		replicator:    replicator,
 	}, nil
 }
 
-func (s UdpServer) getAddress() string {
-	address, err := s.config.GetAddress()
-
-	if err != nil {
-		panic(err)
-	}
-
-	port, configErr := s.config.GetPort()
-
-	if configErr != nil {
-		panic(configErr)
-	}
-
-	return fmt.Sprintf("%s:%d", address, port)
-}
-
 func (s UdpServer) Listen() {
-	address := s.getAddress()
+	address := fmt.Sprintf("%s:%d", s.bindConfig.Address, s.bindConfig.Port)
 
 	packet, err := net.ListenPacket("udp", address)
 
@@ -59,11 +43,7 @@ func (s UdpServer) Listen() {
 	s.logger.Listen.Listen(address)
 
 	for {
-		size, configErr := s.buffer.GetPacketSize()
-
-		if configErr != nil {
-			panic(configErr)
-		}
+		size := s.replicator.CopyBuffer().PacketSize
 
 		payload := make([]byte, size)
 

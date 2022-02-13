@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net"
+	"socks/config/tcp"
 	"socks/handlers/v4"
 	"socks/handlers/v4a"
 	"socks/handlers/v5"
@@ -20,6 +21,7 @@ type BaseConnectionHandler struct {
 	logger      tcp2.Logger
 	receiver    protocol.Receiver
 	bindHandler BindHandler
+	replicator  tcp.ConfigReplicator
 }
 
 func NewBaseConnectionHandler(
@@ -29,6 +31,7 @@ func NewBaseConnectionHandler(
 	logger tcp2.Logger,
 	receiver protocol.Receiver,
 	bindHandler BindHandler,
+	replicator tcp.ConfigReplicator,
 ) (BaseConnectionHandler, error) {
 	return BaseConnectionHandler{
 		v5Handler:   v5Handler,
@@ -37,11 +40,14 @@ func NewBaseConnectionHandler(
 		logger:      logger,
 		receiver:    receiver,
 		bindHandler: bindHandler,
+		replicator:  replicator,
 	}, nil
 }
 
 func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
-	buffer, err := b.receiver.ReceiveWelcome(client)
+	config := b.replicator.CopyDeadline()
+
+	buffer, err := b.receiver.ReceiveWelcome(config, client)
 
 	if err != nil {
 		_ = client.Close()
@@ -51,28 +57,28 @@ func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
 		return
 	}
 
-	b.checkProtocol(buffer, client)
+	b.checkProtocol(config, buffer, client)
 }
 
-func (b BaseConnectionHandler) checkProtocol(request []byte, client net.Conn) {
+func (b BaseConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request []byte, client net.Conn) {
 	if len(request) < 3 {
-		b.bindHandler.Handle(request, client)
+		b.bindHandler.Handle(config, request, client)
 
 		return
 	}
 
 	if request[0] == 4 {
-		b.checkV4(request, client)
+		b.checkV4(config, request, client)
 	} else if request[0] == 5 {
-		b.checkV5(request, client)
+		b.checkV5(config, request, client)
 	} else {
-		b.bindHandler.Handle(request, client)
+		b.bindHandler.Handle(config, request, client)
 	}
 }
 
-func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
+func (b BaseConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte, client net.Conn) {
 	if len(request) < 9 {
-		b.bindHandler.Handle(request, client)
+		b.bindHandler.Handle(config, request, client)
 
 		return
 	}
@@ -88,15 +94,15 @@ func (b BaseConnectionHandler) checkV4(request []byte, client net.Conn) {
 	}
 }
 
-func (b BaseConnectionHandler) checkV5(request []byte, client net.Conn) {
+func (b BaseConnectionHandler) checkV5(config tcp.DeadlineConfig, request []byte, client net.Conn) {
 	if len(request) < 3 {
-		b.bindHandler.Handle(request, client)
+		b.bindHandler.Handle(config, request, client)
 
 		return
 	}
 
 	if int(request[1])+2 != len(request) {
-		b.bindHandler.Handle(request, client)
+		b.bindHandler.Handle(config, request, client)
 
 		return
 	}

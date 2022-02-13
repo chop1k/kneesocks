@@ -2,6 +2,7 @@ package v5
 
 import (
 	"net"
+	v53 "socks/config/v5"
 	"socks/handlers/v5/helpers"
 	v52 "socks/logger/v5"
 	"socks/protocol/v5"
@@ -9,7 +10,7 @@ import (
 )
 
 type ConnectHandler interface {
-	HandleConnect(name string, address string, client net.Conn)
+	HandleConnect(config v53.Config, name string, address string, client net.Conn)
 }
 
 type BaseConnectHandler struct {
@@ -17,7 +18,6 @@ type BaseConnectHandler struct {
 	utils        utils.AddressUtils
 	sender       v5.Sender
 	errorHandler ErrorHandler
-	dialer       helpers.Dialer
 	transmitter  helpers.Transmitter
 }
 
@@ -26,7 +26,6 @@ func NewBaseConnectHandler(
 	addressUtils utils.AddressUtils,
 	sender v5.Sender,
 	errorHandler ErrorHandler,
-	dialer helpers.Dialer,
 	transmitter helpers.Transmitter,
 ) (BaseConnectHandler, error) {
 	return BaseConnectHandler{
@@ -34,28 +33,27 @@ func NewBaseConnectHandler(
 		utils:        addressUtils,
 		sender:       sender,
 		errorHandler: errorHandler,
-		dialer:       dialer,
 		transmitter:  transmitter,
 	}, nil
 }
 
-func (b BaseConnectHandler) HandleConnect(name string, address string, client net.Conn) {
-	host, err := b.dialer.Dial(address)
+func (b BaseConnectHandler) HandleConnect(config v53.Config, name string, address string, client net.Conn) {
+	host, err := net.DialTimeout("tcp", address, config.Deadline.Connect)
 
 	if err != nil {
-		b.errorHandler.HandleDialError(err, address, client)
+		b.errorHandler.HandleDialError(config, err, address, client)
 
 		return
 	}
 
-	b.connectSendResponse(name, address, host, client)
+	b.connectSendResponse(config, name, address, host, client)
 }
 
-func (b BaseConnectHandler) connectSendResponse(name string, address string, host, client net.Conn) {
+func (b BaseConnectHandler) connectSendResponse(config v53.Config, name string, address string, host, client net.Conn) {
 	addr, port, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
-		b.errorHandler.HandleAddressParsingError(parseErr, address, client, host)
+		b.errorHandler.HandleAddressParsingError(config, parseErr, address, client, host)
 
 		return
 	}
@@ -63,20 +61,20 @@ func (b BaseConnectHandler) connectSendResponse(name string, address string, hos
 	addrType, determineErr := b.utils.DetermineAddressType(addr)
 
 	if determineErr != nil {
-		b.errorHandler.HandleAddressDeterminationError(determineErr, address, client, host)
+		b.errorHandler.HandleAddressDeterminationError(config, determineErr, address, client, host)
 
 		return
 	}
 
-	responseErr := b.sender.SendSuccessWithParameters(addrType, addr, uint16(port), client)
+	responseErr := b.sender.SendSuccessWithParameters(config, addrType, addr, uint16(port), client)
 
 	if responseErr != nil {
-		b.errorHandler.HandleConnectIOErrorWithHost(responseErr, address, client, host)
+		b.errorHandler.HandleConnectIOErrorWithHost(config, responseErr, address, client, host)
 
 		return
 	}
 
 	b.logger.Connect.Successful(client.RemoteAddr().String(), host.RemoteAddr().String())
 
-	b.transmitter.TransferConnect(name, client, host)
+	b.transmitter.TransferConnect(config, name, client, host)
 }

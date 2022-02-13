@@ -1,15 +1,19 @@
 package v4
 
 type ConfigReplicator struct {
-	config Config
+	config *Config
 }
 
-func NewConfigReplicator(config Config) (ConfigReplicator, error) {
+func NewConfigReplicator(config *Config) (ConfigReplicator, error) {
 	return ConfigReplicator{config: config}, nil
 }
 
-func (b ConfigReplicator) Copy() Config {
-	config := b.config
+func (b ConfigReplicator) Copy() *Config {
+	if b.config == nil {
+		return nil
+	}
+
+	config := *b.config
 
 	blacklist := make([]string, len(b.config.Restrictions.BlackList))
 	whitelist := make([]string, len(b.config.Restrictions.WhiteList))
@@ -20,5 +24,5 @@ func (b ConfigReplicator) Copy() Config {
 	config.Restrictions.BlackList = blacklist
 	config.Restrictions.WhiteList = whitelist
 
-	return config
+	return &config
 }

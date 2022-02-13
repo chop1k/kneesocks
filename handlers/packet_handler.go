@@ -16,14 +16,13 @@ type PacketHandler interface {
 }
 
 type BasePacketHandler struct {
-	parser  v5.Parser
-	builder v5.Builder
-	utils   utils.AddressUtils
-	clients managers.UdpClientManager
-	hosts   managers.UdpHostManager
-	logger  udp.Logger
-	config  udp2.BindConfig
-	buffer  udp2.BufferConfig
+	parser     v5.Parser
+	builder    v5.Builder
+	utils      utils.AddressUtils
+	clients    managers.UdpClientManager
+	hosts      managers.UdpHostManager
+	logger     udp.Logger
+	replicator udp2.ConfigReplicator
 }
 
 func NewBasePacketHandler(
@@ -33,18 +32,16 @@ func NewBasePacketHandler(
 	clients managers.UdpClientManager,
 	hosts managers.UdpHostManager,
 	logger udp.Logger,
-	config udp2.BindConfig,
-	buffer udp2.BufferConfig,
+	replicator udp2.ConfigReplicator,
 ) BasePacketHandler {
 	return BasePacketHandler{
-		parser:  parser,
-		builder: builder,
-		utils:   utils,
-		clients: clients,
-		hosts:   hosts,
-		logger:  logger,
-		config:  config,
-		buffer:  buffer,
+		parser:     parser,
+		builder:    builder,
+		utils:      utils,
+		clients:    clients,
+		hosts:      hosts,
+		logger:     logger,
+		replicator: replicator,
 	}
 }
 
@@ -143,14 +140,10 @@ func (b BasePacketHandler) sendPacket(chunk v5.UdpRequest, client net.Addr, conn
 }
 
 func (b BasePacketHandler) listen(client net.Addr, packet net.PacketConn, server net.PacketConn) {
-	deadline := time.Second * 30
-
 	for {
-		size, configErr := b.buffer.GetPacketSize()
+		size := b.replicator.CopyBuffer().PacketSize
 
-		if configErr != nil {
-			panic(configErr)
-		}
+		deadline := b.replicator.CopyDeadline().Read
 
 		deadlineErr := packet.SetReadDeadline(time.Now().Add(deadline))
 

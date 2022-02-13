@@ -2,8 +2,6 @@ package v4a
 
 import (
 	"errors"
-	"github.com/Jeffail/gabs"
-	"github.com/mitchellh/mapstructure"
 	"socks/config/tree"
 )
 
@@ -20,65 +18,43 @@ type LoggerConfig interface {
 }
 
 type BaseLoggerConfig struct {
-	config gabs.Container
+	config tree.LogConfig
 }
 
-func NewBaseLoggerConfig(config gabs.Container) (BaseLoggerConfig, error) {
+func NewBaseLoggerConfig(config tree.LogConfig) (BaseLoggerConfig, error) {
 	return BaseLoggerConfig{
 		config: config,
 	}, nil
 }
 
 func (b BaseLoggerConfig) GetLevel() (int, error) {
-	if !b.config.ExistsP("Log.SocksV4a") {
+	if b.config.SocksV4a == nil {
 		return 0, LoggerDisabledError
 	}
 
-	level, ok := b.config.Path("Log.SocksV4a.Level").Data().(float64)
-
-	if !ok {
-		return 0, errors.New("Log.SocksV4a.Level: Not specified or have invalid type. ")
-	}
-
-	return int(level), nil
+	return b.config.SocksV4a.Level, nil
 }
 
 func (b BaseLoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
-	if !b.config.ExistsP("Log.SocksV4a") {
+	if b.config.SocksV4a == nil {
 		return tree.ConsoleOutputConfig{}, LoggerDisabledError
 	}
 
-	if !b.config.ExistsP("Log.SocksV4a.Console") {
+	if b.config.SocksV4a.Console == nil {
 		return tree.ConsoleOutputConfig{}, ConsoleOutputDisabledError
 	}
 
-	output, ok := b.config.Path("Log.SocksV4a.Console").Data().(map[string]interface{})
-
-	if !ok {
-		return tree.ConsoleOutputConfig{}, errors.New("Log.SocksV4a.Console: Not specified or have invalid type. ")
-	}
-
-	_output := tree.ConsoleOutputConfig{}
-
-	return _output, mapstructure.Decode(output, &_output)
+	return *b.config.SocksV4a.Console, nil
 }
 
 func (b BaseLoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
-	if !b.config.ExistsP("Log.SocksV4a") {
+	if b.config.SocksV4a == nil {
 		return tree.FileOutputConfig{}, LoggerDisabledError
 	}
 
-	if !b.config.ExistsP("Log.SocksV4a.File") {
+	if b.config.SocksV4a.File == nil {
 		return tree.FileOutputConfig{}, FileOutputDisabledError
 	}
 
-	output, ok := b.config.Path("Log.SocksV4a.File").Data().(map[string]interface{})
-
-	if !ok {
-		return tree.FileOutputConfig{}, errors.New("Log.SocksV4a.File: Not specified or have invalid type. ")
-	}
-
-	_output := tree.FileOutputConfig{}
-
-	return _output, mapstructure.Decode(output, &_output)
+	return *b.config.SocksV4a.File, nil
 }

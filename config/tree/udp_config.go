@@ -7,7 +7,7 @@ type UdpConfig struct {
 }
 
 type UdpBindConfig struct {
-	Address string `validate:"required"`
+	Address string
 	Port    uint16 `validate:"required"`
 }
 

@@ -11,39 +11,23 @@ import (
 type TcpServer struct {
 	connectionHandler handlers.ConnectionHandler
 	logger            tcp2.Logger
-	config            tcp.BindConfig
+	bind              tcp.BindConfig
 }
 
 func NewTcpServer(
 	connectionHandler handlers.ConnectionHandler,
 	tcpLogger tcp2.Logger,
-	tcpConfig tcp.BindConfig,
+	bind tcp.BindConfig,
 ) (TcpServer, error) {
 	return TcpServer{
 		connectionHandler: connectionHandler,
 		logger:            tcpLogger,
-		config:            tcpConfig,
+		bind:              bind,
 	}, nil
 }
 
-func (s TcpServer) getAddress() string {
-	address, err := s.config.GetAddress()
-
-	if err != nil {
-		panic(err)
-	}
-
-	port, configErr := s.config.GetPort()
-
-	if configErr != nil {
-		panic(configErr)
-	}
-
-	return fmt.Sprintf("%s:%d", address, port)
-}
-
 func (s TcpServer) Listen() {
-	address := s.getAddress()
+	address := fmt.Sprintf("%s:%d", s.bind.Address, s.bind.Port)
 
 	listener, err := net.Listen("tcp", address)
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/sarulabs/di"
-	"socks/logger"
 	"socks/managers"
 )
 
@@ -51,9 +50,7 @@ func registerManagers(builder di.Builder) {
 		Name:  "whitelist_manager",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			serverLogger := ctn.Get("server_logger").(logger.ServerLogger)
-
-			return managers.NewBaseWhitelistManager(serverLogger)
+			return managers.NewBaseWhitelistManager()
 		},
 	}
 
@@ -61,9 +58,7 @@ func registerManagers(builder di.Builder) {
 		Name:  "blacklist_manager",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			serverLogger := ctn.Get("server_logger").(logger.ServerLogger)
-
-			return managers.NewBaseBlacklistManager(serverLogger)
+			return managers.NewBaseBlacklistManager()
 		},
 	}
 

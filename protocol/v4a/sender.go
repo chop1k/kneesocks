@@ -14,17 +14,17 @@ type Sender interface {
 }
 
 type BaseSender struct {
-	tcpConfig tcp.BindConfig
-	builder   Builder
+	bindConfig tcp.BindConfig
+	builder    Builder
 }
 
 func NewBaseSender(
-	tcpConfig tcp.BindConfig,
+	bindConfig tcp.BindConfig,
 	builder Builder,
 ) (BaseSender, error) {
 	return BaseSender{
-		tcpConfig: tcpConfig,
-		builder:   builder,
+		bindConfig: bindConfig,
+		builder:    builder,
 	}, nil
 }
 
@@ -60,24 +60,12 @@ func (b BaseSender) send(config v4a.Config, status byte, ip net.IP, port uint16,
 }
 
 func (b BaseSender) SendFailAndClose(config v4a.Config, client net.Conn) {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	_ = b.send(config, 91, net.IP{0, 0, 0, 0}, port, client)
+	_ = b.send(config, 91, net.IP{0, 0, 0, 0}, b.bindConfig.Port, client)
 	_ = client.Close()
 }
 
 func (b BaseSender) SendSuccess(config v4a.Config, client net.Conn) error {
-	port, err := b.tcpConfig.GetPort()
-
-	if err != nil {
-		panic(err)
-	}
-
-	return b.send(config, 90, net.IP{0, 0, 0, 0}, port, client)
+	return b.send(config, 90, net.IP{0, 0, 0, 0}, b.bindConfig.Port, client)
 }
 
 func (b BaseSender) SendSuccessWithParameters(config v4a.Config, ip net.IP, port uint16, client net.Conn) error {

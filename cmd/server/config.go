@@ -2,50 +2,18 @@ package main
 
 import (
 	"errors"
-	"github.com/Jeffail/gabs"
 	"github.com/go-playground/validator/v10"
 	"github.com/sarulabs/di"
 	"os"
-	"socks/config"
 	"socks/config/tcp"
 	"socks/config/tree"
 	"socks/config/udp"
 	v43 "socks/config/v4"
 	v4a3 "socks/config/v4a"
 	v53 "socks/config/v5"
-	"time"
 )
 
 func registerConfig(builder di.Builder) {
-	configDef := di.Def{
-		Name:  "config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return config.NewBaseConfig(cfg), nil
-		},
-	}
-
-	serverLoggerConfigDef := di.Def{
-		Name:  "server_logger_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return config.NewBaseServerLoggerConfig(cfg)
-		},
-	}
-
-	err := builder.Add(
-		configDef,
-		serverLoggerConfigDef,
-	)
-
-	if err != nil {
-		panic(err)
-	}
-
 	registerTree(builder)
 	registerTcpConfig(builder)
 	registerUdpConfig(builder)
@@ -78,14 +46,13 @@ func registerTree(builder di.Builder) {
 	}
 
 	configTreeDef := di.Def{
-		Name:  "config_container",
+		Name:  "config_tree",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
+			validate := ctn.Get("validator").(validator.Validate)
 			configPath := ctn.Get("config_path").(string)
 
-			container, err := gabs.ParseJSONFile(configPath)
-
-			return *container, err
+			return tree.NewConfig(validate, configPath)
 		},
 	}
 
@@ -101,40 +68,50 @@ func registerTree(builder di.Builder) {
 }
 
 func registerTcpConfig(builder di.Builder) {
+	bindConfigDef := di.Def{
+		Name:  "tcp_base_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+			handler := ctn.Get("tcp_config_handler").(tcp.Handler)
+
+			return handler.Handle(cfg.Tcp), nil
+		},
+	}
+
+	handlerDef := di.Def{
+		Name:  "tcp_config_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return tcp.NewHandler()
+		},
+	}
+
 	loggerConfigDef := di.Def{
 		Name:  "tcp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			cfg := ctn.Get("config_tree").(tree.Config).Log
 
 			return tcp.NewBaseLoggerConfig(cfg)
 		},
 	}
 
-	deadlineDef := di.Def{
-		Name:  "tcp_deadline_config",
+	replicatorDef := di.Def{
+		Name:  "tcp_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			base := ctn.Get("tcp_base_config").(tcp.Config)
 
-			return tcp.NewBaseDeadlineConfig(cfg)
-		},
-	}
-
-	configDef := di.Def{
-		Name:  "tcp_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return tcp.NewBaseBindConfig(cfg)
+			return tcp.NewConfigReplicator(base.Deadline)
 		},
 	}
 
 	err := builder.Add(
+		bindConfigDef,
+		handlerDef,
 		loggerConfigDef,
-		deadlineDef,
-		configDef,
+		replicatorDef,
 	)
 
 	if err != nil {
@@ -143,13 +120,22 @@ func registerTcpConfig(builder di.Builder) {
 }
 
 func registerUdpConfig(builder di.Builder) {
-	bufferConfigDef := di.Def{
-		Name:  "udp_buffer_config",
+	bindConfigDef := di.Def{
+		Name:  "udp_base_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			cfg := ctn.Get("config_tree").(tree.Config)
+			handler := ctn.Get("udp_config_handler").(udp.Handler)
 
-			return udp.NewBaseBufferConfig(cfg)
+			return handler.Handle(cfg.Udp), nil
+		},
+	}
+
+	handlerDef := di.Def{
+		Name:  "udp_config_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return udp.NewHandler()
 		},
 	}
 
@@ -157,26 +143,27 @@ func registerUdpConfig(builder di.Builder) {
 		Name:  "udp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			cfg := ctn.Get("config_tree").(tree.Config).Log
 
 			return udp.NewBaseLoggerConfig(cfg)
 		},
 	}
 
-	configDef := di.Def{
-		Name:  "udp_config",
+	replicatorDef := di.Def{
+		Name:  "udp_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			base := ctn.Get("udp_base_config").(udp.Config)
 
-			return udp.NewBaseBindConfig(cfg)
+			return udp.NewConfigReplicator(base.Buffer, base.Deadline)
 		},
 	}
 
 	err := builder.Add(
-		bufferConfigDef,
+		bindConfigDef,
+		handlerDef,
 		loggerConfigDef,
-		configDef,
+		replicatorDef,
 	)
 
 	if err != nil {
@@ -185,11 +172,30 @@ func registerUdpConfig(builder di.Builder) {
 }
 
 func registerV4Config(builder di.Builder) {
+	configDef := di.Def{
+		Name:  "v4_base_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+			handler := ctn.Get("v4_config_handler").(v43.Handler)
+
+			return handler.Handle(cfg.SocksV4)
+		},
+	}
+
+	handlerDef := di.Def{
+		Name:  "v4_config_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return v43.NewHandler()
+		},
+	}
+
 	loggerConfigDef := di.Def{
 		Name:  "v4_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			cfg := ctn.Get("config_tree").(tree.Config).Log
 
 			return v43.NewBaseLoggerConfig(cfg)
 		},
@@ -199,30 +205,15 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v43.NewConfigReplicator(v43.Config{
-				AllowConnect: true,
-				AllowBind:    true,
-				Deadline: v43.DeadlineConfig{
-					Response: time.Second * 5,
-					Connect:  time.Second * 5,
-					Bind:     time.Second * 5,
-				},
-				Restrictions: tree.Restrictions{
-					WhiteList: []string{},
-					BlackList: []string{},
-					Rate: tree.RateRestrictions{
-						MaxSimultaneousConnections:  -1,
-						HostReadBuffersPerSecond:    -1,
-						HostWriteBuffersPerSecond:   -1,
-						ClientReadBuffersPerSecond:  -1,
-						ClientWriteBuffersPerSecond: -1,
-					},
-				},
-			})
+			cfg := ctn.Get("v4_base_config").(*v43.Config)
+
+			return v43.NewConfigReplicator(cfg)
 		},
 	}
 
 	err := builder.Add(
+		configDef,
+		handlerDef,
 		loggerConfigDef,
 		replicatorDef,
 	)
@@ -233,11 +224,30 @@ func registerV4Config(builder di.Builder) {
 }
 
 func registerV4aConfig(builder di.Builder) {
+	configDef := di.Def{
+		Name:  "v4a_base_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+			handler := ctn.Get("v4a_config_handler").(v4a3.Handler)
+
+			return handler.Handle(cfg.SocksV4a)
+		},
+	}
+
+	handlerDef := di.Def{
+		Name:  "v4a_config_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return v4a3.NewHandler()
+		},
+	}
+
 	loggerConfigDef := di.Def{
 		Name:  "v4a_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			cfg := ctn.Get("config_tree").(tree.Config).Log
 
 			return v4a3.NewBaseLoggerConfig(cfg)
 		},
@@ -247,30 +257,15 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a3.NewConfigReplicator(v4a3.Config{
-				AllowConnect: true,
-				AllowBind:    true,
-				Deadline: v4a3.DeadlineConfig{
-					Response: time.Second * 5,
-					Connect:  time.Second * 5,
-					Bind:     time.Second * 5,
-				},
-				Restrictions: tree.Restrictions{
-					WhiteList: []string{},
-					BlackList: []string{},
-					Rate: tree.RateRestrictions{
-						MaxSimultaneousConnections:  -1,
-						HostReadBuffersPerSecond:    -1,
-						HostWriteBuffersPerSecond:   -1,
-						ClientReadBuffersPerSecond:  -1,
-						ClientWriteBuffersPerSecond: -1,
-					},
-				},
-			})
+			cfg := ctn.Get("v4a_base_config").(*v4a3.Config)
+
+			return v4a3.NewConfigReplicator(cfg)
 		},
 	}
 
 	err := builder.Add(
+		configDef,
+		handlerDef,
 		loggerConfigDef,
 		replicatorDef,
 	)
@@ -281,51 +276,50 @@ func registerV4aConfig(builder di.Builder) {
 }
 
 func registerV5Config(builder di.Builder) {
+	configDef := di.Def{
+		Name:  "v5_base_config",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			cfg := ctn.Get("config_tree").(tree.Config)
+			handler := ctn.Get("v5_config_handler").(v53.Handler)
+
+			return handler.Handle(cfg.SocksV5)
+		},
+	}
+
+	handlerDef := di.Def{
+		Name:  "v5_config_handler",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return v53.NewHandler()
+		},
+	}
+
 	loggerConfigDef := di.Def{
 		Name:  "v5_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			cfg := ctn.Get("config_tree").(tree.Config).Log
 
 			return v53.NewBaseLoggerConfig(cfg)
 		},
 	}
 
-	configDef := di.Def{
-		Name:  "v5_config",
+	replicatorDef := di.Def{
+		Name:  "v5_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
+			cfg := ctn.Get("v5_base_config").(*v53.Config)
 
-			return v53.NewBaseConfig(cfg)
-		},
-	}
-
-	deadlineDef := di.Def{
-		Name:  "v5_deadline_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v53.NewBaseDeadlineConfig(cfg)
-		},
-	}
-
-	usersConfigDef := di.Def{
-		Name:  "users_config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_container").(gabs.Container)
-
-			return v53.NewBaseUsersConfig(cfg)
+			return v53.NewConfigReplicator(cfg)
 		},
 	}
 
 	err := builder.Add(
-		loggerConfigDef,
 		configDef,
-		deadlineDef,
-		usersConfigDef,
+		handlerDef,
+		loggerConfigDef,
+		replicatorDef,
 	)
 
 	if err != nil {
