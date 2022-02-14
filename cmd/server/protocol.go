@@ -112,11 +112,11 @@ func registerV4Protocol(builder di.Builder) {
 		Name:  "v4_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			tcpConfig := ctn.Get("tcp_base_config").(tcp.Config).Bind
+			bind := ctn.Get("tcp_base_config").(tcp.Config).Bind
 			builder := ctn.Get("v4_builder").(v4.Builder)
 
 			return v4.NewSender(
-				tcpConfig,
+				bind,
 				builder,
 			)
 		},
@@ -154,11 +154,11 @@ func registerV4aProtocol(builder di.Builder) {
 		Name:  "v4a_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			tcpConfig := ctn.Get("tcp_base_config").(tcp.Config).Bind
+			bind := ctn.Get("tcp_base_config").(tcp.Config).Bind
 			builder := ctn.Get("v4a_builder").(v4a.Builder)
 
 			return v4a.NewSender(
-				tcpConfig,
+				bind,
 				builder,
 			)
 		},

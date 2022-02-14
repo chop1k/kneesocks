@@ -3,8 +3,6 @@ package main
 import (
 	"github.com/rs/zerolog"
 	"github.com/sarulabs/di"
-	"io"
-	"os"
 	"socks/config/tcp"
 	"socks/config/udp"
 	v43 "socks/config/v4"
@@ -20,54 +18,13 @@ import (
 func registerZeroLog(builder di.Builder) {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 
-	buildLogger := func(level int, loggers []io.Writer) (zerolog.Logger, error) {
-		return zerolog.New(zerolog.MultiLevelWriter(loggers...)).
-			With().
-			Timestamp().
-			Logger().
-			Level(zerolog.Level(level)), nil
-	}
-
 	tcpDef := di.Def{
 		Name:  "tcp_zero_logger",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("tcp_logger_config").(tcp.LoggerConfig)
 
-			level, err := cfg.GetLevel()
-
-			var loggers []io.Writer
-
-			if err != nil {
-				return buildLogger(126, loggers)
-			}
-
-			if output, err := cfg.GetConsoleOutput(); err == nil {
-				loggers = append(loggers, zerolog.ConsoleWriter{
-					Out:        os.Stdout,
-					TimeFormat: output.TimeFormat,
-				})
-			} else {
-				if err == tcp.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-
-				if err != nil {
-					return nil, err
-				}
-
-				loggers = append(loggers, file)
-			} else {
-				if err == tcp.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			return buildLogger(level, loggers)
+			return tcp2.BuildZerolog(cfg)
 		},
 	}
 
@@ -77,40 +34,7 @@ func registerZeroLog(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("udp_logger_config").(udp.LoggerConfig)
 
-			level, err := cfg.GetLevel()
-
-			var loggers []io.Writer
-
-			if err != nil {
-				return buildLogger(126, loggers)
-			}
-
-			if output, err := cfg.GetConsoleOutput(); err == nil {
-				loggers = append(loggers, zerolog.ConsoleWriter{
-					Out:        os.Stdout,
-					TimeFormat: output.TimeFormat,
-				})
-			} else {
-				if err == udp.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-
-				if err != nil {
-					return nil, err
-				}
-
-				loggers = append(loggers, file)
-			} else {
-				if err == udp.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			return buildLogger(level, loggers)
+			return udp2.BuildZerolog(cfg)
 		},
 	}
 
@@ -120,40 +44,7 @@ func registerZeroLog(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("v4_logger_config").(v43.LoggerConfig)
 
-			level, err := cfg.GetLevel()
-
-			var loggers []io.Writer
-
-			if err != nil {
-				return buildLogger(126, loggers)
-			}
-
-			if output, err := cfg.GetConsoleOutput(); err == nil {
-				loggers = append(loggers, zerolog.ConsoleWriter{
-					Out:        os.Stdout,
-					TimeFormat: output.TimeFormat,
-				})
-			} else {
-				if err == v43.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-
-				if err != nil {
-					return nil, err
-				}
-
-				loggers = append(loggers, file)
-			} else {
-				if err == v43.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			return buildLogger(level, loggers)
+			return v4.BuildZerolog(cfg)
 		},
 	}
 
@@ -163,40 +54,7 @@ func registerZeroLog(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("v4a_logger_config").(v4a3.LoggerConfig)
 
-			level, err := cfg.GetLevel()
-
-			var loggers []io.Writer
-
-			if err != nil {
-				return buildLogger(126, loggers)
-			}
-
-			if output, err := cfg.GetConsoleOutput(); err == nil {
-				loggers = append(loggers, zerolog.ConsoleWriter{
-					Out:        os.Stdout,
-					TimeFormat: output.TimeFormat,
-				})
-			} else {
-				if err == v4a3.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-
-				if err != nil {
-					return nil, err
-				}
-
-				loggers = append(loggers, file)
-			} else {
-				if err == v4a3.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			return buildLogger(level, loggers)
+			return v4a.BuildZerolog(cfg)
 		},
 	}
 
@@ -206,40 +64,7 @@ func registerZeroLog(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("v5_logger_config").(v53.LoggerConfig)
 
-			level, err := cfg.GetLevel()
-
-			var loggers []io.Writer
-
-			if err != nil {
-				return buildLogger(126, loggers)
-			}
-
-			if output, err := cfg.GetConsoleOutput(); err == nil {
-				loggers = append(loggers, zerolog.ConsoleWriter{
-					Out:        os.Stdout,
-					TimeFormat: output.TimeFormat,
-				})
-			} else {
-				if err == v53.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			if output, err := cfg.GetFileOutput(); err == nil {
-				file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-
-				if err != nil {
-					return nil, err
-				}
-
-				loggers = append(loggers, file)
-			} else {
-				if err == v53.LoggerDisabledError {
-					return buildLogger(126, loggers)
-				}
-			}
-
-			return buildLogger(level, loggers)
+			return v5.BuildZerolog(cfg)
 		},
 	}
 

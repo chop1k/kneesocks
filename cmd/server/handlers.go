@@ -112,13 +112,13 @@ func registerV4Handlers(builder di.Builder) {
 		Name:  "v4_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v4Logger := ctn.Get("v4_logger").(v44.Logger)
+			logger := ctn.Get("v4_logger").(v44.Logger)
 			sender := ctn.Get("v4_sender").(v4.Sender)
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
 			transmitter := ctn.Get("v4_transmitter").(helpers5.Transmitter)
 
 			return v42.NewConnectHandler(
-				v4Logger,
+				logger,
 				sender,
 				errorHandler,
 				transmitter,
@@ -130,7 +130,7 @@ func registerV4Handlers(builder di.Builder) {
 		Name:  "v4_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v4Logger := ctn.Get("v4_logger").(v44.Logger)
+			logger := ctn.Get("v4_logger").(v44.Logger)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v4_sender").(v4.Sender)
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
@@ -138,7 +138,7 @@ func registerV4Handlers(builder di.Builder) {
 			transmitter := ctn.Get("v4_transmitter").(helpers5.Transmitter)
 
 			return v42.NewBindHandler(
-				v4Logger,
+				logger,
 				addressUtils,
 				sender,
 				errorHandler,
@@ -153,7 +153,7 @@ func registerV4Handlers(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			parser := ctn.Get("v4_parser").(v4.Parser)
-			v4Logger := ctn.Get("v4_logger").(v44.Logger)
+			logger := ctn.Get("v4_logger").(v44.Logger)
 			connectHandler := ctn.Get("v4_connect_handler").(v42.ConnectHandler)
 			bindHandler := ctn.Get("v4_bind_handler").(v42.BindHandler)
 			sender := ctn.Get("v4_sender").(v4.Sender)
@@ -164,7 +164,7 @@ func registerV4Handlers(builder di.Builder) {
 
 			return v42.NewHandler(
 				parser,
-				v4Logger,
+				logger,
 				connectHandler,
 				bindHandler,
 				sender,
@@ -181,11 +181,11 @@ func registerV4Handlers(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			sender := ctn.Get("v4_sender").(v4.Sender)
-			v4Logger := ctn.Get("v4_logger").(v44.Logger)
+			logger := ctn.Get("v4_logger").(v44.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
 			return v42.NewErrorHandler(
-				v4Logger,
+				logger,
 				sender,
 				errorUtils,
 			)
@@ -270,13 +270,13 @@ func registerV4aHandlers(builder di.Builder) {
 		Name:  "v4a_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v4aLogger := ctn.Get("v4a_logger").(v4a4.Logger)
+			logger := ctn.Get("v4a_logger").(v4a4.Logger)
 			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			errorHandler := ctn.Get("v4a_error_handler").(v4a2.ErrorHandler)
 			transmitter := ctn.Get("v4a_transmitter").(helpers2.Transmitter)
 
 			return v4a2.NewConnectHandler(
-				v4aLogger,
+				logger,
 				sender,
 				errorHandler,
 				transmitter,
@@ -288,7 +288,7 @@ func registerV4aHandlers(builder di.Builder) {
 		Name:  "v4a_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v4aLogger := ctn.Get("v4a_logger").(v4a4.Logger)
+			logger := ctn.Get("v4a_logger").(v4a4.Logger)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v4a_sender").(v4a.Sender)
 			errorHandler := ctn.Get("v4a_error_handler").(v4a2.ErrorHandler)
@@ -296,7 +296,7 @@ func registerV4aHandlers(builder di.Builder) {
 			transmitter := ctn.Get("v4a_transmitter").(helpers2.Transmitter)
 
 			return v4a2.NewBindHandler(
-				v4aLogger,
+				logger,
 				addressUtils,
 				sender,
 				errorHandler,
@@ -311,7 +311,7 @@ func registerV4aHandlers(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			parser := ctn.Get("v4a_parser").(v4a.Parser)
-			v4aLogger := ctn.Get("v4a_logger").(v4a4.Logger)
+			logger := ctn.Get("v4a_logger").(v4a4.Logger)
 			connectHandler := ctn.Get("v4a_connect_handler").(v4a2.ConnectHandler)
 			bindHandler := ctn.Get("v4a_bind_handler").(v4a2.BindHandler)
 			sender := ctn.Get("v4a_sender").(v4a.Sender)
@@ -322,7 +322,7 @@ func registerV4aHandlers(builder di.Builder) {
 
 			return v4a2.NewHandler(
 				parser,
-				v4aLogger,
+				logger,
 				connectHandler,
 				bindHandler,
 				sender,
@@ -339,11 +339,11 @@ func registerV4aHandlers(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			sender := ctn.Get("v4a_sender").(v4a.Sender)
-			v4Logger := ctn.Get("v4a_logger").(v4a4.Logger)
+			logger := ctn.Get("v4a_logger").(v4a4.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
 			return v4a2.NewErrorHandler(
-				v4Logger,
+				logger,
 				sender,
 				errorUtils,
 			)
@@ -446,14 +446,14 @@ func registerV5Handlers(builder di.Builder) {
 		Name:  "v5_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v5Logger := ctn.Get("v5_logger").(v54.Logger)
+			logger := ctn.Get("v5_logger").(v54.Logger)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 			transmitter := ctn.Get("v5_transmitter").(helpers.Transmitter)
 
 			return v52.NewConnectHandler(
-				v5Logger,
+				logger,
 				addressUtils,
 				sender,
 				errorHandler,
@@ -466,7 +466,7 @@ func registerV5Handlers(builder di.Builder) {
 		Name:  "v5_bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v5Logger := ctn.Get("v5_logger").(v54.Logger)
+			logger := ctn.Get("v5_logger").(v54.Logger)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
@@ -475,7 +475,7 @@ func registerV5Handlers(builder di.Builder) {
 
 			return v52.NewBindHandler(
 				addressUtils,
-				v5Logger,
+				logger,
 				sender,
 				errorHandler,
 				bindManager,
@@ -488,16 +488,16 @@ func registerV5Handlers(builder di.Builder) {
 		Name:  "v5_udp_association_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v5Logger := ctn.Get("v5_logger").(v54.Logger)
+			logger := ctn.Get("v5_logger").(v54.Logger)
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-			udpClientManager := ctn.Get("udp_client_manager").(managers.UdpClientManager)
+			udpManager := ctn.Get("udp_client_manager").(managers.UdpClientManager)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 
 			return v52.NewUdpAssociationHandler(
 				addressUtils,
-				udpClientManager,
-				v5Logger,
+				udpManager,
+				logger,
 				sender,
 				errorHandler,
 			)
@@ -510,7 +510,7 @@ func registerV5Handlers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			parser := ctn.Get("v5_parser").(v5.Parser)
 			authenticationHandler := ctn.Get("authentication_handler").(v52.AuthenticationHandler)
-			v5Logger := ctn.Get("v5_logger").(v54.Logger)
+			logger := ctn.Get("v5_logger").(v54.Logger)
 			connectHandler := ctn.Get("v5_connect_handler").(v52.ConnectHandler)
 			bindHandler := ctn.Get("v5_bind_handler").(v52.BindHandler)
 			associationHandler := ctn.Get("v5_udp_association_handler").(v52.UdpAssociationHandler)
@@ -524,7 +524,7 @@ func registerV5Handlers(builder di.Builder) {
 			return v52.NewHandler(
 				parser,
 				authenticationHandler,
-				v5Logger,
+				logger,
 				connectHandler,
 				bindHandler,
 				associationHandler,
@@ -543,11 +543,11 @@ func registerV5Handlers(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			sender := ctn.Get("v5_sender").(v5.Sender)
-			v5Logger := ctn.Get("v5_logger").(v54.Logger)
+			logger := ctn.Get("v5_logger").(v54.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
 			return v52.NewErrorHandler(
-				v5Logger,
+				logger,
 				sender,
 				errorUtils,
 			)

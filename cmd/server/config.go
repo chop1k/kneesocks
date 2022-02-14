@@ -35,7 +35,7 @@ func registerTree(builder di.Builder) {
 		Name:  "config_path",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			path, ok := os.LookupEnv("socks_config")
+			path, ok := os.LookupEnv("config_path")
 
 			if !ok {
 				return nil, errors.New("Config path is not specified. ")
@@ -72,10 +72,10 @@ func registerTcpConfig(builder di.Builder) {
 		Name:  "tcp_base_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			config := ctn.Get("config_tree").(tree.Config)
 			handler := ctn.Get("tcp_config_handler").(tcp.Handler)
 
-			return handler.Handle(cfg.Tcp), nil
+			return handler.Handle(config.Tcp), nil
 		},
 	}
 
@@ -91,9 +91,9 @@ func registerTcpConfig(builder di.Builder) {
 		Name:  "tcp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config).Log
+			config := ctn.Get("config_tree").(tree.Config).Log
 
-			return tcp.NewLoggerConfig(cfg)
+			return tcp.NewLoggerConfig(config)
 		},
 	}
 
@@ -124,10 +124,10 @@ func registerUdpConfig(builder di.Builder) {
 		Name:  "udp_base_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			config := ctn.Get("config_tree").(tree.Config)
 			handler := ctn.Get("udp_config_handler").(udp.Handler)
 
-			return handler.Handle(cfg.Udp), nil
+			return handler.Handle(config.Udp), nil
 		},
 	}
 
@@ -143,9 +143,9 @@ func registerUdpConfig(builder di.Builder) {
 		Name:  "udp_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config).Log
+			config := ctn.Get("config_tree").(tree.Config).Log
 
-			return udp.NewLoggerConfig(cfg)
+			return udp.NewLoggerConfig(config)
 		},
 	}
 
@@ -176,10 +176,10 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_base_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			config := ctn.Get("config_tree").(tree.Config)
 			handler := ctn.Get("v4_config_handler").(v43.Handler)
 
-			return handler.Handle(cfg.SocksV4)
+			return handler.Handle(config.SocksV4)
 		},
 	}
 
@@ -195,9 +195,9 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config).Log
+			config := ctn.Get("config_tree").(tree.Config).Log
 
-			return v43.NewLoggerConfig(cfg)
+			return v43.NewLoggerConfig(config)
 		},
 	}
 
@@ -205,9 +205,9 @@ func registerV4Config(builder di.Builder) {
 		Name:  "v4_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4_base_config").(*v43.Config)
+			config := ctn.Get("v4_base_config").(*v43.Config)
 
-			return v43.NewConfigReplicator(cfg)
+			return v43.NewConfigReplicator(config)
 		},
 	}
 
@@ -228,10 +228,10 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_base_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			config := ctn.Get("config_tree").(tree.Config)
 			handler := ctn.Get("v4a_config_handler").(v4a3.Handler)
 
-			return handler.Handle(cfg.SocksV4a)
+			return handler.Handle(config.SocksV4a)
 		},
 	}
 
@@ -247,9 +247,9 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config).Log
+			config := ctn.Get("config_tree").(tree.Config).Log
 
-			return v4a3.NewLoggerConfig(cfg)
+			return v4a3.NewLoggerConfig(config)
 		},
 	}
 
@@ -257,9 +257,9 @@ func registerV4aConfig(builder di.Builder) {
 		Name:  "v4a_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v4a_base_config").(*v4a3.Config)
+			config := ctn.Get("v4a_base_config").(*v4a3.Config)
 
-			return v4a3.NewConfigReplicator(cfg)
+			return v4a3.NewConfigReplicator(config)
 		},
 	}
 
@@ -280,10 +280,10 @@ func registerV5Config(builder di.Builder) {
 		Name:  "v5_base_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config)
+			config := ctn.Get("config_tree").(tree.Config)
 			handler := ctn.Get("v5_config_handler").(v53.Handler)
 
-			return handler.Handle(cfg.SocksV5)
+			return handler.Handle(config.SocksV5)
 		},
 	}
 
@@ -299,9 +299,9 @@ func registerV5Config(builder di.Builder) {
 		Name:  "v5_logger_config",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config_tree").(tree.Config).Log
+			config := ctn.Get("config_tree").(tree.Config).Log
 
-			return v53.NewLoggerConfig(cfg)
+			return v53.NewLoggerConfig(config)
 		},
 	}
 
@@ -309,9 +309,9 @@ func registerV5Config(builder di.Builder) {
 		Name:  "v5_config_replicator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("v5_base_config").(*v53.Config)
+			config := ctn.Get("v5_base_config").(*v53.Config)
 
-			return v53.NewConfigReplicator(cfg)
+			return v53.NewConfigReplicator(config)
 		},
 	}
 
