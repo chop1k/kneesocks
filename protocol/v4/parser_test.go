@@ -87,7 +87,7 @@ func TestBaseParser_ParseRequest(t *testing.T) {
 		},
 	}
 
-	parser := NewBaseParser()
+	parser := NewParser()
 
 	for i, test := range tests {
 		result, err := parser.ParseRequest(test.bytes)

@@ -58,7 +58,7 @@ func TestBaseParser_ParseMethods(t *testing.T) {
 		},
 	}
 
-	parser := NewBaseParser(utils.AddressUtils{})
+	parser := NewParser(utils.AddressUtils{})
 
 	for i, test := range tests {
 		result, err := parser.ParseMethods(test.bytes)
@@ -176,7 +176,7 @@ func TestBaseParser_ParseRequest(t *testing.T) {
 		},
 	}
 
-	parser := NewBaseParser(utils.AddressUtils{})
+	parser := NewParser(utils.AddressUtils{})
 
 	for i, test := range tests {
 		result, err := parser.ParseRequest(test.bytes)
@@ -344,7 +344,7 @@ func TestBaseParser_ParseUdpRequest(t *testing.T) {
 		},
 	}
 
-	parser := NewBaseParser(utils.AddressUtils{})
+	parser := NewParser(utils.AddressUtils{})
 
 	for i, test := range tests {
 		result, err := parser.ParseUdpRequest(test.bytes)

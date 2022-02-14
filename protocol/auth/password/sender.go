@@ -6,23 +6,19 @@ import (
 	"time"
 )
 
-type Sender interface {
-	SendResponse(config v5.Config, code byte, client net.Conn) error
-}
-
-type BaseSender struct {
+type Sender struct {
 	builder Builder
 }
 
-func NewBaseSender(
+func NewSender(
 	builder Builder,
-) (BaseSender, error) {
-	return BaseSender{
+) (Sender, error) {
+	return Sender{
 		builder: builder,
 	}, nil
 }
 
-func (b BaseSender) SendResponse(config v5.Config, code byte, client net.Conn) error {
+func (b Sender) SendResponse(config v5.Config, code byte, client net.Conn) error {
 	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.PasswordResponse))
 
 	if deadlineErr != nil {

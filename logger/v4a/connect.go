@@ -2,27 +2,17 @@ package v4a
 
 import "github.com/rs/zerolog"
 
-type ConnectLogger interface {
-	Request(client string, address string)
-	Failed(client string, address string)
-	Successful(client string, address string)
-	HostUnreachable(client string, address string)
-	NetworkUnreachable(client string, address string)
-	Refused(client string, address string)
-	Timeout(client string, address string)
-}
-
-type BaseConnectLogger struct {
+type ConnectLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseConnectLogger(logger zerolog.Logger) (BaseConnectLogger, error) {
-	return BaseConnectLogger{
+func NewConnectLogger(logger zerolog.Logger) (ConnectLogger, error) {
+	return ConnectLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseConnectLogger) Request(client string, address string) {
+func (b ConnectLogger) Request(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -35,7 +25,7 @@ func (b BaseConnectLogger) Request(client string, address string) {
 		Msg("Received connect request. ")
 }
 
-func (b BaseConnectLogger) Failed(client string, address string) {
+func (b ConnectLogger) Failed(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -48,7 +38,7 @@ func (b BaseConnectLogger) Failed(client string, address string) {
 		Msg("Connect failed. ")
 }
 
-func (b BaseConnectLogger) Successful(client string, address string) {
+func (b ConnectLogger) Successful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -61,7 +51,7 @@ func (b BaseConnectLogger) Successful(client string, address string) {
 		Msg("Connect successful. ")
 }
 
-func (b BaseConnectLogger) HostUnreachable(client string, address string) {
+func (b ConnectLogger) HostUnreachable(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -74,7 +64,7 @@ func (b BaseConnectLogger) HostUnreachable(client string, address string) {
 		Msg("Host unreachable. ")
 }
 
-func (b BaseConnectLogger) Timeout(client string, address string) {
+func (b ConnectLogger) Timeout(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -87,7 +77,7 @@ func (b BaseConnectLogger) Timeout(client string, address string) {
 		Msg("Connect failed due to timeout. ")
 }
 
-func (b BaseConnectLogger) NetworkUnreachable(client string, address string) {
+func (b ConnectLogger) NetworkUnreachable(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -100,7 +90,7 @@ func (b BaseConnectLogger) NetworkUnreachable(client string, address string) {
 		Msg("Network unreachable. ")
 }
 
-func (b BaseConnectLogger) Refused(client string, address string) {
+func (b ConnectLogger) Refused(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

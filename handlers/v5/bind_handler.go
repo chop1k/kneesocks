@@ -10,11 +10,7 @@ import (
 	"socks/utils"
 )
 
-type BindHandler interface {
-	HandleBind(config v53.Config, name string, address string, client net.Conn)
-}
-
-type BaseBindHandler struct {
+type BindHandler struct {
 	utils        utils.AddressUtils
 	logger       v52.Logger
 	sender       v5.Sender
@@ -23,15 +19,15 @@ type BaseBindHandler struct {
 	transmitter  helpers.Transmitter
 }
 
-func NewBaseBindHandler(
+func NewBindHandler(
 	utils utils.AddressUtils,
 	logger v52.Logger,
 	sender v5.Sender,
 	errorHandler ErrorHandler,
 	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
-) (BaseBindHandler, error) {
-	return BaseBindHandler{
+) (BindHandler, error) {
+	return BindHandler{
 		utils:        utils,
 		logger:       logger,
 		sender:       sender,
@@ -41,7 +37,7 @@ func NewBaseBindHandler(
 	}, nil
 }
 
-func (b BaseBindHandler) HandleBind(config v53.Config, name string, address string, client net.Conn) {
+func (b BindHandler) HandleBind(config v53.Config, name string, address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
@@ -55,7 +51,7 @@ func (b BaseBindHandler) HandleBind(config v53.Config, name string, address stri
 	b.bindSendFirstResponse(config, name, address, client)
 }
 
-func (b BaseBindHandler) bindSendFirstResponse(config v53.Config, name string, address string, client net.Conn) {
+func (b BindHandler) bindSendFirstResponse(config v53.Config, name string, address string, client net.Conn) {
 	err := b.sender.SendSuccessWithTcpPort(config, client)
 
 	if err != nil {
@@ -69,7 +65,7 @@ func (b BaseBindHandler) bindSendFirstResponse(config v53.Config, name string, a
 	b.bindManager.Remove(address)
 }
 
-func (b BaseBindHandler) bindWait(config v53.Config, name string, address string, client net.Conn) {
+func (b BindHandler) bindWait(config v53.Config, name string, address string, client net.Conn) {
 	host, err := b.bindManager.ReceiveHost(address, config.Deadline.Bind)
 
 	if err != nil {
@@ -81,7 +77,7 @@ func (b BaseBindHandler) bindWait(config v53.Config, name string, address string
 	b.bindCheckAddress(config, name, address, host, client)
 }
 
-func (b BaseBindHandler) bindCheckAddress(config v53.Config, name string, address string, host, client net.Conn) {
+func (b BindHandler) bindCheckAddress(config v53.Config, name string, address string, host, client net.Conn) {
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
@@ -101,7 +97,7 @@ func (b BaseBindHandler) bindCheckAddress(config v53.Config, name string, addres
 	b.sendSecondResponse(config, name, address, addrType, hostAddr, uint16(hostPort), host, client)
 }
 
-func (b BaseBindHandler) sendSecondResponse(config v53.Config, name string, address string, addrType byte, hostAddress string, hostPort uint16, host, client net.Conn) {
+func (b BindHandler) sendSecondResponse(config v53.Config, name string, address string, addrType byte, hostAddress string, hostPort uint16, host, client net.Conn) {
 	err := b.sender.SendSuccessWithParameters(config, addrType, hostAddress, hostPort, client)
 
 	if err != nil {

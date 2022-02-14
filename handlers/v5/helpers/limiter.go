@@ -7,23 +7,19 @@ import (
 	"socks/managers"
 )
 
-type Limiter interface {
-	IsLimited(config v5.Config, name string) bool
-}
-
-type BaseLimiter struct {
+type Limiter struct {
 	manager *managers.ConnectionsManager
 }
 
-func NewBaseLimiter(
+func NewLimiter(
 	manager *managers.ConnectionsManager,
-) (BaseLimiter, error) {
-	return BaseLimiter{
+) (Limiter, error) {
+	return Limiter{
 		manager: manager,
 	}, nil
 }
 
-func (b BaseLimiter) IsLimited(config v5.Config, name string) bool {
+func (b Limiter) IsLimited(config v5.Config, name string) bool {
 	var limit tree.RateRestrictions
 
 	user, ok := config.Users[name]

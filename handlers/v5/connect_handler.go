@@ -9,11 +9,7 @@ import (
 	"socks/utils"
 )
 
-type ConnectHandler interface {
-	HandleConnect(config v53.Config, name string, address string, client net.Conn)
-}
-
-type BaseConnectHandler struct {
+type ConnectHandler struct {
 	logger       v52.Logger
 	utils        utils.AddressUtils
 	sender       v5.Sender
@@ -21,14 +17,14 @@ type BaseConnectHandler struct {
 	transmitter  helpers.Transmitter
 }
 
-func NewBaseConnectHandler(
+func NewConnectHandler(
 	logger v52.Logger,
 	addressUtils utils.AddressUtils,
 	sender v5.Sender,
 	errorHandler ErrorHandler,
 	transmitter helpers.Transmitter,
-) (BaseConnectHandler, error) {
-	return BaseConnectHandler{
+) (ConnectHandler, error) {
+	return ConnectHandler{
 		logger:       logger,
 		utils:        addressUtils,
 		sender:       sender,
@@ -37,7 +33,7 @@ func NewBaseConnectHandler(
 	}, nil
 }
 
-func (b BaseConnectHandler) HandleConnect(config v53.Config, name string, address string, client net.Conn) {
+func (b ConnectHandler) HandleConnect(config v53.Config, name string, address string, client net.Conn) {
 	host, err := net.DialTimeout("tcp", address, config.Deadline.Connect)
 
 	if err != nil {
@@ -49,7 +45,7 @@ func (b BaseConnectHandler) HandleConnect(config v53.Config, name string, addres
 	b.connectSendResponse(config, name, address, host, client)
 }
 
-func (b BaseConnectHandler) connectSendResponse(config v53.Config, name string, address string, host, client net.Conn) {
+func (b ConnectHandler) connectSendResponse(config v53.Config, name string, address string, host, client net.Conn) {
 	addr, port, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {

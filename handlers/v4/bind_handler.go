@@ -10,11 +10,7 @@ import (
 	"socks/utils"
 )
 
-type BindHandler interface {
-	HandleBind(config v43.Config, address string, client net.Conn)
-}
-
-type BaseBindHandler struct {
+type BindHandler struct {
 	logger       v42.Logger
 	utils        utils.AddressUtils
 	sender       v4.Sender
@@ -23,15 +19,15 @@ type BaseBindHandler struct {
 	transmitter  helpers.Transmitter
 }
 
-func NewBaseBindHandler(
+func NewBindHandler(
 	logger v42.Logger,
 	utils utils.AddressUtils,
 	sender v4.Sender,
 	errorHandler ErrorHandler,
 	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
-) (BaseBindHandler, error) {
-	return BaseBindHandler{
+) (BindHandler, error) {
+	return BindHandler{
 		logger:       logger,
 		utils:        utils,
 		sender:       sender,
@@ -41,7 +37,7 @@ func NewBaseBindHandler(
 	}, nil
 }
 
-func (b BaseBindHandler) HandleBind(config v43.Config, address string, client net.Conn) {
+func (b BindHandler) HandleBind(config v43.Config, address string, client net.Conn) {
 	err := b.bindManager.Bind(address)
 
 	if err != nil {
@@ -55,7 +51,7 @@ func (b BaseBindHandler) HandleBind(config v43.Config, address string, client ne
 	b.bindSendFirstResponse(config, address, client)
 }
 
-func (b BaseBindHandler) bindSendFirstResponse(config v43.Config, address string, client net.Conn) {
+func (b BindHandler) bindSendFirstResponse(config v43.Config, address string, client net.Conn) {
 	err := b.sender.SendSuccess(config, client)
 
 	if err != nil {
@@ -69,7 +65,7 @@ func (b BaseBindHandler) bindSendFirstResponse(config v43.Config, address string
 	b.bindManager.Remove(address)
 }
 
-func (b BaseBindHandler) bindWait(config v43.Config, address string, client net.Conn) {
+func (b BindHandler) bindWait(config v43.Config, address string, client net.Conn) {
 	host, err := b.bindManager.ReceiveHost(address, config.Deadline.Bind)
 
 	if err != nil {
@@ -81,7 +77,7 @@ func (b BaseBindHandler) bindWait(config v43.Config, address string, client net.
 	b.bindCheckAddress(config, address, host, client)
 }
 
-func (b BaseBindHandler) bindCheckAddress(config v43.Config, address string, host net.Conn, client net.Conn) {
+func (b BindHandler) bindCheckAddress(config v43.Config, address string, host net.Conn, client net.Conn) {
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.RemoteAddr().String())
 
 	if parseErr != nil {
@@ -107,7 +103,7 @@ func (b BaseBindHandler) bindCheckAddress(config v43.Config, address string, hos
 	b.bindSendSecondResponse(config, address, hostAddr, uint16(hostPort), host, client)
 }
 
-func (b BaseBindHandler) bindSendSecondResponse(config v43.Config, address string, hostAddr string, hostPort uint16, host net.Conn, client net.Conn) {
+func (b BindHandler) bindSendSecondResponse(config v43.Config, address string, hostAddr string, hostPort uint16, host net.Conn, client net.Conn) {
 	ip := net.ParseIP(hostAddr)
 
 	if ip == nil {

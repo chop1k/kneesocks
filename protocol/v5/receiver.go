@@ -7,26 +7,22 @@ import (
 	"time"
 )
 
-type Receiver interface {
-	ReceiveRequest(config v52.Config, conn net.Conn) (RequestChunk, error)
-}
-
-type BaseReceiver struct {
+type Receiver struct {
 	parser Parser
 	buffer utils.BufferReader
 }
 
-func NewBaseReceiver(
+func NewReceiver(
 	parser Parser,
 	buffer utils.BufferReader,
-) (BaseReceiver, error) {
-	return BaseReceiver{
+) (Receiver, error) {
+	return Receiver{
 		parser: parser,
 		buffer: buffer,
 	}, nil
 }
 
-func (b BaseReceiver) ReceiveRequest(config v52.Config, conn net.Conn) (RequestChunk, error) {
+func (b Receiver) ReceiveRequest(config v52.Config, conn net.Conn) (RequestChunk, error) {
 	deadlineErr := conn.SetReadDeadline(time.Now().Add(config.Deadline.Request))
 
 	if deadlineErr != nil {

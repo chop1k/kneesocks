@@ -184,7 +184,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 		Name:  "v4_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v42.NewBaseBuilder(), nil
+			return v42.NewBuilder(), nil
 		},
 	}
 
@@ -275,7 +275,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 		Name:  "v4a_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a2.NewBaseBuilder(), nil
+			return v4a2.NewBuilder(), nil
 		},
 	}
 
@@ -374,7 +374,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Name:  "v5_password_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return password.NewBaseBuilder()
+			return password.NewBuilder()
 		},
 	}
 
@@ -382,7 +382,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Name:  "v5_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v52.NewBaseBuilder()
+			return v52.NewBuilder()
 		},
 	}
 
@@ -392,7 +392,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 
-			return v52.NewBaseParser(addressUtils), nil
+			return v52.NewParser(addressUtils), nil
 		},
 	}
 

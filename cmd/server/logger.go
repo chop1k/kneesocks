@@ -272,7 +272,7 @@ func registerTcpLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("tcp_zero_logger").(zerolog.Logger)
 
-			return tcp2.NewBaseConnectionLogger(zero)
+			return tcp2.NewConnectionLogger(zero)
 		},
 	}
 
@@ -282,7 +282,7 @@ func registerTcpLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("tcp_zero_logger").(zerolog.Logger)
 
-			return tcp2.NewBaseErrorsLogger(zero)
+			return tcp2.NewErrorsLogger(zero)
 		},
 	}
 
@@ -292,7 +292,7 @@ func registerTcpLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("tcp_zero_logger").(zerolog.Logger)
 
-			return tcp2.NewBaseListenLogger(zero)
+			return tcp2.NewListenLogger(zero)
 		},
 	}
 
@@ -327,7 +327,7 @@ func registerUdpLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("udp_zero_logger").(zerolog.Logger)
 
-			return udp2.NewBaseErrorsLogger(zero)
+			return udp2.NewErrorsLogger(zero)
 		},
 	}
 
@@ -337,7 +337,7 @@ func registerUdpLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("udp_zero_logger").(zerolog.Logger)
 
-			return udp2.NewBaseListenLogger(zero)
+			return udp2.NewListenLogger(zero)
 		},
 	}
 
@@ -347,7 +347,7 @@ func registerUdpLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("udp_zero_logger").(zerolog.Logger)
 
-			return udp2.NewBasePacketLogger(zero)
+			return udp2.NewPacketLogger(zero)
 		},
 	}
 
@@ -382,7 +382,7 @@ func registerV4Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4_zero_logger").(zerolog.Logger)
 
-			return v4.NewBaseBindLogger(zero)
+			return v4.NewBindLogger(zero)
 		},
 	}
 
@@ -392,7 +392,7 @@ func registerV4Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4_zero_logger").(zerolog.Logger)
 
-			return v4.NewBaseConnectLogger(zero)
+			return v4.NewConnectLogger(zero)
 		},
 	}
 
@@ -402,7 +402,7 @@ func registerV4Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4_zero_logger").(zerolog.Logger)
 
-			return v4.NewBaseErrorsLogger(zero)
+			return v4.NewErrorsLogger(zero)
 		},
 	}
 
@@ -412,7 +412,7 @@ func registerV4Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4_zero_logger").(zerolog.Logger)
 
-			return v4.NewBaseRestrictionsLogger(zero)
+			return v4.NewRestrictionsLogger(zero)
 		},
 	}
 
@@ -422,7 +422,7 @@ func registerV4Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4_zero_logger").(zerolog.Logger)
 
-			return v4.NewBaseTransferLogger(zero)
+			return v4.NewTransferLogger(zero)
 		},
 	}
 
@@ -461,7 +461,7 @@ func registerV4aLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4a_zero_logger").(zerolog.Logger)
 
-			return v4a.NewBaseBindLogger(zero)
+			return v4a.NewBindLogger(zero)
 		},
 	}
 
@@ -471,7 +471,7 @@ func registerV4aLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4a_zero_logger").(zerolog.Logger)
 
-			return v4a.NewBaseConnectLogger(zero)
+			return v4a.NewConnectLogger(zero)
 		},
 	}
 
@@ -481,7 +481,7 @@ func registerV4aLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4a_zero_logger").(zerolog.Logger)
 
-			return v4a.NewBaseErrorsLogger(zero)
+			return v4a.NewErrorsLogger(zero)
 		},
 	}
 
@@ -491,7 +491,7 @@ func registerV4aLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4a_zero_logger").(zerolog.Logger)
 
-			return v4a.NewBaseRestrictionsLogger(zero)
+			return v4a.NewRestrictionsLogger(zero)
 		},
 	}
 
@@ -501,7 +501,7 @@ func registerV4aLogger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v4a_zero_logger").(zerolog.Logger)
 
-			return v4a.NewBaseTransferLogger(zero)
+			return v4a.NewTransferLogger(zero)
 		},
 	}
 
@@ -540,7 +540,7 @@ func registerV5Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return v5.NewBaseAssociationLogger(zero)
+			return v5.NewAssociationLogger(zero)
 		},
 	}
 
@@ -550,7 +550,7 @@ func registerV5Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return v5.NewBaseAuthLogger(zero)
+			return v5.NewAuthLogger(zero)
 		},
 	}
 
@@ -560,7 +560,7 @@ func registerV5Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return v5.NewBaseBindLogger(zero)
+			return v5.NewBindLogger(zero)
 		},
 	}
 
@@ -570,7 +570,7 @@ func registerV5Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return v5.NewBaseConnectLogger(zero)
+			return v5.NewConnectLogger(zero)
 		},
 	}
 
@@ -580,7 +580,7 @@ func registerV5Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return v5.NewBaseErrorsLogger(zero)
+			return v5.NewErrorsLogger(zero)
 		},
 	}
 
@@ -590,7 +590,7 @@ func registerV5Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return v5.NewBaseRestrictionsLogger(zero)
+			return v5.NewRestrictionsLogger(zero)
 		},
 	}
 
@@ -600,7 +600,7 @@ func registerV5Logger(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			zero := ctn.Get("v5_zero_logger").(zerolog.Logger)
 
-			return v5.NewBaseTransferLogger(zero)
+			return v5.NewTransferLogger(zero)
 		},
 	}
 	loggerDef := di.Def{

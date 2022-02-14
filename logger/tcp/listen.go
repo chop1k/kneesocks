@@ -2,21 +2,17 @@ package tcp
 
 import "github.com/rs/zerolog"
 
-type ListenLogger interface {
-	Listen(address string)
-}
-
-type BaseListenLogger struct {
+type ListenLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseListenLogger(logger zerolog.Logger) (BaseListenLogger, error) {
-	return BaseListenLogger{
+func NewListenLogger(logger zerolog.Logger) (ListenLogger, error) {
+	return ListenLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseListenLogger) Listen(address string) {
+func (b ListenLogger) Listen(address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {

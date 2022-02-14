@@ -7,28 +7,22 @@ import (
 	"time"
 )
 
-type Sender interface {
-	SendFailAndClose(config v4a.Config, client net.Conn)
-	SendSuccess(config v4a.Config, client net.Conn) error
-	SendSuccessWithParameters(config v4a.Config, ip net.IP, port uint16, client net.Conn) error
-}
-
-type BaseSender struct {
+type Sender struct {
 	bindConfig tcp.BindConfig
 	builder    Builder
 }
 
-func NewBaseSender(
+func NewSender(
 	bindConfig tcp.BindConfig,
 	builder Builder,
-) (BaseSender, error) {
-	return BaseSender{
+) (Sender, error) {
+	return Sender{
 		bindConfig: bindConfig,
 		builder:    builder,
 	}, nil
 }
 
-func (b BaseSender) build(status byte, ip net.IP, port uint16) ([]byte, error) {
+func (b Sender) build(status byte, ip net.IP, port uint16) ([]byte, error) {
 	return b.builder.BuildResponse(ResponseChunk{
 		SocksVersion:    0,
 		CommandCode:     status,
@@ -37,7 +31,7 @@ func (b BaseSender) build(status byte, ip net.IP, port uint16) ([]byte, error) {
 	})
 }
 
-func (b BaseSender) send(config v4a.Config, status byte, ip net.IP, port uint16, client net.Conn) error {
+func (b Sender) send(config v4a.Config, status byte, ip net.IP, port uint16, client net.Conn) error {
 	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Response))
 
 	if deadlineErr != nil {
@@ -59,15 +53,15 @@ func (b BaseSender) send(config v4a.Config, status byte, ip net.IP, port uint16,
 	return nil
 }
 
-func (b BaseSender) SendFailAndClose(config v4a.Config, client net.Conn) {
+func (b Sender) SendFailAndClose(config v4a.Config, client net.Conn) {
 	_ = b.send(config, 91, net.IP{0, 0, 0, 0}, b.bindConfig.Port, client)
 	_ = client.Close()
 }
 
-func (b BaseSender) SendSuccess(config v4a.Config, client net.Conn) error {
+func (b Sender) SendSuccess(config v4a.Config, client net.Conn) error {
 	return b.send(config, 90, net.IP{0, 0, 0, 0}, b.bindConfig.Port, client)
 }
 
-func (b BaseSender) SendSuccessWithParameters(config v4a.Config, ip net.IP, port uint16, client net.Conn) error {
+func (b Sender) SendSuccessWithParameters(config v4a.Config, ip net.IP, port uint16, client net.Conn) error {
 	return b.send(config, 90, ip, port, client)
 }

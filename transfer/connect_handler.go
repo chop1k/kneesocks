@@ -6,19 +6,15 @@ import (
 	rate2 "socks/transfer/rate"
 )
 
-type ConnectHandler interface {
-	HandleClient(rate tree.RateRestrictions, client net.Conn, host net.Conn)
+type ConnectHandler struct {
+	handler Handler
 }
 
-type BaseConnectHandler struct {
-	handler BaseHandler
+func NewConnectHandler(handler Handler) (ConnectHandler, error) {
+	return ConnectHandler{handler: handler}, nil
 }
 
-func NewBaseConnectHandler(handler BaseHandler) (BaseConnectHandler, error) {
-	return BaseConnectHandler{handler: handler}, nil
-}
-
-func (b BaseConnectHandler) HandleClient(rate tree.RateRestrictions, client net.Conn, host net.Conn) {
+func (b ConnectHandler) HandleClient(rate tree.RateRestrictions, client net.Conn, host net.Conn) {
 	limitedClient := rate2.NewBaseLimitedConn(rate.ClientWriteBuffersPerSecond, rate.ClientReadBuffersPerSecond, client)
 	limitedHost := rate2.NewBaseLimitedConn(rate.HostWriteBuffersPerSecond, rate.HostReadBuffersPerSecond, host)
 

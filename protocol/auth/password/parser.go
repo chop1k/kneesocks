@@ -8,18 +8,14 @@ var (
 	InvalidPasswordSizeError = errors.New("Invalid password size. ")
 )
 
-type Parser interface {
-	ParseRequest(bytes []byte) (RequestChunk, error)
+type Parser struct {
 }
 
-type BaseParser struct {
+func NewParser() Parser {
+	return Parser{}
 }
 
-func NewBaseParser() BaseParser {
-	return BaseParser{}
-}
-
-func (b BaseParser) ParseRequest(bytes []byte) (RequestChunk, error) {
+func (b Parser) ParseRequest(bytes []byte) (RequestChunk, error) {
 	length := len(bytes)
 
 	if length < 5 {

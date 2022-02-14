@@ -10,11 +10,7 @@ import (
 	"socks/protocol"
 )
 
-type ConnectionHandler interface {
-	HandleConnection(client net.Conn)
-}
-
-type BaseConnectionHandler struct {
+type ConnectionHandler struct {
 	v4Handler   v4.Handler
 	v4aHandler  v4a.Handler
 	v5Handler   v5.Handler
@@ -24,7 +20,7 @@ type BaseConnectionHandler struct {
 	replicator  tcp.ConfigReplicator
 }
 
-func NewBaseConnectionHandler(
+func NewConnectionHandler(
 	v4Handler v4.Handler,
 	v4aHandler v4a.Handler,
 	v5Handler v5.Handler,
@@ -32,8 +28,8 @@ func NewBaseConnectionHandler(
 	receiver protocol.Receiver,
 	bindHandler BindHandler,
 	replicator tcp.ConfigReplicator,
-) (BaseConnectionHandler, error) {
-	return BaseConnectionHandler{
+) (ConnectionHandler, error) {
+	return ConnectionHandler{
 		v5Handler:   v5Handler,
 		v4aHandler:  v4aHandler,
 		v4Handler:   v4Handler,
@@ -44,7 +40,7 @@ func NewBaseConnectionHandler(
 	}, nil
 }
 
-func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
+func (b ConnectionHandler) HandleConnection(client net.Conn) {
 	config := b.replicator.CopyDeadline()
 
 	buffer, err := b.receiver.ReceiveWelcome(config, client)
@@ -60,7 +56,7 @@ func (b BaseConnectionHandler) HandleConnection(client net.Conn) {
 	b.checkProtocol(config, buffer, client)
 }
 
-func (b BaseConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request []byte, client net.Conn) {
+func (b ConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request []byte, client net.Conn) {
 	if len(request) < 3 {
 		b.bindHandler.Handle(config, request, client)
 
@@ -76,7 +72,7 @@ func (b BaseConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request 
 	}
 }
 
-func (b BaseConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte, client net.Conn) {
+func (b ConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte, client net.Conn) {
 	if len(request) < 9 {
 		b.bindHandler.Handle(config, request, client)
 
@@ -94,7 +90,7 @@ func (b BaseConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte
 	}
 }
 
-func (b BaseConnectionHandler) checkV5(config tcp.DeadlineConfig, request []byte, client net.Conn) {
+func (b ConnectionHandler) checkV5(config tcp.DeadlineConfig, request []byte, client net.Conn) {
 	if len(request) < 3 {
 		b.bindHandler.Handle(config, request, client)
 

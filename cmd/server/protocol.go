@@ -19,7 +19,7 @@ func registerProtocol(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			buffer := ctn.Get("buffer_reader").(utils.BufferReader)
 
-			return protocol.NewBaseReceiver(buffer)
+			return protocol.NewReceiver(buffer)
 		},
 	}
 
@@ -46,7 +46,7 @@ func registerPasswordAuth(builder di.Builder) {
 		Name:  "auth_password_parser",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return password.NewBaseParser(), nil
+			return password.NewParser(), nil
 		},
 	}
 
@@ -54,7 +54,7 @@ func registerPasswordAuth(builder di.Builder) {
 		Name:  "auth_password_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return password.NewBaseBuilder()
+			return password.NewBuilder()
 		},
 	}
 
@@ -65,7 +65,7 @@ func registerPasswordAuth(builder di.Builder) {
 			parser := ctn.Get("auth_password_parser").(password.Parser)
 			buffer := ctn.Get("buffer_reader").(utils.BufferReader)
 
-			return password.NewBaseReceiver(parser, buffer)
+			return password.NewReceiver(parser, buffer)
 		},
 	}
 
@@ -75,7 +75,7 @@ func registerPasswordAuth(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			builder := ctn.Get("auth_password_builder").(password.Builder)
 
-			return password.NewBaseSender(builder)
+			return password.NewSender(builder)
 		},
 	}
 
@@ -96,7 +96,7 @@ func registerV4Protocol(builder di.Builder) {
 		Name:  "v4_parser",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v4.NewBaseParser(), nil
+			return v4.NewParser(), nil
 		},
 	}
 
@@ -104,7 +104,7 @@ func registerV4Protocol(builder di.Builder) {
 		Name:  "v4_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v4.NewBaseBuilder(), nil
+			return v4.NewBuilder(), nil
 		},
 	}
 
@@ -115,7 +115,7 @@ func registerV4Protocol(builder di.Builder) {
 			tcpConfig := ctn.Get("tcp_base_config").(tcp.Config).Bind
 			builder := ctn.Get("v4_builder").(v4.Builder)
 
-			return v4.NewBaseSender(
+			return v4.NewSender(
 				tcpConfig,
 				builder,
 			)
@@ -138,7 +138,7 @@ func registerV4aProtocol(builder di.Builder) {
 		Name:  "v4a_parser",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a.NewBaseParser(), nil
+			return v4a.NewParser(), nil
 		},
 	}
 
@@ -146,7 +146,7 @@ func registerV4aProtocol(builder di.Builder) {
 		Name:  "v4a_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a.NewBaseBuilder(), nil
+			return v4a.NewBuilder(), nil
 		},
 	}
 
@@ -157,7 +157,7 @@ func registerV4aProtocol(builder di.Builder) {
 			tcpConfig := ctn.Get("tcp_base_config").(tcp.Config).Bind
 			builder := ctn.Get("v4a_builder").(v4a.Builder)
 
-			return v4a.NewBaseSender(
+			return v4a.NewSender(
 				tcpConfig,
 				builder,
 			)
@@ -182,7 +182,7 @@ func registerV5Protocol(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 
-			return v5.NewBaseParser(addressUtils), nil
+			return v5.NewParser(addressUtils), nil
 		},
 	}
 
@@ -190,7 +190,7 @@ func registerV5Protocol(builder di.Builder) {
 		Name:  "v5_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v5.NewBaseBuilder()
+			return v5.NewBuilder()
 		},
 	}
 
@@ -201,7 +201,7 @@ func registerV5Protocol(builder di.Builder) {
 			parser := ctn.Get("v5_parser").(v5.Parser)
 			buffer := ctn.Get("buffer_reader").(utils.BufferReader)
 
-			return v5.NewBaseReceiver(parser, buffer)
+			return v5.NewReceiver(parser, buffer)
 		},
 	}
 
@@ -213,7 +213,7 @@ func registerV5Protocol(builder di.Builder) {
 			udpConfig := ctn.Get("udp_base_config").(udp.Config).Bind
 			builder := ctn.Get("v5_builder").(v5.Builder)
 
-			return v5.NewBaseSender(tcpConfig, udpConfig, builder)
+			return v5.NewSender(tcpConfig, udpConfig, builder)
 		},
 	}
 

@@ -16,26 +16,18 @@ var (
 	DomainTooLongError                = errors.New("Domain too long. ")
 )
 
-type Builder interface {
-	BuildMethodSelection(chunk MethodSelectionChunk) ([]byte, error)
-	BuildResponse(chunk ResponseChunk) ([]byte, error)
-	BuildMethods(chunk MethodsChunk) ([]byte, error)
-	BuildRequest(chunk RequestChunk) ([]byte, error)
-	BuildUdpRequest(chunk UdpRequest) ([]byte, error)
+type Builder struct {
 }
 
-type BaseBuilder struct {
+func NewBuilder() (Builder, error) {
+	return Builder{}, nil
 }
 
-func NewBaseBuilder() (BaseBuilder, error) {
-	return BaseBuilder{}, nil
-}
-
-func (b BaseBuilder) BuildMethodSelection(chunk MethodSelectionChunk) ([]byte, error) {
+func (b Builder) BuildMethodSelection(chunk MethodSelectionChunk) ([]byte, error) {
 	return []byte{chunk.SocksVersion, chunk.Method}, nil
 }
 
-func (b BaseBuilder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
+func (b Builder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	buffer.WriteByte(chunk.SocksVersion)
@@ -86,7 +78,7 @@ func (b BaseBuilder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (b BaseBuilder) BuildMethods(chunk MethodsChunk) ([]byte, error) {
+func (b Builder) BuildMethods(chunk MethodsChunk) ([]byte, error) {
 	if len(chunk.Methods) > 256 {
 		return nil, TooManyAuthenticationMethodsError
 	}
@@ -101,7 +93,7 @@ func (b BaseBuilder) BuildMethods(chunk MethodsChunk) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (b BaseBuilder) BuildRequest(chunk RequestChunk) ([]byte, error) {
+func (b Builder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	buffer.WriteByte(chunk.SocksVersion)
@@ -157,7 +149,7 @@ func (b BaseBuilder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (b BaseBuilder) BuildUdpRequest(chunk UdpRequest) ([]byte, error) {
+func (b Builder) BuildUdpRequest(chunk UdpRequest) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	buffer.WriteByte(0)

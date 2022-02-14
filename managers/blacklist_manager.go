@@ -4,18 +4,14 @@ import (
 	"regexp"
 )
 
-type BlacklistManager interface {
-	IsBlacklisted(list []string, address string) bool
+type BlacklistManager struct {
 }
 
-type BaseBlacklistManager struct {
+func NewBlacklistManager() (BlacklistManager, error) {
+	return BlacklistManager{}, nil
 }
 
-func NewBaseBlacklistManager() (BaseBlacklistManager, error) {
-	return BaseBlacklistManager{}, nil
-}
-
-func (b BaseBlacklistManager) IsBlacklisted(list []string, address string) bool {
+func (b BlacklistManager) IsBlacklisted(list []string, address string) bool {
 	for _, pattern := range list {
 		matched, err := regexp.MatchString(pattern, address)
 

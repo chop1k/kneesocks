@@ -40,7 +40,7 @@ func TestBaseBuilder_BuildMethodSelection(t *testing.T) {
 		},
 	}
 
-	builder, err := NewBaseBuilder()
+	builder, err := NewBuilder()
 
 	require.NoError(t, err)
 
@@ -116,7 +116,7 @@ func TestBaseBuilder_BuildResponse(t *testing.T) {
 		},
 	}
 
-	builder, err := NewBaseBuilder()
+	builder, err := NewBuilder()
 
 	require.NoError(t, err)
 

@@ -2,28 +2,17 @@ package tcp
 
 import "github.com/rs/zerolog"
 
-type ErrorsLogger interface {
-	ListenError(address string, err error)
-	AcceptError(err error)
-	AddressParseError(address string, err error)
-	LookupError(address string, err error)
-	ReceiveClientError(address string, err error)
-	SendHostError(address string, err error)
-	WriteRequestError(client string, host string, err error)
-	ReceiveWelcomeError(client string, err error)
-}
-
-type BaseErrorsLogger struct {
+type ErrorsLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseErrorsLogger(logger zerolog.Logger) (BaseErrorsLogger, error) {
-	return BaseErrorsLogger{
+func NewErrorsLogger(logger zerolog.Logger) (ErrorsLogger, error) {
+	return ErrorsLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseErrorsLogger) ListenError(address string, err error) {
+func (b ErrorsLogger) ListenError(address string, err error) {
 	e := b.logger.Fatal()
 
 	if !e.Enabled() {
@@ -36,7 +25,7 @@ func (b BaseErrorsLogger) ListenError(address string, err error) {
 		Msg("Got listen error.")
 }
 
-func (b BaseErrorsLogger) AcceptError(err error) {
+func (b ErrorsLogger) AcceptError(err error) {
 	e := b.logger.Error()
 
 	if !e.Enabled() {
@@ -48,7 +37,7 @@ func (b BaseErrorsLogger) AcceptError(err error) {
 		Msg("Got accept error.")
 }
 
-func (b BaseErrorsLogger) AddressParseError(address string, err error) {
+func (b ErrorsLogger) AddressParseError(address string, err error) {
 	e := b.logger.Error()
 
 	if !e.Enabled() {
@@ -61,7 +50,7 @@ func (b BaseErrorsLogger) AddressParseError(address string, err error) {
 		Msg("Cannot parse address.")
 }
 
-func (b BaseErrorsLogger) LookupError(address string, err error) {
+func (b ErrorsLogger) LookupError(address string, err error) {
 	e := b.logger.Error()
 
 	if !e.Enabled() {
@@ -74,7 +63,7 @@ func (b BaseErrorsLogger) LookupError(address string, err error) {
 		Msg("Got lookup error.")
 }
 
-func (b BaseErrorsLogger) ReceiveClientError(address string, err error) {
+func (b ErrorsLogger) ReceiveClientError(address string, err error) {
 	e := b.logger.Error()
 
 	if !e.Enabled() {
@@ -87,7 +76,7 @@ func (b BaseErrorsLogger) ReceiveClientError(address string, err error) {
 		Msg("Cannot receive client because of error.")
 }
 
-func (b BaseErrorsLogger) SendHostError(address string, err error) {
+func (b ErrorsLogger) SendHostError(address string, err error) {
 	e := b.logger.Error()
 
 	if !e.Enabled() {
@@ -100,7 +89,7 @@ func (b BaseErrorsLogger) SendHostError(address string, err error) {
 		Msg("Cannot send host because of error.")
 }
 
-func (b BaseErrorsLogger) WriteRequestError(client string, host string, err error) {
+func (b ErrorsLogger) WriteRequestError(client string, host string, err error) {
 	e := b.logger.Error()
 
 	if !e.Enabled() {
@@ -114,7 +103,7 @@ func (b BaseErrorsLogger) WriteRequestError(client string, host string, err erro
 		Msg("Cannot send first packet because of error.")
 }
 
-func (b BaseErrorsLogger) ReceiveWelcomeError(client string, err error) {
+func (b ErrorsLogger) ReceiveWelcomeError(client string, err error) {
 	e := b.logger.Error()
 
 	if !e.Enabled() {

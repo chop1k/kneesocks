@@ -9,40 +9,25 @@ import (
 	"socks/utils"
 )
 
-type ErrorHandler interface {
-	HandleDialError(config v4a3.Config, err error, address string, client net.Conn)
-	HandleConnectIOErrorWithHost(config v4a3.Config, err error, address string, client net.Conn, host net.Conn)
-	HandleBindIOError(config v4a3.Config, err error, address string, client net.Conn)
-	HandleBindIOErrorWithHost(config v4a3.Config, err error, address string, client net.Conn, host net.Conn)
-	HandleAddressParsingError(config v4a3.Config, err error, address string, client net.Conn, host net.Conn)
-	HandleAddressDeterminationError(config v4a3.Config, err error, address string, client net.Conn, host net.Conn)
-	HandleInvalidAddressTypeError(config v4a3.Config, address string, client net.Conn, host net.Conn)
-	HandleBindManagerBindError(config v4a3.Config, err error, address string, client net.Conn)
-	HandleBindManagerReceiveHostError(config v4a3.Config, err error, address string, client net.Conn)
-	HandleBindManagerSendClientError(err error, address string, client net.Conn, host net.Conn)
-	HandleChunkParseError(config v4a3.Config, err error, client net.Conn)
-	HandleTransferError(err error, client net.Conn, host net.Conn)
-}
-
-type BaseErrorHandler struct {
+type ErrorHandler struct {
 	logger v4a.Logger
 	sender v4a2.Sender
 	errors utils.ErrorUtils
 }
 
-func NewBaseErrorHandler(
+func NewErrorHandler(
 	logger v4a.Logger,
 	sender v4a2.Sender,
 	errors utils.ErrorUtils,
-) (BaseErrorHandler, error) {
-	return BaseErrorHandler{
+) (ErrorHandler, error) {
+	return ErrorHandler{
 		logger: logger,
 		sender: sender,
 		errors: errors,
 	}, nil
 }
 
-func (b BaseErrorHandler) HandleDialError(config v4a3.Config, err error, address string, client net.Conn) {
+func (b ErrorHandler) HandleDialError(config v4a3.Config, err error, address string, client net.Conn) {
 	if b.errors.IsConnectionRefusedError(err) {
 		b.logger.Connect.Refused(client.RemoteAddr().String(), address)
 	} else if b.errors.IsNetworkUnreachableError(err) {
@@ -57,7 +42,7 @@ func (b BaseErrorHandler) HandleDialError(config v4a3.Config, err error, address
 	b.logger.Connect.Failed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseErrorHandler) HandleConnectIOErrorWithHost(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
+func (b ErrorHandler) HandleConnectIOErrorWithHost(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	_ = host.Close()
@@ -66,14 +51,14 @@ func (b BaseErrorHandler) HandleConnectIOErrorWithHost(config v4a3.Config, err e
 	b.logger.Connect.Failed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseErrorHandler) HandleBindIOError(config v4a3.Config, err error, address string, client net.Conn) {
+func (b ErrorHandler) HandleBindIOError(config v4a3.Config, err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	b.logger.Errors.UnknownError(client.RemoteAddr().String(), address, err)
 	b.logger.Bind.Failed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseErrorHandler) HandleBindIOErrorWithHost(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
+func (b ErrorHandler) HandleBindIOErrorWithHost(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	_ = host.Close()
@@ -82,7 +67,7 @@ func (b BaseErrorHandler) HandleBindIOErrorWithHost(config v4a3.Config, err erro
 	b.logger.Bind.Failed(client.RemoteAddr().String(), address)
 }
 
-func (b BaseErrorHandler) HandleAddressParsingError(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
+func (b ErrorHandler) HandleAddressParsingError(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	_ = host.Close()
@@ -90,7 +75,7 @@ func (b BaseErrorHandler) HandleAddressParsingError(config v4a3.Config, err erro
 	b.logger.Errors.AddressParsingError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
 }
 
-func (b BaseErrorHandler) HandleAddressDeterminationError(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
+func (b ErrorHandler) HandleAddressDeterminationError(config v4a3.Config, err error, address string, client net.Conn, host net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	_ = host.Close()
@@ -98,7 +83,7 @@ func (b BaseErrorHandler) HandleAddressDeterminationError(config v4a3.Config, er
 	b.logger.Errors.AddressDeterminationError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
 }
 
-func (b BaseErrorHandler) HandleInvalidAddressTypeError(config v4a3.Config, address string, client net.Conn, host net.Conn) {
+func (b ErrorHandler) HandleInvalidAddressTypeError(config v4a3.Config, address string, client net.Conn, host net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	_ = host.Close()
@@ -106,13 +91,13 @@ func (b BaseErrorHandler) HandleInvalidAddressTypeError(config v4a3.Config, addr
 	b.logger.Errors.InvalidAddressTypeError(client.RemoteAddr().String(), host.RemoteAddr().String(), address)
 }
 
-func (b BaseErrorHandler) HandleBindManagerBindError(config v4a3.Config, err error, address string, client net.Conn) {
+func (b ErrorHandler) HandleBindManagerBindError(config v4a3.Config, err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	b.logger.Errors.BindError(client.RemoteAddr().String(), address, err)
 }
 
-func (b BaseErrorHandler) HandleBindManagerReceiveHostError(config v4a3.Config, err error, address string, client net.Conn) {
+func (b ErrorHandler) HandleBindManagerReceiveHostError(config v4a3.Config, err error, address string, client net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	if err == managers.TimeoutError {
@@ -122,20 +107,20 @@ func (b BaseErrorHandler) HandleBindManagerReceiveHostError(config v4a3.Config, 
 	}
 }
 
-func (b BaseErrorHandler) HandleBindManagerSendClientError(err error, address string, client net.Conn, host net.Conn) {
+func (b ErrorHandler) HandleBindManagerSendClientError(err error, address string, client net.Conn, host net.Conn) {
 	_ = client.Close()
 	_ = host.Close()
 
 	b.logger.Errors.SendClientError(client.RemoteAddr().String(), host.RemoteAddr().String(), address, err)
 }
 
-func (b BaseErrorHandler) HandleChunkParseError(config v4a3.Config, err error, client net.Conn) {
+func (b ErrorHandler) HandleChunkParseError(config v4a3.Config, err error, client net.Conn) {
 	b.sender.SendFailAndClose(config, client)
 
 	b.logger.Errors.ParseError(client.RemoteAddr().String(), err)
 }
 
-func (b BaseErrorHandler) HandleTransferError(err error, client net.Conn, host net.Conn) {
+func (b ErrorHandler) HandleTransferError(err error, client net.Conn, host net.Conn) {
 	_ = client.Close()
 	_ = host.Close()
 

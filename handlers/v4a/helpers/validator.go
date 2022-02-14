@@ -8,11 +8,7 @@ import (
 	v4a3 "socks/protocol/v4a"
 )
 
-type Validator interface {
-	ValidateRestrictions(config v4a.Config, command byte, address string, client net.Conn) bool
-}
-
-type BaseValidator struct {
+type Validator struct {
 	whitelist managers.WhitelistManager
 	blacklist managers.BlacklistManager
 	sender    v4a3.Sender
@@ -20,14 +16,14 @@ type BaseValidator struct {
 	limiter   Limiter
 }
 
-func NewBaseValidator(
+func NewValidator(
 	whitelist managers.WhitelistManager,
 	blacklist managers.BlacklistManager,
 	sender v4a3.Sender,
 	logger v4a2.Logger,
 	limiter Limiter,
-) (BaseValidator, error) {
-	return BaseValidator{
+) (Validator, error) {
+	return Validator{
 		whitelist: whitelist,
 		blacklist: blacklist,
 		sender:    sender,
@@ -36,7 +32,7 @@ func NewBaseValidator(
 	}, nil
 }
 
-func (b BaseValidator) ValidateRestrictions(config v4a.Config, command byte, address string, client net.Conn) bool {
+func (b Validator) ValidateRestrictions(config v4a.Config, command byte, address string, client net.Conn) bool {
 	if !config.AllowConnect && command == 1 {
 		b.sender.SendFailAndClose(config, client)
 

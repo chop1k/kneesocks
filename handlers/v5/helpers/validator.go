@@ -8,11 +8,7 @@ import (
 	v53 "socks/protocol/v5"
 )
 
-type Validator interface {
-	ValidateRestrictions(config v5.Config, command byte, name string, addressType byte, address string, client net.Conn) bool
-}
-
-type BaseValidator struct {
+type Validator struct {
 	whitelist managers.WhitelistManager
 	blacklist managers.BlacklistManager
 	sender    v53.Sender
@@ -20,14 +16,14 @@ type BaseValidator struct {
 	limiter   Limiter
 }
 
-func NewBaseValidator(
+func NewValidator(
 	whitelist managers.WhitelistManager,
 	blacklist managers.BlacklistManager,
 	sender v53.Sender,
 	logger v52.Logger,
 	limiter Limiter,
-) (BaseValidator, error) {
-	return BaseValidator{
+) (Validator, error) {
+	return Validator{
 		whitelist: whitelist,
 		blacklist: blacklist,
 		sender:    sender,
@@ -36,7 +32,7 @@ func NewBaseValidator(
 	}, nil
 }
 
-func (b BaseValidator) ValidateRestrictions(config v5.Config, command byte, name string, addressType byte, address string, client net.Conn) bool {
+func (b Validator) ValidateRestrictions(config v5.Config, command byte, name string, addressType byte, address string, client net.Conn) bool {
 	if !config.AllowIPv4 && addressType == 1 {
 		b.sender.SendAddressNotSupportedAndClose(config, client)
 

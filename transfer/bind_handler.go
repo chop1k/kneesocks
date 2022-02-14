@@ -6,27 +6,22 @@ import (
 	"socks/transfer/rate"
 )
 
-type BindHandler interface {
-	HandleClient(client net.Conn, host net.Conn)
-	HandleHost(client net.Conn, host net.Conn)
-}
-
-type BaseBindHandler struct {
+type BindHandler struct {
 	bindRate managers.BindRateManager
-	handler  BaseHandler
+	handler  Handler
 }
 
-func NewBaseBindHandler(
+func NewBindHandler(
 	bindRate managers.BindRateManager,
-	handler BaseHandler,
-) (BaseBindHandler, error) {
-	return BaseBindHandler{
+	handler Handler,
+) (BindHandler, error) {
+	return BindHandler{
 		bindRate: bindRate,
 		handler:  handler,
 	}, nil
 }
 
-func (b BaseBindHandler) HandleClient(client net.Conn, host net.Conn) {
+func (b BindHandler) HandleClient(client net.Conn, host net.Conn) {
 	restrictions, err := b.bindRate.Get(client.RemoteAddr().String())
 
 	if err != nil {
@@ -42,7 +37,7 @@ func (b BaseBindHandler) HandleClient(client net.Conn, host net.Conn) {
 	b.handler.TransferToHost(limitedClient, limitedHost)
 }
 
-func (b BaseBindHandler) HandleHost(client net.Conn, host net.Conn) {
+func (b BindHandler) HandleHost(client net.Conn, host net.Conn) {
 	restrictions, err := b.bindRate.Get(client.RemoteAddr().String())
 
 	if err != nil {

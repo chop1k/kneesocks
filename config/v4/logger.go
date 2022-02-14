@@ -11,23 +11,17 @@ var (
 	FileOutputDisabledError    = errors.New("SocksV4 file output is disabled. ")
 )
 
-type LoggerConfig interface {
-	GetLevel() (int, error)
-	GetConsoleOutput() (tree.ConsoleOutputConfig, error)
-	GetFileOutput() (tree.FileOutputConfig, error)
-}
-
-type BaseLoggerConfig struct {
+type LoggerConfig struct {
 	config tree.LogConfig
 }
 
-func NewBaseLoggerConfig(config tree.LogConfig) (BaseLoggerConfig, error) {
-	return BaseLoggerConfig{
+func NewLoggerConfig(config tree.LogConfig) (LoggerConfig, error) {
+	return LoggerConfig{
 		config: config,
 	}, nil
 }
 
-func (b BaseLoggerConfig) GetLevel() (int, error) {
+func (b LoggerConfig) GetLevel() (int, error) {
 	if b.config.SocksV4 == nil {
 		return 0, LoggerDisabledError
 	}
@@ -35,7 +29,7 @@ func (b BaseLoggerConfig) GetLevel() (int, error) {
 	return b.config.SocksV4.Level, nil
 }
 
-func (b BaseLoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
+func (b LoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
 	if b.config.SocksV4 == nil {
 		return tree.ConsoleOutputConfig{}, LoggerDisabledError
 	}
@@ -47,7 +41,7 @@ func (b BaseLoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
 	return *b.config.SocksV4.Console, nil
 }
 
-func (b BaseLoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
+func (b LoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
 	if b.config.SocksV4 == nil {
 		return tree.FileOutputConfig{}, LoggerDisabledError
 	}

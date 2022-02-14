@@ -4,14 +4,14 @@ import (
 	"net"
 )
 
-type BaseHandler struct {
+type Handler struct {
 }
 
-func NewBaseHandler() (BaseHandler, error) {
-	return BaseHandler{}, nil
+func NewHandler() (Handler, error) {
+	return Handler{}, nil
 }
 
-func (b BaseHandler) TransferToHost(client net.Conn, host net.Conn) {
+func (b Handler) TransferToHost(client net.Conn, host net.Conn) {
 	for {
 		err := b.clientToHost(client, host)
 
@@ -24,7 +24,7 @@ func (b BaseHandler) TransferToHost(client net.Conn, host net.Conn) {
 	}
 }
 
-func (b BaseHandler) TransferToClient(client net.Conn, host net.Conn) {
+func (b Handler) TransferToClient(client net.Conn, host net.Conn) {
 	for {
 		err := b.hostToClient(client, host)
 
@@ -37,7 +37,7 @@ func (b BaseHandler) TransferToClient(client net.Conn, host net.Conn) {
 	}
 }
 
-func (b BaseHandler) clientToHost(client, host net.Conn) error {
+func (b Handler) clientToHost(client, host net.Conn) error {
 	buffer := make([]byte, 512)
 
 	i, readErr := client.Read(buffer)
@@ -55,7 +55,7 @@ func (b BaseHandler) clientToHost(client, host net.Conn) error {
 	return readErr
 }
 
-func (b BaseHandler) hostToClient(client, host net.Conn) error {
+func (b Handler) hostToClient(client, host net.Conn) error {
 	buffer := make([]byte, 512)
 
 	i, readErr := host.Read(buffer)

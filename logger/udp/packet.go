@@ -2,28 +2,17 @@ package udp
 
 import "github.com/rs/zerolog"
 
-type PacketLogger interface {
-	Accepted(address string)
-	Denied(address string)
-	NotAllowed(address string)
-	NotAllowedByWhitelist(address string)
-	NotAllowedByBlacklist(address string)
-	HostUnreachable(address string)
-	NetworkUnreachable(address string)
-	InvalidFragment(address string)
-}
-
-type BasePacketLogger struct {
+type PacketLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBasePacketLogger(logger zerolog.Logger) (BasePacketLogger, error) {
-	return BasePacketLogger{
+func NewPacketLogger(logger zerolog.Logger) (PacketLogger, error) {
+	return PacketLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BasePacketLogger) Accepted(client string) {
+func (b PacketLogger) Accepted(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -35,7 +24,7 @@ func (b BasePacketLogger) Accepted(client string) {
 		Msg("Packet accepted.")
 }
 
-func (b BasePacketLogger) Denied(client string) {
+func (b PacketLogger) Denied(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -47,7 +36,7 @@ func (b BasePacketLogger) Denied(client string) {
 		Msg("Packet denied.")
 }
 
-func (b BasePacketLogger) NotAllowed(client string) {
+func (b PacketLogger) NotAllowed(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -59,7 +48,7 @@ func (b BasePacketLogger) NotAllowed(client string) {
 		Msg("Packet not allowed due to ruleset.")
 }
 
-func (b BasePacketLogger) NotAllowedByWhitelist(client string) {
+func (b PacketLogger) NotAllowedByWhitelist(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -71,7 +60,7 @@ func (b BasePacketLogger) NotAllowedByWhitelist(client string) {
 		Msg("Packet not allowed by whitelist.")
 }
 
-func (b BasePacketLogger) NotAllowedByBlacklist(client string) {
+func (b PacketLogger) NotAllowedByBlacklist(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -83,7 +72,7 @@ func (b BasePacketLogger) NotAllowedByBlacklist(client string) {
 		Msg("Packet not allowed by blacklist.")
 }
 
-func (b BasePacketLogger) HostUnreachable(client string) {
+func (b PacketLogger) HostUnreachable(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -95,7 +84,7 @@ func (b BasePacketLogger) HostUnreachable(client string) {
 		Msg("Host unreachable.")
 }
 
-func (b BasePacketLogger) NetworkUnreachable(client string) {
+func (b PacketLogger) NetworkUnreachable(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -107,7 +96,7 @@ func (b BasePacketLogger) NetworkUnreachable(client string) {
 		Msg("Network unreachable.")
 }
 
-func (b BasePacketLogger) InvalidFragment(address string) {
+func (b PacketLogger) InvalidFragment(address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

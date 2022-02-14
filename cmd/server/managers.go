@@ -50,7 +50,7 @@ func registerManagers(builder di.Builder) {
 		Name:  "whitelist_manager",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewBaseWhitelistManager()
+			return managers.NewWhitelistManager()
 		},
 	}
 
@@ -58,7 +58,7 @@ func registerManagers(builder di.Builder) {
 		Name:  "blacklist_manager",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewBaseBlacklistManager()
+			return managers.NewBlacklistManager()
 		},
 	}
 

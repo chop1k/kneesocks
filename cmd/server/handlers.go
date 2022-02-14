@@ -40,7 +40,7 @@ func registerHandlers(builder di.Builder) {
 			bindHandler := ctn.Get("transfer_bind_handler").(transfer.BindHandler)
 			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 
-			return handlers.NewBaseBindHandler(addressUtils, tcpLogger, bindHandler, bindManager)
+			return handlers.NewBindHandler(addressUtils, tcpLogger, bindHandler, bindManager)
 		},
 	}
 
@@ -56,7 +56,7 @@ func registerHandlers(builder di.Builder) {
 			bindHandler := ctn.Get("bind_handler").(handlers.BindHandler)
 			replicator := ctn.Get("tcp_config_replicator").(tcp.ConfigReplicator)
 
-			return handlers.NewBaseConnectionHandler(
+			return handlers.NewConnectionHandler(
 				v4Handler,
 				v4aHandler,
 				v5Handler,
@@ -80,7 +80,7 @@ func registerHandlers(builder di.Builder) {
 			logger := ctn.Get("udp_logger").(udp.Logger)
 			replicator := ctn.Get("udp_config_replicator").(udp2.ConfigReplicator)
 
-			return handlers.NewBasePacketHandler(
+			return handlers.NewPacketHandler(
 				parser,
 				builder,
 				addressUtils,
@@ -117,7 +117,7 @@ func registerV4Handlers(builder di.Builder) {
 			errorHandler := ctn.Get("v4_error_handler").(v42.ErrorHandler)
 			transmitter := ctn.Get("v4_transmitter").(helpers5.Transmitter)
 
-			return v42.NewBaseConnectHandler(
+			return v42.NewConnectHandler(
 				v4Logger,
 				sender,
 				errorHandler,
@@ -137,7 +137,7 @@ func registerV4Handlers(builder di.Builder) {
 			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 			transmitter := ctn.Get("v4_transmitter").(helpers5.Transmitter)
 
-			return v42.NewBaseBindHandler(
+			return v42.NewBindHandler(
 				v4Logger,
 				addressUtils,
 				sender,
@@ -162,7 +162,7 @@ func registerV4Handlers(builder di.Builder) {
 			cleaner := ctn.Get("v4_cleaner").(helpers5.Cleaner)
 			replicator := ctn.Get("v4_config_replicator").(v43.ConfigReplicator)
 
-			return v42.NewBaseHandler(
+			return v42.NewHandler(
 				parser,
 				v4Logger,
 				connectHandler,
@@ -184,7 +184,7 @@ func registerV4Handlers(builder di.Builder) {
 			v4Logger := ctn.Get("v4_logger").(v44.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
-			return v42.NewBaseErrorHandler(
+			return v42.NewErrorHandler(
 				v4Logger,
 				sender,
 				errorUtils,
@@ -213,7 +213,7 @@ func registerV4Helpers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
 
-			return helpers5.NewBaseCleaner(manager)
+			return helpers5.NewCleaner(manager)
 		},
 	}
 
@@ -223,7 +223,7 @@ func registerV4Helpers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
 
-			return helpers5.NewBaseLimiter(manager)
+			return helpers5.NewLimiter(manager)
 		},
 	}
 
@@ -235,7 +235,7 @@ func registerV4Helpers(builder di.Builder) {
 			bind := ctn.Get("transfer_bind_handler").(transfer.BindHandler)
 			bindRate := ctn.Get("bind_rate_manager").(managers.BindRateManager)
 
-			return helpers5.NewBaseTransmitter(connect, bind, bindRate)
+			return helpers5.NewTransmitter(connect, bind, bindRate)
 		},
 	}
 
@@ -249,7 +249,7 @@ func registerV4Helpers(builder di.Builder) {
 			logger := ctn.Get("v4_logger").(v44.Logger)
 			limiter := ctn.Get("v4_limiter").(helpers5.Limiter)
 
-			return helpers5.NewBaseValidator(whitelist, blacklist, sender, logger, limiter)
+			return helpers5.NewValidator(whitelist, blacklist, sender, logger, limiter)
 		},
 	}
 
@@ -275,7 +275,7 @@ func registerV4aHandlers(builder di.Builder) {
 			errorHandler := ctn.Get("v4a_error_handler").(v4a2.ErrorHandler)
 			transmitter := ctn.Get("v4a_transmitter").(helpers2.Transmitter)
 
-			return v4a2.NewBaseConnectHandler(
+			return v4a2.NewConnectHandler(
 				v4aLogger,
 				sender,
 				errorHandler,
@@ -295,7 +295,7 @@ func registerV4aHandlers(builder di.Builder) {
 			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 			transmitter := ctn.Get("v4a_transmitter").(helpers2.Transmitter)
 
-			return v4a2.NewBaseBindHandler(
+			return v4a2.NewBindHandler(
 				v4aLogger,
 				addressUtils,
 				sender,
@@ -320,7 +320,7 @@ func registerV4aHandlers(builder di.Builder) {
 			cleaner := ctn.Get("v4a_cleaner").(helpers2.Cleaner)
 			replicator := ctn.Get("v4a_config_replicator").(v4a3.ConfigReplicator)
 
-			return v4a2.NewBaseHandler(
+			return v4a2.NewHandler(
 				parser,
 				v4aLogger,
 				connectHandler,
@@ -342,7 +342,7 @@ func registerV4aHandlers(builder di.Builder) {
 			v4Logger := ctn.Get("v4a_logger").(v4a4.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
-			return v4a2.NewBaseErrorHandler(
+			return v4a2.NewErrorHandler(
 				v4Logger,
 				sender,
 				errorUtils,
@@ -371,7 +371,7 @@ func registerV4aHelpers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
 
-			return helpers2.NewBaseCleaner(manager)
+			return helpers2.NewCleaner(manager)
 		},
 	}
 
@@ -381,7 +381,7 @@ func registerV4aHelpers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
 
-			return helpers2.NewBaseLimiter(manager)
+			return helpers2.NewLimiter(manager)
 		},
 	}
 
@@ -393,7 +393,7 @@ func registerV4aHelpers(builder di.Builder) {
 			bind := ctn.Get("transfer_bind_handler").(transfer.BindHandler)
 			bindRate := ctn.Get("bind_rate_manager").(managers.BindRateManager)
 
-			return helpers2.NewBaseTransmitter(connect, bind, bindRate)
+			return helpers2.NewTransmitter(connect, bind, bindRate)
 		},
 	}
 
@@ -407,7 +407,7 @@ func registerV4aHelpers(builder di.Builder) {
 			logger := ctn.Get("v4a_logger").(v4a4.Logger)
 			limiter := ctn.Get("v4a_limiter").(helpers2.Limiter)
 
-			return helpers2.NewBaseValidator(whitelist, blacklist, sender, logger, limiter)
+			return helpers2.NewValidator(whitelist, blacklist, sender, logger, limiter)
 		},
 	}
 
@@ -433,7 +433,7 @@ func registerV5Handlers(builder di.Builder) {
 			noAuthAuthenticator := ctn.Get("no_auth_authenticator").(v52.Authenticator)
 			sender := ctn.Get("v5_sender").(v5.Sender)
 
-			return v52.NewBaseAuthenticationHandler(
+			return v52.NewAuthenticationHandler(
 				errorHandler,
 				passwordAuthenticator,
 				noAuthAuthenticator,
@@ -452,7 +452,7 @@ func registerV5Handlers(builder di.Builder) {
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 			transmitter := ctn.Get("v5_transmitter").(helpers.Transmitter)
 
-			return v52.NewBaseConnectHandler(
+			return v52.NewConnectHandler(
 				v5Logger,
 				addressUtils,
 				sender,
@@ -473,7 +473,7 @@ func registerV5Handlers(builder di.Builder) {
 			bindManager := ctn.Get("bind_manager").(managers.BindManager)
 			transmitter := ctn.Get("v5_transmitter").(helpers.Transmitter)
 
-			return v52.NewBaseBindHandler(
+			return v52.NewBindHandler(
 				addressUtils,
 				v5Logger,
 				sender,
@@ -494,7 +494,7 @@ func registerV5Handlers(builder di.Builder) {
 			sender := ctn.Get("v5_sender").(v5.Sender)
 			errorHandler := ctn.Get("v5_error_handler").(v52.ErrorHandler)
 
-			return v52.NewBaseUdpAssociationHandler(
+			return v52.NewUdpAssociationHandler(
 				addressUtils,
 				udpClientManager,
 				v5Logger,
@@ -521,7 +521,7 @@ func registerV5Handlers(builder di.Builder) {
 			cleaner := ctn.Get("v5_cleaner").(helpers.Cleaner)
 			replicator := ctn.Get("v5_config_replicator").(v53.ConfigReplicator)
 
-			return v52.NewBaseHandler(
+			return v52.NewHandler(
 				parser,
 				authenticationHandler,
 				v5Logger,
@@ -546,7 +546,7 @@ func registerV5Handlers(builder di.Builder) {
 			v5Logger := ctn.Get("v5_logger").(v54.Logger)
 			errorUtils := ctn.Get("error_utils").(utils.ErrorUtils)
 
-			return v52.NewBaseErrorHandler(
+			return v52.NewErrorHandler(
 				v5Logger,
 				sender,
 				errorUtils,
@@ -580,7 +580,7 @@ func registerAuthenticators(builder di.Builder) {
 			receiver := ctn.Get("auth_password_receiver").(password.Receiver)
 			sender := ctn.Get("auth_password_sender").(password.Sender)
 
-			return authenticator.NewBasePasswordAuthenticator(
+			return authenticator.NewPasswordAuthenticator(
 				errorHandler,
 				sender,
 				receiver,
@@ -592,7 +592,7 @@ func registerAuthenticators(builder di.Builder) {
 		Name:  "no_auth_authenticator",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return authenticator.NewBaseNoAuthAuthenticator()
+			return authenticator.NewNoAuthAuthenticator()
 		},
 	}
 
@@ -613,7 +613,7 @@ func registerV5Helpers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
 
-			return helpers.NewBaseCleaner(manager)
+			return helpers.NewCleaner(manager)
 		},
 	}
 
@@ -623,7 +623,7 @@ func registerV5Helpers(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			manager := ctn.Get("connections_manager").(*managers.ConnectionsManager)
 
-			return helpers.NewBaseLimiter(manager)
+			return helpers.NewLimiter(manager)
 		},
 	}
 
@@ -635,7 +635,7 @@ func registerV5Helpers(builder di.Builder) {
 			bind := ctn.Get("transfer_bind_handler").(transfer.BindHandler)
 			bindRate := ctn.Get("bind_rate_manager").(managers.BindRateManager)
 
-			return helpers.NewBaseTransmitter(connect, bind, bindRate)
+			return helpers.NewTransmitter(connect, bind, bindRate)
 		},
 	}
 
@@ -649,7 +649,7 @@ func registerV5Helpers(builder di.Builder) {
 			logger := ctn.Get("v5_logger").(v54.Logger)
 			limiter := ctn.Get("v5_limiter").(helpers.Limiter)
 
-			return helpers.NewBaseValidator(whitelist, blacklist, sender, logger, limiter)
+			return helpers.NewValidator(whitelist, blacklist, sender, logger, limiter)
 		},
 	}
 

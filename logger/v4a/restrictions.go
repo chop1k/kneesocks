@@ -2,24 +2,17 @@ package v4a
 
 import "github.com/rs/zerolog"
 
-type RestrictionsLogger interface {
-	NotAllowed(client string, address string)
-	NotAllowedByWhitelist(client string, address string)
-	NotAllowedByBlacklist(client string, address string)
-	NotAllowedByConnectionLimits(client string, address string)
-}
-
-type BaseRestrictionsLogger struct {
+type RestrictionsLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseRestrictionsLogger(logger zerolog.Logger) (BaseRestrictionsLogger, error) {
-	return BaseRestrictionsLogger{
+func NewRestrictionsLogger(logger zerolog.Logger) (RestrictionsLogger, error) {
+	return RestrictionsLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseRestrictionsLogger) NotAllowed(client string, address string) {
+func (b RestrictionsLogger) NotAllowed(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -32,7 +25,7 @@ func (b BaseRestrictionsLogger) NotAllowed(client string, address string) {
 		Msg("Command not allowed due to ruleset.")
 }
 
-func (b BaseRestrictionsLogger) NotAllowedByWhitelist(client string, address string) {
+func (b RestrictionsLogger) NotAllowedByWhitelist(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -45,7 +38,7 @@ func (b BaseRestrictionsLogger) NotAllowedByWhitelist(client string, address str
 		Msg("Not allowed due to whitelist.")
 }
 
-func (b BaseRestrictionsLogger) NotAllowedByBlacklist(client string, address string) {
+func (b RestrictionsLogger) NotAllowedByBlacklist(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -58,7 +51,7 @@ func (b BaseRestrictionsLogger) NotAllowedByBlacklist(client string, address str
 		Msg("Not allowed due to blacklist.")
 }
 
-func (b BaseRestrictionsLogger) NotAllowedByConnectionLimits(client string, address string) {
+func (b RestrictionsLogger) NotAllowedByConnectionLimits(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

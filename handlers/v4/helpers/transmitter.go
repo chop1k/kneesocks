@@ -7,34 +7,29 @@ import (
 	"socks/transfer"
 )
 
-type Transmitter interface {
-	TransferConnect(config v4.Config, client net.Conn, host net.Conn)
-	TransferBind(config v4.Config, client net.Conn, host net.Conn) error
-}
-
-type BaseTransmitter struct {
+type Transmitter struct {
 	connectHandler transfer.ConnectHandler
 	bindHandler    transfer.BindHandler
 	bindRate       managers.BindRateManager
 }
 
-func NewBaseTransmitter(
+func NewTransmitter(
 	connectHandler transfer.ConnectHandler,
 	bindHandler transfer.BindHandler,
 	bindRate managers.BindRateManager,
-) (BaseTransmitter, error) {
-	return BaseTransmitter{
+) (Transmitter, error) {
+	return Transmitter{
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
 		bindRate:       bindRate,
 	}, nil
 }
 
-func (b BaseTransmitter) TransferConnect(config v4.Config, client net.Conn, host net.Conn) {
+func (b Transmitter) TransferConnect(config v4.Config, client net.Conn, host net.Conn) {
 	b.connectHandler.HandleClient(config.Restrictions.Rate, client, host)
 }
 
-func (b BaseTransmitter) TransferBind(config v4.Config, client net.Conn, host net.Conn) error {
+func (b Transmitter) TransferBind(config v4.Config, client net.Conn, host net.Conn) error {
 	err := b.bindRate.Add(client.RemoteAddr().String(), config.Restrictions.Rate)
 
 	if err != nil {

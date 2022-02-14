@@ -93,7 +93,7 @@ func registerTcpConfig(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config_tree").(tree.Config).Log
 
-			return tcp.NewBaseLoggerConfig(cfg)
+			return tcp.NewLoggerConfig(cfg)
 		},
 	}
 
@@ -145,7 +145,7 @@ func registerUdpConfig(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config_tree").(tree.Config).Log
 
-			return udp.NewBaseLoggerConfig(cfg)
+			return udp.NewLoggerConfig(cfg)
 		},
 	}
 
@@ -197,7 +197,7 @@ func registerV4Config(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config_tree").(tree.Config).Log
 
-			return v43.NewBaseLoggerConfig(cfg)
+			return v43.NewLoggerConfig(cfg)
 		},
 	}
 
@@ -249,7 +249,7 @@ func registerV4aConfig(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config_tree").(tree.Config).Log
 
-			return v4a3.NewBaseLoggerConfig(cfg)
+			return v4a3.NewLoggerConfig(cfg)
 		},
 	}
 
@@ -301,7 +301,7 @@ func registerV5Config(builder di.Builder) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cfg := ctn.Get("config_tree").(tree.Config).Log
 
-			return v53.NewBaseLoggerConfig(cfg)
+			return v53.NewLoggerConfig(cfg)
 		},
 	}
 

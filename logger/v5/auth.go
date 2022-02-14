@@ -2,22 +2,17 @@ package v5
 
 import "github.com/rs/zerolog"
 
-type AuthLogger interface {
-	Successful(client string, name string)
-	Failed(client string)
-}
-
-type BaseAuthLogger struct {
+type AuthLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseAuthLogger(logger zerolog.Logger) (BaseAuthLogger, error) {
-	return BaseAuthLogger{
+func NewAuthLogger(logger zerolog.Logger) (AuthLogger, error) {
+	return AuthLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseAuthLogger) Successful(client string, name string) {
+func (b AuthLogger) Successful(client string, name string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -30,7 +25,7 @@ func (b BaseAuthLogger) Successful(client string, name string) {
 		Msg("Authentication successful. ")
 }
 
-func (b BaseAuthLogger) Failed(client string) {
+func (b AuthLogger) Failed(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

@@ -11,11 +11,7 @@ import (
 	"time"
 )
 
-type PacketHandler interface {
-	HandlePacket(payload []byte, address net.Addr, conn net.PacketConn)
-}
-
-type BasePacketHandler struct {
+type PacketHandler struct {
 	parser     v5.Parser
 	builder    v5.Builder
 	utils      utils.AddressUtils
@@ -25,7 +21,7 @@ type BasePacketHandler struct {
 	replicator udp2.ConfigReplicator
 }
 
-func NewBasePacketHandler(
+func NewPacketHandler(
 	parser v5.Parser,
 	builder v5.Builder,
 	utils utils.AddressUtils,
@@ -33,8 +29,8 @@ func NewBasePacketHandler(
 	hosts managers.UdpHostManager,
 	logger udp.Logger,
 	replicator udp2.ConfigReplicator,
-) BasePacketHandler {
-	return BasePacketHandler{
+) PacketHandler {
+	return PacketHandler{
 		parser:     parser,
 		builder:    builder,
 		utils:      utils,
@@ -45,7 +41,7 @@ func NewBasePacketHandler(
 	}
 }
 
-func (b BasePacketHandler) HandlePacket(payload []byte, address net.Addr, conn net.PacketConn) {
+func (b PacketHandler) HandlePacket(payload []byte, address net.Addr, conn net.PacketConn) {
 	chunk, err := b.parser.ParseUdpRequest(payload)
 
 	if err != nil {
@@ -73,7 +69,7 @@ func (b BasePacketHandler) HandlePacket(payload []byte, address net.Addr, conn n
 	}
 }
 
-func (b BasePacketHandler) checkBound(payload []byte, address string, conn net.PacketConn) {
+func (b PacketHandler) checkBound(payload []byte, address string, conn net.PacketConn) {
 	client, err := b.hosts.Get(address)
 
 	if err != nil {
@@ -99,7 +95,7 @@ func (b BasePacketHandler) checkBound(payload []byte, address string, conn net.P
 	}
 }
 
-func (b BasePacketHandler) sendPacket(chunk v5.UdpRequest, client net.Addr, conn net.PacketConn) {
+func (b PacketHandler) sendPacket(chunk v5.UdpRequest, client net.Addr, conn net.PacketConn) {
 	var address string
 
 	if chunk.AddressType == 1 || chunk.AddressType == 3 {
@@ -139,7 +135,7 @@ func (b BasePacketHandler) sendPacket(chunk v5.UdpRequest, client net.Addr, conn
 	b.listen(client, packet, conn)
 }
 
-func (b BasePacketHandler) listen(client net.Addr, packet net.PacketConn, server net.PacketConn) {
+func (b PacketHandler) listen(client net.Addr, packet net.PacketConn, server net.PacketConn) {
 	for {
 		size := b.replicator.CopyBuffer().PacketSize
 
@@ -167,7 +163,7 @@ func (b BasePacketHandler) listen(client net.Addr, packet net.PacketConn, server
 	_ = packet.Close()
 }
 
-func (b BasePacketHandler) sendToClient(data []byte, client net.Addr, host net.Addr, server net.PacketConn) {
+func (b PacketHandler) sendToClient(data []byte, client net.Addr, host net.Addr, server net.PacketConn) {
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(host.String())
 
 	if parseErr != nil {

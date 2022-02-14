@@ -10,24 +10,20 @@ import (
 	"socks/utils"
 )
 
-type BindHandler interface {
-	Handle(config tcp2.DeadlineConfig, request []byte, host net.Conn)
-}
-
-type BaseBindHandler struct {
+type BindHandler struct {
 	utils       utils.AddressUtils
 	logger      tcp.Logger
 	bind        transfer.BindHandler
 	bindManager managers.BindManager
 }
 
-func NewBaseBindHandler(
+func NewBindHandler(
 	utils utils.AddressUtils,
 	logger tcp.Logger,
 	bind transfer.BindHandler,
 	bindManager managers.BindManager,
-) (BaseBindHandler, error) {
-	return BaseBindHandler{
+) (BindHandler, error) {
+	return BindHandler{
 		utils:       utils,
 		logger:      logger,
 		bind:        bind,
@@ -35,7 +31,7 @@ func NewBaseBindHandler(
 	}, nil
 }
 
-func (b BaseBindHandler) Handle(config tcp2.DeadlineConfig, request []byte, host net.Conn) {
+func (b BindHandler) Handle(config tcp2.DeadlineConfig, request []byte, host net.Conn) {
 	addr := host.RemoteAddr().String()
 
 	if b.bindManager.IsBound(addr) {
@@ -45,7 +41,7 @@ func (b BaseBindHandler) Handle(config tcp2.DeadlineConfig, request []byte, host
 	}
 }
 
-func (b BaseBindHandler) checkDomain(config tcp2.DeadlineConfig, request []byte, address string, host net.Conn) {
+func (b BindHandler) checkDomain(config tcp2.DeadlineConfig, request []byte, address string, host net.Conn) {
 	hostAddr, hostPort, parseErr := b.utils.ParseAddress(address)
 
 	if parseErr != nil {
@@ -81,7 +77,7 @@ func (b BaseBindHandler) checkDomain(config tcp2.DeadlineConfig, request []byte,
 	b.logger.Connection.Denied(address)
 }
 
-func (b BaseBindHandler) exchange(config tcp2.DeadlineConfig, request []byte, address string, host net.Conn) {
+func (b BindHandler) exchange(config tcp2.DeadlineConfig, request []byte, address string, host net.Conn) {
 	err := b.bindManager.SendHost(address, host)
 
 	if err != nil {

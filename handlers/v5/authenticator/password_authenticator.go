@@ -12,25 +12,25 @@ var (
 	UserNotFoundError = errors.New("User not found. ")
 )
 
-type BasePasswordAuthenticator struct {
+type PasswordAuthenticator struct {
 	errorHandler v5.ErrorHandler
 	sender       password.Sender
 	receiver     password.Receiver
 }
 
-func NewBasePasswordAuthenticator(
+func NewPasswordAuthenticator(
 	errorHandler v5.ErrorHandler,
 	sender password.Sender,
 	receiver password.Receiver,
-) (BasePasswordAuthenticator, error) {
-	return BasePasswordAuthenticator{
+) (PasswordAuthenticator, error) {
+	return PasswordAuthenticator{
 		errorHandler: errorHandler,
 		sender:       sender,
 		receiver:     receiver,
 	}, nil
 }
 
-func (b BasePasswordAuthenticator) Authenticate(config v52.Config, client net.Conn) (string, error) {
+func (b PasswordAuthenticator) Authenticate(config v52.Config, client net.Conn) (string, error) {
 	request, err := b.receiver.ReceiveRequest(config, client)
 
 	if err != nil {

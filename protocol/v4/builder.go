@@ -10,19 +10,14 @@ var (
 	DestinationIpIsNullError = errors.New("Destination ip is null. ")
 )
 
-type Builder interface {
-	BuildResponse(chunk ResponseChunk) ([]byte, error)
-	BuildRequest(chunk RequestChunk) ([]byte, error)
+type Builder struct {
 }
 
-type BaseBuilder struct {
+func NewBuilder() Builder {
+	return Builder{}
 }
 
-func NewBaseBuilder() BaseBuilder {
-	return BaseBuilder{}
-}
-
-func (b BaseBuilder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
+func (b Builder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	if chunk.DestinationIp == nil {
 		return nil, DestinationIpIsNullError
 	}
@@ -43,7 +38,7 @@ func (b BaseBuilder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (b BaseBuilder) BuildRequest(chunk RequestChunk) ([]byte, error) {
+func (b Builder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 	if chunk.DestinationIp == nil {
 		return nil, DestinationIpIsNullError
 	}

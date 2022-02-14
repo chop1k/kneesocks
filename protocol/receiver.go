@@ -7,23 +7,19 @@ import (
 	"time"
 )
 
-type Receiver interface {
-	ReceiveWelcome(config tcp.DeadlineConfig, conn net.Conn) ([]byte, error)
-}
-
-type BaseReceiver struct {
+type Receiver struct {
 	buffer utils.BufferReader
 }
 
-func NewBaseReceiver(
+func NewReceiver(
 	buffer utils.BufferReader,
-) (BaseReceiver, error) {
-	return BaseReceiver{
+) (Receiver, error) {
+	return Receiver{
 		buffer: buffer,
 	}, nil
 }
 
-func (b BaseReceiver) ReceiveWelcome(config tcp.DeadlineConfig, conn net.Conn) ([]byte, error) {
+func (b Receiver) ReceiveWelcome(config tcp.DeadlineConfig, conn net.Conn) ([]byte, error) {
 	deadlineErr := conn.SetReadDeadline(time.Now().Add(config.Welcome))
 
 	if deadlineErr != nil {

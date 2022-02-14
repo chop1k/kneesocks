@@ -73,7 +73,7 @@ func TestBaseBuilder_BuildResponse(t *testing.T) {
 		},
 	}
 
-	builder := NewBaseBuilder()
+	builder := NewBuilder()
 
 	for i, test := range tests {
 		result, err := builder.BuildResponse(test.chunk)

@@ -12,9 +12,9 @@ func registerTransfer(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			bindRate := ctn.Get("bind_rate_manager").(managers.BindRateManager)
-			handler := ctn.Get("transfer_handler").(transfer.BaseHandler)
+			handler := ctn.Get("transfer_handler").(transfer.Handler)
 
-			return transfer.NewBaseBindHandler(bindRate, handler)
+			return transfer.NewBindHandler(bindRate, handler)
 		},
 	}
 
@@ -22,9 +22,9 @@ func registerTransfer(builder di.Builder) {
 		Name:  "transfer_connect_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			handler := ctn.Get("transfer_handler").(transfer.BaseHandler)
+			handler := ctn.Get("transfer_handler").(transfer.Handler)
 
-			return transfer.NewBaseConnectHandler(handler)
+			return transfer.NewConnectHandler(handler)
 		},
 	}
 
@@ -32,7 +32,7 @@ func registerTransfer(builder di.Builder) {
 		Name:  "transfer_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return transfer.NewBaseHandler()
+			return transfer.NewHandler()
 		},
 	}
 

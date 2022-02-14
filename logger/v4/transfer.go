@@ -2,21 +2,17 @@ package v4
 
 import "github.com/rs/zerolog"
 
-type TransferLogger interface {
-	TransferFinished(client string, host string)
-}
-
-type BaseTransferLogger struct {
+type TransferLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseTransferLogger(logger zerolog.Logger) (BaseTransferLogger, error) {
-	return BaseTransferLogger{
+func NewTransferLogger(logger zerolog.Logger) (TransferLogger, error) {
+	return TransferLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseTransferLogger) TransferFinished(client string, host string) {
+func (b TransferLogger) TransferFinished(client string, host string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {

@@ -2,23 +2,17 @@ package v5
 
 import "github.com/rs/zerolog"
 
-type AssociationLogger interface {
-	Request(client string)
-	Successful(client string, address string)
-	Failed(client string, address string)
-}
-
-type BaseAssociationLogger struct {
+type AssociationLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseAssociationLogger(logger zerolog.Logger) (BaseAssociationLogger, error) {
-	return BaseAssociationLogger{
+func NewAssociationLogger(logger zerolog.Logger) (AssociationLogger, error) {
+	return AssociationLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseAssociationLogger) Request(client string) {
+func (b AssociationLogger) Request(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -30,7 +24,7 @@ func (b BaseAssociationLogger) Request(client string) {
 		Msg("Received udp association request. ")
 }
 
-func (b BaseAssociationLogger) Successful(client string, address string) {
+func (b AssociationLogger) Successful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -43,7 +37,7 @@ func (b BaseAssociationLogger) Successful(client string, address string) {
 		Msg("Udp associate successful. ")
 }
 
-func (b BaseAssociationLogger) Failed(client string, address string) {
+func (b AssociationLogger) Failed(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

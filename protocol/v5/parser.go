@@ -14,21 +14,15 @@ var (
 	InvalidFragmentByteError    = errors.New("Invalid frag byte. ")
 )
 
-type Parser interface {
-	ParseMethods(bytes []byte) (MethodsChunk, error)
-	ParseRequest(bytes []byte) (RequestChunk, error)
-	ParseUdpRequest(bytes []byte) (UdpRequest, error)
-}
-
-type BaseParser struct {
+type Parser struct {
 	utils utils.AddressUtils
 }
 
-func NewBaseParser(utils utils.AddressUtils) BaseParser {
-	return BaseParser{utils: utils}
+func NewParser(utils utils.AddressUtils) Parser {
+	return Parser{utils: utils}
 }
 
-func (b BaseParser) ParseMethods(bytes []byte) (MethodsChunk, error) {
+func (b Parser) ParseMethods(bytes []byte) (MethodsChunk, error) {
 	length := len(bytes)
 
 	if length < 3 {
@@ -61,7 +55,7 @@ func (b BaseParser) ParseMethods(bytes []byte) (MethodsChunk, error) {
 	}, nil
 }
 
-func (b BaseParser) ParseRequest(bytes []byte) (RequestChunk, error) {
+func (b Parser) ParseRequest(bytes []byte) (RequestChunk, error) {
 	length := len(bytes)
 
 	if length < 10 {
@@ -119,7 +113,7 @@ func (b BaseParser) ParseRequest(bytes []byte) (RequestChunk, error) {
 	}, nil
 }
 
-func (b BaseParser) ParseUdpRequest(bytes []byte) (UdpRequest, error) {
+func (b Parser) ParseUdpRequest(bytes []byte) (UdpRequest, error) {
 	length := len(bytes)
 
 	if length < 10 {

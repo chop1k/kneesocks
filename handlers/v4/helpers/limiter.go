@@ -5,23 +5,19 @@ import (
 	"socks/managers"
 )
 
-type Limiter interface {
-	IsLimited(config v4.Config) bool
-}
-
-type BaseLimiter struct {
+type Limiter struct {
 	manager *managers.ConnectionsManager
 }
 
-func NewBaseLimiter(
+func NewLimiter(
 	manager *managers.ConnectionsManager,
-) (BaseLimiter, error) {
-	return BaseLimiter{
+) (Limiter, error) {
+	return Limiter{
 		manager: manager,
 	}, nil
 }
 
-func (b BaseLimiter) IsLimited(config v4.Config) bool {
+func (b Limiter) IsLimited(config v4.Config) bool {
 	rate := config.Restrictions.Rate
 
 	if rate.MaxSimultaneousConnections <= 0 {

@@ -9,11 +9,7 @@ import (
 	v4 "socks/protocol/v4"
 )
 
-type Handler interface {
-	Handle(request []byte, client net.Conn)
-}
-
-type BaseHandler struct {
+type Handler struct {
 	parser         v4.Parser
 	logger         v43.Logger
 	connectHandler ConnectHandler
@@ -25,7 +21,7 @@ type BaseHandler struct {
 	replicator     v42.ConfigReplicator
 }
 
-func NewBaseHandler(
+func NewHandler(
 	parser v4.Parser,
 	logger v43.Logger,
 	connectHandler ConnectHandler,
@@ -35,8 +31,8 @@ func NewBaseHandler(
 	validator helpers.Validator,
 	cleaner helpers.Cleaner,
 	replicator v42.ConfigReplicator,
-) (BaseHandler, error) {
-	return BaseHandler{
+) (Handler, error) {
+	return Handler{
 		parser:         parser,
 		logger:         logger,
 		connectHandler: connectHandler,
@@ -49,7 +45,7 @@ func NewBaseHandler(
 	}, nil
 }
 
-func (b BaseHandler) Handle(request []byte, client net.Conn) {
+func (b Handler) Handle(request []byte, client net.Conn) {
 	configPointer := b.replicator.Copy()
 
 	if configPointer == nil {
@@ -85,13 +81,13 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 	b.cleaner.Clean()
 }
 
-func (b BaseHandler) handleConnect(config v42.Config, address string, client net.Conn) {
+func (b Handler) handleConnect(config v42.Config, address string, client net.Conn) {
 	b.logger.Connect.Request(client.RemoteAddr().String(), address)
 
 	b.connectHandler.HandleConnect(config, address, client)
 }
 
-func (b BaseHandler) handleBind(config v42.Config, address string, client net.Conn) {
+func (b Handler) handleBind(config v42.Config, address string, client net.Conn) {
 	b.logger.Bind.Request(client.RemoteAddr().String(), address)
 
 	b.bindHandler.HandleBind(config, address, client)

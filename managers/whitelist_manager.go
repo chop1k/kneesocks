@@ -4,18 +4,14 @@ import (
 	"regexp"
 )
 
-type WhitelistManager interface {
-	IsWhitelisted(list []string, address string) bool
+type WhitelistManager struct {
 }
 
-type BaseWhitelistManager struct {
+func NewWhitelistManager() (WhitelistManager, error) {
+	return WhitelistManager{}, nil
 }
 
-func NewBaseWhitelistManager() (BaseWhitelistManager, error) {
-	return BaseWhitelistManager{}, nil
-}
-
-func (b BaseWhitelistManager) IsWhitelisted(list []string, address string) bool {
+func (b WhitelistManager) IsWhitelisted(list []string, address string) bool {
 	if len(list) <= 0 {
 		return false
 	}

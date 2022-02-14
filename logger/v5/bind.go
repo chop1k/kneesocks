@@ -2,25 +2,17 @@ package v5
 
 import "github.com/rs/zerolog"
 
-type BindLogger interface {
-	Request(client string, address string)
-	Failed(client string, address string)
-	Successful(client string, address string)
-	Timeout(client string, address string)
-	Bound(client string, host string)
-}
-
-type BaseBindLogger struct {
+type BindLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseBindLogger(logger zerolog.Logger) (BaseBindLogger, error) {
-	return BaseBindLogger{
+func NewBindLogger(logger zerolog.Logger) (BindLogger, error) {
+	return BindLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseBindLogger) Request(client string, address string) {
+func (b BindLogger) Request(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -33,7 +25,7 @@ func (b BaseBindLogger) Request(client string, address string) {
 		Msg("Received bind request. ")
 }
 
-func (b BaseBindLogger) Failed(client string, address string) {
+func (b BindLogger) Failed(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -46,7 +38,7 @@ func (b BaseBindLogger) Failed(client string, address string) {
 		Msg("Bind failed. ")
 }
 
-func (b BaseBindLogger) Successful(client string, address string) {
+func (b BindLogger) Successful(client string, address string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -59,7 +51,7 @@ func (b BaseBindLogger) Successful(client string, address string) {
 		Msg("Bind successful. ")
 }
 
-func (b BaseBindLogger) Timeout(client string, address string) {
+func (b BindLogger) Timeout(client string, address string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {
@@ -72,7 +64,7 @@ func (b BaseBindLogger) Timeout(client string, address string) {
 		Msg("Bind failed due to timeout. ")
 }
 
-func (b BaseBindLogger) Bound(client string, host string) {
+func (b BindLogger) Bound(client string, host string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {

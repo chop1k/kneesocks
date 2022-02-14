@@ -10,18 +10,14 @@ var (
 	InvalidChunkSizeError    = errors.New("Invalid chunk size. ")
 )
 
-type Parser interface {
-	ParseRequest(bytes []byte) (RequestChunk, error)
+type Parser struct {
 }
 
-type BaseParser struct {
+func NewParser() Parser {
+	return Parser{}
 }
 
-func NewBaseParser() BaseParser {
-	return BaseParser{}
-}
-
-func (b BaseParser) ParseRequest(bytes []byte) (RequestChunk, error) {
+func (b Parser) ParseRequest(bytes []byte) (RequestChunk, error) {
 	if len(bytes) < 9 {
 		return RequestChunk{}, InvalidChunkSizeError
 	}
@@ -31,10 +27,10 @@ func (b BaseParser) ParseRequest(bytes []byte) (RequestChunk, error) {
 	}
 
 	return RequestChunk{
-		SocksVersion: bytes[0],
-		CommandCode: bytes[1],
-		DestinationPort: uint16(bytes[2]) << 8 | uint16(bytes[3]),
-		DestinationIp: net.IP{bytes[4], bytes[5], bytes[6], bytes[7]},
-		UserId: string(bytes[8:len(bytes) - 1]),
+		SocksVersion:    bytes[0],
+		CommandCode:     bytes[1],
+		DestinationPort: uint16(bytes[2])<<8 | uint16(bytes[3]),
+		DestinationIp:   net.IP{bytes[4], bytes[5], bytes[6], bytes[7]},
+		UserId:          string(bytes[8 : len(bytes)-1]),
 	}, nil
 }

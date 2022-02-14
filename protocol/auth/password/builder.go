@@ -11,19 +11,14 @@ var (
 	PasswordTooLongError = errors.New("Password too long, 256 maximum. ")
 )
 
-type Builder interface {
-	BuildResponse(chunk ResponseChunk) ([]byte, error)
-	BuildRequest(chunk RequestChunk) ([]byte, error)
+type Builder struct {
 }
 
-type BaseBuilder struct {
+func NewBuilder() (Builder, error) {
+	return Builder{}, nil
 }
 
-func NewBaseBuilder() (BaseBuilder, error) {
-	return BaseBuilder{}, nil
-}
-
-func (b BaseBuilder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
+func (b Builder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	if chunk.Version != 1 {
 		return nil, InvalidVersionError
 	}
@@ -31,7 +26,7 @@ func (b BaseBuilder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	return []byte{chunk.Version, chunk.Status}, nil
 }
 
-func (b BaseBuilder) BuildRequest(chunk RequestChunk) ([]byte, error) {
+func (b Builder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 	if chunk.Version != 1 {
 		return nil, InvalidVersionError
 	}

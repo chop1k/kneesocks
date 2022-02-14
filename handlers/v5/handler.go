@@ -9,11 +9,7 @@ import (
 	v5 "socks/protocol/v5"
 )
 
-type Handler interface {
-	Handle(request []byte, client net.Conn)
-}
-
-type BaseHandler struct {
+type Handler struct {
 	parser                v5.Parser
 	authenticationHandler AuthenticationHandler
 	logger                v53.Logger
@@ -28,7 +24,7 @@ type BaseHandler struct {
 	replicator            v52.ConfigReplicator
 }
 
-func NewBaseHandler(
+func NewHandler(
 	parser v5.Parser,
 	authenticationHandler AuthenticationHandler,
 	logger v53.Logger,
@@ -41,8 +37,8 @@ func NewBaseHandler(
 	validator helpers.Validator,
 	cleaner helpers.Cleaner,
 	replicator v52.ConfigReplicator,
-) (BaseHandler, error) {
-	return BaseHandler{
+) (Handler, error) {
+	return Handler{
 		parser:                parser,
 		authenticationHandler: authenticationHandler,
 		logger:                logger,
@@ -58,7 +54,7 @@ func NewBaseHandler(
 	}, nil
 }
 
-func (b BaseHandler) Handle(request []byte, client net.Conn) {
+func (b Handler) Handle(request []byte, client net.Conn) {
 	configPointer := b.replicator.Copy()
 
 	if configPointer == nil {
@@ -78,7 +74,7 @@ func (b BaseHandler) Handle(request []byte, client net.Conn) {
 	b.handleAuthentication(config, methods, client)
 }
 
-func (b BaseHandler) handleAuthentication(config v52.Config, methods v5.MethodsChunk, client net.Conn) {
+func (b Handler) handleAuthentication(config v52.Config, methods v5.MethodsChunk, client net.Conn) {
 	name, err := b.authenticationHandler.HandleAuthentication(config, methods, client)
 
 	if err != nil {
@@ -94,7 +90,7 @@ func (b BaseHandler) handleAuthentication(config v52.Config, methods v5.MethodsC
 	b.handleChunk(config, name, client)
 }
 
-func (b BaseHandler) handleChunk(config v52.Config, name string, client net.Conn) {
+func (b Handler) handleChunk(config v52.Config, name string, client net.Conn) {
 	chunk, err := b.receiver.ReceiveRequest(config, client)
 
 	if err != nil {
@@ -106,7 +102,7 @@ func (b BaseHandler) handleChunk(config v52.Config, name string, client net.Conn
 	b.handleCommand(config, name, chunk, client)
 }
 
-func (b BaseHandler) handleCommand(config v52.Config, name string, chunk v5.RequestChunk, client net.Conn) {
+func (b Handler) handleCommand(config v52.Config, name string, chunk v5.RequestChunk, client net.Conn) {
 	var address string
 
 	if chunk.AddressType == 4 {
@@ -138,19 +134,19 @@ func (b BaseHandler) handleCommand(config v52.Config, name string, chunk v5.Requ
 	b.cleaner.Clean(name)
 }
 
-func (b BaseHandler) handleConnect(config v52.Config, name string, address string, client net.Conn) {
+func (b Handler) handleConnect(config v52.Config, name string, address string, client net.Conn) {
 	b.logger.Connect.Request(client.RemoteAddr().String(), address)
 
 	b.connectHandler.HandleConnect(config, name, address, client)
 }
 
-func (b BaseHandler) handleBind(config v52.Config, name string, address string, client net.Conn) {
+func (b Handler) handleBind(config v52.Config, name string, address string, client net.Conn) {
 	b.logger.Bind.Request(client.RemoteAddr().String(), address)
 
 	b.bindHandler.HandleBind(config, name, address, client)
 }
 
-func (b BaseHandler) handleUdpAssociate(config v52.Config, name string, _ string, client net.Conn) {
+func (b Handler) handleUdpAssociate(config v52.Config, name string, _ string, client net.Conn) {
 	b.logger.Association.Request(client.RemoteAddr().String())
 
 	b.udpAssociationHandler.HandleUdpAssociation(config, name, client)

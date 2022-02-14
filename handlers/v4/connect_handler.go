@@ -8,24 +8,20 @@ import (
 	"socks/protocol/v4"
 )
 
-type ConnectHandler interface {
-	HandleConnect(config v43.Config, address string, client net.Conn)
-}
-
-type BaseConnectHandler struct {
+type ConnectHandler struct {
 	logger       v42.Logger
 	sender       v4.Sender
 	errorHandler ErrorHandler
 	transmitter  helpers.Transmitter
 }
 
-func NewBaseConnectHandler(
+func NewConnectHandler(
 	logger v42.Logger,
 	sender v4.Sender,
 	errorHandler ErrorHandler,
 	transmitter helpers.Transmitter,
-) (BaseConnectHandler, error) {
-	return BaseConnectHandler{
+) (ConnectHandler, error) {
+	return ConnectHandler{
 		logger:       logger,
 		sender:       sender,
 		errorHandler: errorHandler,
@@ -33,7 +29,7 @@ func NewBaseConnectHandler(
 	}, nil
 }
 
-func (b BaseConnectHandler) HandleConnect(config v43.Config, address string, client net.Conn) {
+func (b ConnectHandler) HandleConnect(config v43.Config, address string, client net.Conn) {
 	host, err := net.DialTimeout("tcp4", address, config.Deadline.Connect)
 
 	if err != nil {
@@ -45,7 +41,7 @@ func (b BaseConnectHandler) HandleConnect(config v43.Config, address string, cli
 	b.connectSendSuccess(config, address, host, client)
 }
 
-func (b BaseConnectHandler) connectSendSuccess(config v43.Config, address string, host net.Conn, client net.Conn) {
+func (b ConnectHandler) connectSendSuccess(config v43.Config, address string, host net.Conn, client net.Conn) {
 	err := b.sender.SendSuccess(config, client)
 
 	if err != nil {

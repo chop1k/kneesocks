@@ -2,25 +2,17 @@ package tcp
 
 import "github.com/rs/zerolog"
 
-type ConnectionLogger interface {
-	Accepted(client string)
-	Denied(client string)
-	ProtocolDetermined(client string, protocol string)
-	Bound(client string, host string)
-	ExchangeTimeout(client string)
-}
-
-type BaseConnectionLogger struct {
+type ConnectionLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBaseConnectionLogger(logger zerolog.Logger) (BaseConnectionLogger, error) {
-	return BaseConnectionLogger{
+func NewConnectionLogger(logger zerolog.Logger) (ConnectionLogger, error) {
+	return ConnectionLogger{
 		logger: logger,
 	}, nil
 }
 
-func (b BaseConnectionLogger) Accepted(client string) {
+func (b ConnectionLogger) Accepted(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -32,7 +24,7 @@ func (b BaseConnectionLogger) Accepted(client string) {
 		Msg("Tcp connection accepted.")
 }
 
-func (b BaseConnectionLogger) Denied(client string) {
+func (b ConnectionLogger) Denied(client string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -44,7 +36,7 @@ func (b BaseConnectionLogger) Denied(client string) {
 		Msg("Tcp connection denied.")
 }
 
-func (b BaseConnectionLogger) ProtocolDetermined(client string, protocol string) {
+func (b ConnectionLogger) ProtocolDetermined(client string, protocol string) {
 	e := b.logger.Debug()
 
 	if !e.Enabled() {
@@ -57,7 +49,7 @@ func (b BaseConnectionLogger) ProtocolDetermined(client string, protocol string)
 		Msg("Connection protocol determined.")
 }
 
-func (b BaseConnectionLogger) Bound(client string, host string) {
+func (b ConnectionLogger) Bound(client string, host string) {
 	e := b.logger.Info()
 
 	if !e.Enabled() {
@@ -70,7 +62,7 @@ func (b BaseConnectionLogger) Bound(client string, host string) {
 		Msg("Connection bound.")
 }
 
-func (b BaseConnectionLogger) ExchangeTimeout(client string) {
+func (b ConnectionLogger) ExchangeTimeout(client string) {
 	e := b.logger.Warn()
 
 	if !e.Enabled() {

@@ -16,24 +16,20 @@ type Authenticator interface {
 	Authenticate(config v52.Config, client net.Conn) (string, error)
 }
 
-type AuthenticationHandler interface {
-	HandleAuthentication(config v52.Config, methods v5.MethodsChunk, client net.Conn) (string, error)
-}
-
-type BaseAuthenticationHandler struct {
+type AuthenticationHandler struct {
 	errorHandler ErrorHandler
 	password     Authenticator
 	noAuth       Authenticator
 	sender       v5.Sender
 }
 
-func NewBaseAuthenticationHandler(
+func NewAuthenticationHandler(
 	errorHandler ErrorHandler,
 	password Authenticator,
 	noAuth Authenticator,
 	sender v5.Sender,
-) BaseAuthenticationHandler {
-	return BaseAuthenticationHandler{
+) AuthenticationHandler {
+	return AuthenticationHandler{
 		errorHandler: errorHandler,
 		password:     password,
 		noAuth:       noAuth,
@@ -41,7 +37,7 @@ func NewBaseAuthenticationHandler(
 	}
 }
 
-func (b BaseAuthenticationHandler) HandleAuthentication(config v52.Config, methods v5.MethodsChunk, client net.Conn) (string, error) {
+func (b AuthenticationHandler) HandleAuthentication(config v52.Config, methods v5.MethodsChunk, client net.Conn) (string, error) {
 	_methods := config.AuthenticationMethodsAllowed
 
 	for _, method := range _methods {
@@ -69,7 +65,7 @@ func (b BaseAuthenticationHandler) HandleAuthentication(config v52.Config, metho
 	return "", NoAuthenticationMethodsProvidedError
 }
 
-func (b BaseAuthenticationHandler) selectMethod(config v52.Config, code byte, client net.Conn) (string, error) {
+func (b AuthenticationHandler) selectMethod(config v52.Config, code byte, client net.Conn) (string, error) {
 	err := b.sender.SendMethodSelection(config, code, client)
 
 	if err != nil {
