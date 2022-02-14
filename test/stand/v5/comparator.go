@@ -3,8 +3,8 @@ package v5
 import (
 	"github.com/stretchr/testify/require"
 	"net"
-	"socks/protocol/auth/password"
-	v5 "socks/protocol/v5"
+	"socks/pkg/protocol/auth/password"
+	"socks/pkg/protocol/v5"
 	"socks/test/stand/config"
 	"testing"
 )

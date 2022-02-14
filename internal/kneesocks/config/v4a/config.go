@@ -1,0 +1,19 @@
+package v4a
+
+import (
+	"socks/internal/kneesocks/config/tree"
+	"time"
+)
+
+type Config struct {
+	AllowConnect bool
+	AllowBind    bool
+	Deadline     DeadlineConfig
+	Restrictions tree.Restrictions
+}
+
+type DeadlineConfig struct {
+	Response time.Duration
+	Connect  time.Duration
+	Bind     time.Duration
+}

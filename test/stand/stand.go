@@ -5,17 +5,17 @@ import (
 	"github.com/sarulabs/di"
 	"github.com/stretchr/testify/require"
 	"os"
-	"socks/protocol/auth/password"
-	v42 "socks/protocol/v4"
-	v4a2 "socks/protocol/v4a"
-	v52 "socks/protocol/v5"
+	"socks/pkg/protocol/auth/password"
+	v4Protocol "socks/pkg/protocol/v4"
+	v4aProtocol "socks/pkg/protocol/v4a"
+	v5Protocol "socks/pkg/protocol/v5"
+	"socks/pkg/utils"
 	"socks/test/stand/config"
 	"socks/test/stand/picture"
 	"socks/test/stand/server"
-	v4 "socks/test/stand/v4"
+	"socks/test/stand/v4"
 	"socks/test/stand/v4a"
-	v5 "socks/test/stand/v5"
-	"socks/utils"
+	"socks/test/stand/v5"
 	"testing"
 )
 
@@ -142,7 +142,7 @@ func (s Stand) registerPicture(builder di.Builder, t *testing.T) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
 			cfg := ctn.Get("config").(config.Config)
-			parser := ctn.Get("v5_parser").(v52.Parser)
+			parser := ctn.Get("v5_parser").(v5Protocol.Parser)
 
 			return picture.NewPicture(cfg, _case, t, parser)
 		},
@@ -184,7 +184,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 		Name:  "v4_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v42.NewBuilder(), nil
+			return v4Protocol.NewBuilder(), nil
 		},
 	}
 
@@ -194,7 +194,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v4_builder").(v42.Builder)
+			builder := ctn.Get("v4_builder").(v4Protocol.Builder)
 
 			return v4.NewSender(t, cfg, builder)
 		},
@@ -206,7 +206,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v4_builder").(v42.Builder)
+			builder := ctn.Get("v4_builder").(v4Protocol.Builder)
 
 			return v4.NewComparator(t, cfg, builder)
 		},
@@ -275,7 +275,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 		Name:  "v4a_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a2.NewBuilder(), nil
+			return v4aProtocol.NewBuilder(), nil
 		},
 	}
 
@@ -301,7 +301,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v4a_builder").(v4a2.Builder)
+			builder := ctn.Get("v4a_builder").(v4aProtocol.Builder)
 
 			return v4a.NewSender(t, cfg, builder)
 		},
@@ -313,7 +313,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v4a_builder").(v4a2.Builder)
+			builder := ctn.Get("v4a_builder").(v4aProtocol.Builder)
 
 			return v4a.NewComparator(t, cfg, builder)
 		},
@@ -382,7 +382,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Name:  "v5_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return v52.NewBuilder()
+			return v5Protocol.NewBuilder()
 		},
 	}
 
@@ -392,7 +392,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 
-			return v52.NewParser(addressUtils), nil
+			return v5Protocol.NewParser(addressUtils), nil
 		},
 	}
 
@@ -402,7 +402,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v5_builder").(v52.Builder)
+			builder := ctn.Get("v5_builder").(v5Protocol.Builder)
 			passwordBuilder := ctn.Get("v5_password_builder").(password.Builder)
 
 			return v5.NewSender(t, cfg, builder, passwordBuilder)
@@ -415,7 +415,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
-			builder := ctn.Get("v5_builder").(v52.Builder)
+			builder := ctn.Get("v5_builder").(v5Protocol.Builder)
 			passwordBuilder := ctn.Get("v5_password_builder").(password.Builder)
 
 			return v5.NewComparator(t, cfg, builder, passwordBuilder)

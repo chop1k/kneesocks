@@ -5,9 +5,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/require"
 	"os"
-	v4 "socks/test/stand/config/v4"
+	"socks/test/stand/config/v4"
 	"socks/test/stand/config/v4a"
-	v5 "socks/test/stand/config/v5"
+	"socks/test/stand/config/v5"
 	"testing"
 )
 

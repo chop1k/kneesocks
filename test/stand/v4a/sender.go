@@ -3,7 +3,7 @@ package v4a
 import (
 	"github.com/stretchr/testify/require"
 	"net"
-	"socks/protocol/v4a"
+	"socks/pkg/protocol/v4a"
 	"socks/test/stand/config"
 	"testing"
 )

@@ -3,9 +3,9 @@ package stand
 import (
 	"github.com/stretchr/testify/require"
 	"socks/test/stand/config"
-	v4 "socks/test/stand/v4"
+	"socks/test/stand/v4"
 	"socks/test/stand/v4a"
-	v5 "socks/test/stand/v5"
+	"socks/test/stand/v5"
 	"testing"
 )
 

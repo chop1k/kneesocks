@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
-	v5 "socks/protocol/v5"
+	"socks/pkg/protocol/v5"
 	"socks/test/stand/config"
 	"syscall"
 	"testing"
