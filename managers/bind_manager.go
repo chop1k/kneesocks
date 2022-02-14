@@ -95,6 +95,10 @@ func (m BindManager) ReceiveClient(address string, deadline time.Duration) (net.
 		return nil, AddressNotExistsError
 	}
 
+	if deadline <= 0 {
+		return <-channel.client, nil
+	}
+
 	timer := time.NewTimer(deadline)
 
 	var client net.Conn
@@ -123,6 +127,10 @@ func (m BindManager) ReceiveHost(address string, deadline time.Duration) (net.Co
 
 	if !ok {
 		return nil, AddressNotExistsError
+	}
+
+	if deadline <= 0 {
+		return <-channel.host, nil
 	}
 
 	timer := time.NewTimer(deadline)

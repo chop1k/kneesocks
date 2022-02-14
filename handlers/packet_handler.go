@@ -141,12 +141,14 @@ func (b PacketHandler) listen(client net.Addr, packet net.PacketConn, server net
 
 		deadline := b.replicator.CopyDeadline().Read
 
-		deadlineErr := packet.SetReadDeadline(time.Now().Add(deadline))
+		if deadline > 0 {
+			deadlineErr := packet.SetReadDeadline(time.Now().Add(deadline))
 
-		if deadlineErr != nil {
-			b.logger.Errors.DeadlineError(client.String(), deadlineErr)
+			if deadlineErr != nil {
+				b.logger.Errors.DeadlineError(client.String(), deadlineErr)
 
-			break
+				break
+			}
 		}
 
 		buffer := make([]byte, size)

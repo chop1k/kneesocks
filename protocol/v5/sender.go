@@ -27,10 +27,12 @@ func NewSender(
 }
 
 func (b Sender) SendMethodSelection(config v52.Config, method byte, client net.Conn) error {
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Selection))
+	if config.Deadline.Selection > 0 {
+		deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Selection))
 
-	if deadlineErr != nil {
-		return deadlineErr
+		if deadlineErr != nil {
+			return deadlineErr
+		}
 	}
 
 	selection := MethodSelectionChunk{
@@ -50,10 +52,12 @@ func (b Sender) SendMethodSelection(config v52.Config, method byte, client net.C
 }
 
 func (b Sender) responseWithCode(config v52.Config, code byte, addrType byte, addr string, port uint16, client net.Conn) error {
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Response))
+	if config.Deadline.Response > 0 {
+		deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Response))
 
-	if deadlineErr != nil {
-		return deadlineErr
+		if deadlineErr != nil {
+			return deadlineErr
+		}
 	}
 
 	chunk := ResponseChunk{

@@ -23,10 +23,12 @@ func NewReceiver(
 }
 
 func (b Receiver) ReceiveRequest(config v52.Config, conn net.Conn) (RequestChunk, error) {
-	deadlineErr := conn.SetReadDeadline(time.Now().Add(config.Deadline.Request))
+	if config.Deadline.Request > 0 {
+		deadlineErr := conn.SetReadDeadline(time.Now().Add(config.Deadline.Request))
 
-	if deadlineErr != nil {
-		return RequestChunk{}, deadlineErr
+		if deadlineErr != nil {
+			return RequestChunk{}, deadlineErr
+		}
 	}
 
 	chunk, err := b.buffer.Read(conn, 263)

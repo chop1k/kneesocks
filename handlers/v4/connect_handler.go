@@ -30,7 +30,14 @@ func NewConnectHandler(
 }
 
 func (b ConnectHandler) HandleConnect(config v43.Config, address string, client net.Conn) {
-	host, err := net.DialTimeout("tcp4", address, config.Deadline.Connect)
+	var host net.Conn
+	var err error
+
+	if config.Deadline.Connect > 0 {
+		host, err = net.DialTimeout("tcp4", address, config.Deadline.Connect)
+	} else {
+		host, err = net.Dial("tcp4", address)
+	}
 
 	if err != nil {
 		b.errorHandler.HandleDialError(config, err, address, client)

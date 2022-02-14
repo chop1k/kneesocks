@@ -19,10 +19,12 @@ func NewSender(
 }
 
 func (b Sender) SendResponse(config v5.Config, code byte, client net.Conn) error {
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.PasswordResponse))
+	if config.Deadline.PasswordResponse > 0 {
+		deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.PasswordResponse))
 
-	if deadlineErr != nil {
-		return deadlineErr
+		if deadlineErr != nil {
+			return deadlineErr
+		}
 	}
 
 	chunk, err := b.builder.BuildResponse(ResponseChunk{

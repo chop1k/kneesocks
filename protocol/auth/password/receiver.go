@@ -23,10 +23,12 @@ func NewReceiver(
 }
 
 func (b Receiver) ReceiveRequest(config v5.Config, conn net.Conn) (RequestChunk, error) {
-	deadlineErr := conn.SetReadDeadline(time.Now().Add(config.Deadline.Password))
+	if config.Deadline.Password > 0 {
+		deadlineErr := conn.SetReadDeadline(time.Now().Add(config.Deadline.Password))
 
-	if deadlineErr != nil {
-		return RequestChunk{}, deadlineErr
+		if deadlineErr != nil {
+			return RequestChunk{}, deadlineErr
+		}
 	}
 
 	data, err := b.buffer.Read(conn, 515)

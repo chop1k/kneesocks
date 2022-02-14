@@ -32,10 +32,12 @@ func (b Sender) build(status byte, ip net.IP, port uint16) ([]byte, error) {
 }
 
 func (b Sender) send(config v4a.Config, status byte, ip net.IP, port uint16, client net.Conn) error {
-	deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Response))
+	if config.Deadline.Response > 0 {
+		deadlineErr := client.SetWriteDeadline(time.Now().Add(config.Deadline.Response))
 
-	if deadlineErr != nil {
-		return deadlineErr
+		if deadlineErr != nil {
+			return deadlineErr
+		}
 	}
 
 	data, err := b.build(status, ip, port)

@@ -91,11 +91,11 @@ func register(builder di.Builder) {
 		Name:  "connection_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config").(Config)
+			config := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
 			sender := ctn.Get("picture_sender").(PictureSender)
 
-			return NewConnectHandler(cfg, logger, sender)
+			return NewConnectHandler(config, logger, sender)
 		},
 	}
 
@@ -103,10 +103,10 @@ func register(builder di.Builder) {
 		Name:  "packet_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config").(Config)
+			config := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
 
-			return NewPacketHandler(cfg, logger)
+			return NewPacketHandler(config, logger)
 		},
 	}
 
@@ -114,11 +114,11 @@ func register(builder di.Builder) {
 		Name:  "bind_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config").(Config)
+			config := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
 			picture := ctn.Get("picture_sender").(PictureSender)
 
-			return NewBindHandler(cfg, logger, picture)
+			return NewBindHandler(config, logger, picture)
 		},
 	}
 
@@ -126,13 +126,13 @@ func register(builder di.Builder) {
 		Name:  "server",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config").(Config)
+			config := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
 			connectionHandler := ctn.Get("connection_handler").(ConnectHandler)
 			packetHandler := ctn.Get("packet_handler").(PacketHandler)
 			bindHandler := ctn.Get("bind_handler").(BindHandler)
 
-			return NewServer(cfg, connectionHandler, packetHandler, logger, bindHandler)
+			return NewServer(config, connectionHandler, packetHandler, logger, bindHandler)
 		},
 	}
 
@@ -140,10 +140,10 @@ func register(builder di.Builder) {
 		Name:  "picture_sender",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cfg := ctn.Get("config").(Config)
+			config := ctn.Get("config").(Config)
 			logger := ctn.Get("logger").(Logger)
 
-			return NewPictureSender(logger, cfg)
+			return NewPictureSender(logger, config)
 		},
 	}
 
@@ -168,7 +168,5 @@ func register(builder di.Builder) {
 }
 
 func start(ctn di.Container) {
-	server := ctn.Get("server").(Server)
-
-	server.Start()
+	ctn.Get("server").(Server).Start()
 }
