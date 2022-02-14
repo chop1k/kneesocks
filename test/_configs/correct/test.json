@@ -29,9 +29,9 @@
     "AllowConnect": true,
     "AllowBind": true,
     "Deadline": {
-      "Response": 2,
-      "Connect": 60,
-      "Bind": 60
+      "Response": -1,
+      "Connect": -1,
+      "Bind": -1
     },
     "Restrictions": {
       "Blacklist": [],
@@ -49,9 +49,9 @@
     "AllowConnect": true,
     "AllowBind": true,
     "Deadline": {
-      "Response": 2,
-      "Connect": 60,
-      "Bind": 60
+      "Response": -1,
+      "Connect": -1,
+      "Bind": -1
     },
     "Restrictions": {
       "Blacklist": [],
@@ -77,13 +77,13 @@
       "name/password"
     ],
     "Deadline": {
-      "Selection": 5,
-      "Password": 5,
-      "PasswordResponse": 5,
-      "Request": 5,
-      "Response": 10,
-      "Connect": 60,
-      "Bind": 60
+      "Selection": -1,
+      "Password": -1,
+      "PasswordResponse": -1,
+      "Request": -1,
+      "Response": -1,
+      "Connect": -1,
+      "Bind": -1
     },
     "Users": {
       "test": {
