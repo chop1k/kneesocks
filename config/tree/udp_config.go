@@ -16,5 +16,5 @@ type UdpBufferConfig struct {
 }
 
 type UdpDeadlineConfig struct {
-	Read uint `validate:"required"`
+	Read int `validate:"required"`
 }

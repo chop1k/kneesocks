@@ -8,7 +8,7 @@ type SocksV4Config struct {
 }
 
 type SocksV4DeadlineConfig struct {
-	Response uint `validate:"required"`
-	Connect  uint `validate:"required"`
-	Bind     uint `validate:"required"`
+	Response int `validate:"required"`
+	Connect  int `validate:"required"`
+	Bind     int `validate:"required"`
 }

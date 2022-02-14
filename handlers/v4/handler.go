@@ -49,7 +49,9 @@ func (b Handler) Handle(request []byte, client net.Conn) {
 	configPointer := b.replicator.Copy()
 
 	if configPointer == nil {
-		// TODO: do
+		_ = client.Close()
+
+		return
 	}
 
 	config := *configPointer

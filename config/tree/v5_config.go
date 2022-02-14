@@ -18,11 +18,11 @@ type User struct {
 }
 
 type SocksV5DeadlineConfig struct {
-	Selection        uint `validate:"required"`
-	Password         uint `validate:"required"`
-	PasswordResponse uint `validate:"required"`
-	Request          uint `validate:"required"`
-	Response         uint `validate:"required"`
-	Connect          uint `validate:"required"`
-	Bind             uint `validate:"required"`
+	Selection        int `validate:"required"`
+	Password         int `validate:"required"`
+	PasswordResponse int `validate:"required"`
+	Request          int `validate:"required"`
+	Response         int `validate:"required"`
+	Connect          int `validate:"required"`
+	Bind             int `validate:"required"`
 }

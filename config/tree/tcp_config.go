@@ -17,6 +17,6 @@ type TcpBufferConfig struct {
 }
 
 type TcpDeadline struct {
-	Welcome  uint `validate:"required"`
-	Exchange uint `validate:"required"`
+	Welcome  int `validate:"required"`
+	Exchange int `validate:"required"`
 }
