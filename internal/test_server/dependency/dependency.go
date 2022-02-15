@@ -1,7 +1,6 @@
 package dependency
 
 import (
-	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 	"github.com/sarulabs/di"
@@ -21,7 +20,7 @@ func Register(builder di.Builder) {
 			path, ok := os.LookupEnv("config_path")
 
 			if !ok {
-				return nil, errors.New("Config path is not specified. ")
+				return "/etc/kneesocks/test-server-config.json", nil
 			}
 
 			return path, nil

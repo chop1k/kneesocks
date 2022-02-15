@@ -72,11 +72,11 @@ func (s Stand) registerConfig(protocol string, command string, number int, build
 		Name:  "config_path",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			t := ctn.Get("t").(*testing.T)
-
 			path, ok := os.LookupEnv("config_path")
 
-			require.True(t, ok, "Config path is not specified. ")
+			if !ok {
+				return "/etc/kneesocks/e2e.json", nil
+			}
 
 			return path, nil
 		},

@@ -1,0 +1,23 @@
+version: "3.7"
+
+services:
+  kneesocks-test-server:
+    image: chop1k/kneesocks-test-server
+    ports:
+      - "9999:9999/tcp"
+      - "9999:9999/udp"
+      - "9000:9000/tcp"
+    volumes:
+      - ./config:/etc/kneesocks
+      - ./images:/usr/share/kneesocks/images
+      - logs:/var/log/kneesocks
+    networks:
+      - kneesocks
+
+networks:
+  kneesocks:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local

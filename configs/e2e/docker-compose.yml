@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  kneesocks-test-server:
+    image: chop1k/kneesocks-e2e
+    volumes:
+      - ./config:/etc/kneesocks
+    networks:
+      - kneesocks
+
+networks:
+  kneesocks:
+    driver: bridge

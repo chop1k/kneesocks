@@ -1,0 +1,29 @@
+{
+  "Socks": {
+    "IPv4": "127.0.0.1",
+    "IPv6": "::1",
+    "Port": 1080,
+    "Zone": ""
+  },
+  "Tcp": {
+    "BindAddress": "",
+    "BindPort": 9000,
+    "ConnectPort": 9999
+  },
+  "Udp": {
+    "BindAddress": "",
+    "BindPort": 9999
+  },
+  "Picture": {
+    "BigPicturePath": "/home/chop1k/Pictures/Memes/Durka/Межгалактический-портал-в-дурку.gif",
+    "MiddlePicturePath": "/home/chop1k/Pictures/Memes/memes_29/5eA-dD3iZEE.jpg",
+    "SmallPicturePath": "/home/chop1k/Pictures/Memes/memes_21/mZAEUhyKciE.jpg"
+  },
+  "Log": {
+    "Path": "/var/log/kneesocks/test-server.log"
+  },
+  "Http": {
+    "Address": "127.0.0.1",
+    "Port": 9000
+  }
+}
