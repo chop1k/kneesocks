@@ -1,7 +1,6 @@
 package dependency
 
 import (
-	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/sarulabs/di"
 	"os"
@@ -38,7 +37,7 @@ func registerTree(builder di.Builder) {
 			path, ok := os.LookupEnv("config_path")
 
 			if !ok {
-				return nil, errors.New("Config path is not specified. ")
+				return "/etc/kneesocks/config.json", nil
 			}
 
 			return path, nil
