@@ -43,7 +43,7 @@ func NewBindTester(
 func (t BindTester) Test(number int) {
 	scope := t.scope.GetV5Bind(number)
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", t.config.Socks.IPv4, t.config.Socks.TcpPort))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", t.config.Socks.Address, t.config.Socks.TcpPort))
 
 	require.NoError(t.t, err)
 

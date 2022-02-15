@@ -23,9 +23,7 @@ type Config struct {
 }
 
 type SocksConfig struct {
-	IPv4    string `validate:"required,ipv4"`
-	Domain  string `validate:"required,hostname"`
-	IPv6    string `validate:"required,ipv6"`
+	Address string
 	TcpPort uint16 `validate:"required"`
 	UdpPort uint16 `validate:"required"`
 }

@@ -39,7 +39,7 @@ func NewAuthTester(
 func (t AuthTester) Test(number int) {
 	scope := t.scope.GetV5Auth(number)
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", t.config.Socks.IPv4, t.config.Socks.TcpPort))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", t.config.Socks.Address, t.config.Socks.TcpPort))
 
 	require.NoError(t.t, err)
 

@@ -247,9 +247,7 @@
     ]
   },
   "Socks": {
-    "IPv4": "127.0.0.1",
-    "Domain": "localhost",
-    "IPv6": "::1",
+    "Address": "kneesocks",
     "TcpPort": 1080,
     "UdpPort": 1080
   },

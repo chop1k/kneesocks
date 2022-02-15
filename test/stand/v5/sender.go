@@ -99,7 +99,7 @@ func (s Sender) SendAssociateRequest(addressType byte, conn net.Conn) {
 }
 
 func (s Sender) SendPictureRequest(picture byte) net.PacketConn {
-	addr, lookupErr := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", s.config.Socks.IPv4, s.config.Socks.UdpPort))
+	addr, lookupErr := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", s.config.Socks.Address, s.config.Socks.UdpPort))
 
 	require.NoError(s.t, lookupErr)
 
