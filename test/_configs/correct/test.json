@@ -117,25 +117,34 @@
     }
   },
   "Log": {
+    "Tcp": {
+      "Level": 1,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
+      }
+    },
+    "Udp": {
+      "Level": 1,
+      "Console": {
+        "TimeFormat": "2006-01-02 15:04:05"
+      }
+    },
     "SocksV4": {
-      "Level": 0,
+      "Level": 1,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
       }
     },
     "SocksV4a": {
-      "Level": 0,
+      "Level": 1,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
       }
     },
     "SocksV5": {
-      "Level": 0,
+      "Level": 1,
       "Console": {
         "TimeFormat": "2006-01-02 15:04:05"
-      },
-      "File": {
-        "Path": "/tmp/v5.log"
       }
     }
   }

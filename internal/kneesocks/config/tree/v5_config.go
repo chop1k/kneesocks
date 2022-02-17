@@ -7,7 +7,7 @@ type SocksV5Config struct {
 	AllowIPv4                    bool
 	AllowIPv6                    bool
 	AllowDomain                  bool
-	AuthenticationMethodsAllowed []string              `validate:"required"`
+	AuthenticationMethodsAllowed []string              `validate:"required,min=1"`
 	Deadline                     SocksV5DeadlineConfig `validate:"required"`
 	Users                        map[string]User       `validate:"required,dive,keys,max=255,endkeys"`
 }

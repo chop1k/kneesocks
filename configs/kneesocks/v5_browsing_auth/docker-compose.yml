@@ -11,6 +11,7 @@ services:
       - logs:/var/log/kneesocks
     networks:
       - kneesocks
+    restart: always
 
 networks:
   kneesocks:
