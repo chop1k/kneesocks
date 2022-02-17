@@ -15,15 +15,11 @@
     "BindPort": 9999
   },
   "Picture": {
-    "BigPicturePath": "/home/chop1k/Pictures/Memes/Durka/Межгалактический-портал-в-дурку.gif",
-    "MiddlePicturePath": "/home/chop1k/Pictures/Memes/memes_29/5eA-dD3iZEE.jpg",
-    "SmallPicturePath": "/home/chop1k/Pictures/Memes/memes_21/mZAEUhyKciE.jpg"
+    "BigPicturePath": "./configs/test_server/images/1.gif",
+    "MiddlePicturePath": "./configs/test_server/images/2.jpg",
+    "SmallPicturePath": "./configs/test_server/images/3.jpg"
   },
   "Log": {
-    "Path": "/var/log/kneesocks/test-server.log"
-  },
-  "Http": {
-    "Address": "127.0.0.1",
-    "Port": 9000
+    "Path": "/tmp/test-server.log"
   }
 }

@@ -18,7 +18,6 @@ type SocksConfig struct {
 	IPv4 string `validate:"required,ipv4"`
 	IPv6 string `validate:"required,ipv6"`
 	Port uint16 `validate:"required"`
-	Zone string
 }
 
 type TcpConfig struct {
@@ -33,9 +32,9 @@ type UdpConfig struct {
 }
 
 type PictureConfig struct {
-	BigPicturePath    string `validate:"required,uri"`
-	MiddlePicturePath string `validate:"required,uri"`
-	SmallPicturePath  string `validate:"required,uri"`
+	BigPicturePath    string `validate:"required"`
+	MiddlePicturePath string `validate:"required"`
+	SmallPicturePath  string `validate:"required"`
 }
 
 type LogConfig struct {

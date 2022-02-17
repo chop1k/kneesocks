@@ -70,9 +70,9 @@
           "Rate": {
             "MaxSimultaneousConnections": 100,
             "HostReadBuffersPerSecond": 2080,
-            "HostWriteBuffersPerSecond": 1080,
-            "ClientReadBuffersPerSecond": 1080,
-            "ClientWriteBuffersPerSecond": 1080
+            "HostWriteBuffersPerSecond": 2080,
+            "ClientReadBuffersPerSecond": 2080,
+            "ClientWriteBuffersPerSecond": 2080
           }
         }
       }

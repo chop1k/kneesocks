@@ -247,7 +247,7 @@
     ]
   },
   "Socks": {
-    "Address": "kneesocks",
+    "Address": "127.0.0.1",
     "TcpPort": 1080,
     "UdpPort": 1080
   },
