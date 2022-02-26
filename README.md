@@ -52,6 +52,7 @@ For installation guide read the [wiki](https://github.com/chop1k/kneesocks/wiki)
 - [go-playground/validator](https://github.com/go-playground/validator) - For validating config.
 - [stretchr/testify](https://github.com/stretchr/testify) - For testing assertions.
 - [emicpasic/gods](https://github.com/emirpasic/gods) - For data structures, like sets and maps.
+- [urfave/cli](https://github.com/urfave/cli) - For console argument parsing and management.
 
 ## Contributing
 
@@ -61,3 +62,13 @@ See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for our code of conduct.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+## Supported platforms
+
+We tested only unix systems:
+
+- Arch linux - during development
+- Debian 10 - in production
+
+We not sure that kneesocks will work with another platforms, but who knows? Maybe under certain circumstances it will
+work. 
