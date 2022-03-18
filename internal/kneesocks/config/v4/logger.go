@@ -12,43 +12,43 @@ var (
 )
 
 type LoggerConfig struct {
-	config tree.LogConfig
+	config *tree.SocksV4LoggerConfig
 }
 
-func NewLoggerConfig(config tree.LogConfig) (LoggerConfig, error) {
+func NewLoggerConfig(config *tree.SocksV4LoggerConfig) (LoggerConfig, error) {
 	return LoggerConfig{
 		config: config,
 	}, nil
 }
 
 func (b LoggerConfig) GetLevel() (int, error) {
-	if b.config.SocksV4 == nil {
+	if b.config == nil {
 		return 0, LoggerDisabledError
 	}
 
-	return b.config.SocksV4.Level, nil
+	return b.config.Level, nil
 }
 
 func (b LoggerConfig) GetConsoleOutput() (tree.ConsoleOutputConfig, error) {
-	if b.config.SocksV4 == nil {
+	if b.config == nil {
 		return tree.ConsoleOutputConfig{}, LoggerDisabledError
 	}
 
-	if b.config.SocksV4.Console == nil {
+	if b.config.Console == nil {
 		return tree.ConsoleOutputConfig{}, ConsoleOutputDisabledError
 	}
 
-	return *b.config.SocksV4.Console, nil
+	return *b.config.Console, nil
 }
 
 func (b LoggerConfig) GetFileOutput() (tree.FileOutputConfig, error) {
-	if b.config.SocksV4 == nil {
+	if b.config == nil {
 		return tree.FileOutputConfig{}, LoggerDisabledError
 	}
 
-	if b.config.SocksV4.File == nil {
+	if b.config.File == nil {
 		return tree.FileOutputConfig{}, FileOutputDisabledError
 	}
 
-	return *b.config.SocksV4.File, nil
+	return *b.config.File, nil
 }
