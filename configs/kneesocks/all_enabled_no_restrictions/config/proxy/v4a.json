@@ -1,0 +1,20 @@
+{
+    "AllowConnect": true,
+    "AllowBind": true,
+    "Deadline": {
+        "Response": -1,
+        "Connect": -1,
+        "Bind": -1
+    },
+    "Restrictions": {
+        "Blacklist": [],
+        "Whitelist": [],
+        "Rate": {
+            "MaxSimultaneousConnections": -1,
+            "HostReadBuffersPerSecond": -1,
+            "HostWriteBuffersPerSecond": -1,
+            "ClientReadBuffersPerSecond": -1,
+            "ClientWriteBuffersPerSecond": -1
+        }
+    }
+}

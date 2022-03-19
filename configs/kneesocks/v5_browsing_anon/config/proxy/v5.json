@@ -1,0 +1,36 @@
+{
+    "AllowConnect": true,
+    "AllowBind": false,
+    "AllowUdpAssociation": false,
+    "AllowIPv4": true,
+    "AllowIPv6": true,
+    "AllowDomain": true,
+    "AuthenticationMethodsAllowed": [
+        "no-authentication"
+    ],
+    "Deadline": {
+        "Selection": 20,
+        "Password": 20,
+        "PasswordResponse": 20,
+        "Request": 20,
+        "Response": 20,
+        "Connect": 20,
+        "Bind": 20
+    },
+    "Users": {
+        "anonymous": {
+            "Password": "anonymous",
+            "Restrictions": {
+                "Blacklist": [],
+                "Whitelist": [],
+                "Rate": {
+                    "MaxSimultaneousConnections": -1,
+                    "HostReadBuffersPerSecond": -1,
+                    "HostWriteBuffersPerSecond": -1,
+                    "ClientReadBuffersPerSecond": -1,
+                    "ClientWriteBuffersPerSecond": -1
+                }
+            }
+        }
+    }
+}

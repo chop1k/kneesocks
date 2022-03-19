@@ -1,0 +1,14 @@
+{
+    "Bind": {
+        "Address": "",
+        "Port": 1080
+    },
+    "Buffer": {
+        "ClientSize": 512,
+        "HostSize": 512
+    },
+    "Deadline": {
+        "Welcome": 2,
+        "Exchange": 15
+    }
+}

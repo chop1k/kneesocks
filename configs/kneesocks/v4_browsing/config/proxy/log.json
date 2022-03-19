@@ -1,0 +1,29 @@
+{
+    "Tcp": {
+        "Level": 1,
+        "Console": {
+            "TimeFormat": "2006-01-02 15:04:05"
+        },
+        "File": {
+            "Path": "/tmp/kneesocks/tcp.log"
+        }
+    },
+    "SocksV4": {
+        "Level": 1,
+        "Console": {
+            "TimeFormat": "2006-01-02 15:04:05"
+        },
+        "File": {
+            "Path": "/var/log/kneesocks/v4.log"
+        }
+    },
+    "SocksV4a": {
+        "Level": 1,
+        "Console": {
+            "TimeFormat": "2006-01-02 15:04:05"
+        },
+        "File": {
+            "Path": "/var/log/kneesocks/v4a.log"
+        }
+    }
+}
