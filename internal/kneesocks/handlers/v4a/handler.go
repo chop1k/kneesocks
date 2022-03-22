@@ -31,8 +31,8 @@ func NewHandler(
 	validator helpers.Validator,
 	cleaner helpers.Cleaner,
 	replicator v4a2.ConfigReplicator,
-) (Handler, error) {
-	return Handler{
+) (*Handler, error) {
+	return &Handler{
 		parser:         parser,
 		logger:         logger,
 		connectHandler: connectHandler,

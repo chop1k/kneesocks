@@ -1,12 +1,6 @@
 package dependency
 
 import (
-	"socks/internal/kneesocks/config/tcp"
-	"socks/internal/kneesocks/config/tree"
-	"socks/internal/kneesocks/config/udp"
-	v4 "socks/internal/kneesocks/config/v4"
-	v4a "socks/internal/kneesocks/config/v4a"
-	v5 "socks/internal/kneesocks/config/v5"
 	"socks/internal/kneesocks/dependency/build"
 
 	"github.com/sarulabs/di"
@@ -267,46 +261,25 @@ func registerTcpConfig(builder di.Builder) {
 	bindConfigDef := di.Def{
 		Name:  "tcp_base_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			config := ctn.Get("tcp_tree").(tree.TcpConfig)
-			handler := ctn.Get("tcp_config_handler").(tcp.Handler)
-
-			return handler.Handle(config), nil
-		},
+		Build: build.TcpBaseConfig,
 	}
 
 	handlerDef := di.Def{
 		Name:  "tcp_config_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return tcp.NewHandler()
-		},
+		Build: build.TcpConfigHandler,
 	}
 
 	loggerConfigDef := di.Def{
 		Name:  "tcp_logger_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("log_tree")
-
-			if _config == nil {
-				return tcp.NewLoggerConfig(nil)
-			}
-
-			config := _config.(*tree.TcpLoggerConfig)
-
-			return tcp.NewLoggerConfig(config)
-		},
+		Build: build.TcpLoggerConfig,
 	}
 
 	replicatorDef := di.Def{
 		Name:  "tcp_config_replicator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			base := ctn.Get("tcp_base_config").(tcp.Config)
-
-			return tcp.NewConfigReplicator(base.Deadline)
-		},
+		Build: build.TcpConfigReplicator,
 	}
 
 	err := builder.Add(
@@ -325,64 +298,25 @@ func registerUdpConfig(builder di.Builder) {
 	bindConfigDef := di.Def{
 		Name:  "udp_base_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("udp_tree")
-			handler := ctn.Get("udp_config_handler").(udp.Handler)
-
-			if _config == nil {
-				return nil, nil
-			}
-
-			config := _config.(tree.UdpConfig)
-
-			return handler.Handle(config), nil
-		},
+		Build: build.UdpBaseConfig,
 	}
 
 	handlerDef := di.Def{
 		Name:  "udp_config_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return udp.NewHandler()
-		},
+		Build: build.UdpConfigHandler,
 	}
 
 	loggerConfigDef := di.Def{
 		Name:  "udp_logger_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("log_tree")
-
-			if _config == nil {
-				return udp.NewLoggerConfig(nil)
-			}
-
-			__config := _config.(*tree.LogConfig)
-
-			if __config == nil {
-				return udp.NewLoggerConfig(nil)
-			}
-
-			config := __config.Udp
-
-			return udp.NewLoggerConfig(config)
-		},
+		Build: build.UdpLoggerConfig,
 	}
 
 	replicatorDef := di.Def{
 		Name:  "udp_config_replicator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_base := ctn.Get("udp_base_config")
-
-			if _base == nil {
-				return nil, nil
-			}
-
-			base := _base.(udp.Config)
-
-			return udp.NewConfigReplicator(base.Buffer, base.Deadline)
-		},
+		Build: build.UdpConfigReplicator,
 	}
 
 	err := builder.Add(
@@ -401,64 +335,25 @@ func registerV4Config(builder di.Builder) {
 	configDef := di.Def{
 		Name:  "v4_base_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("v4_tree")
-			handler := ctn.Get("v4_config_handler").(v4.Handler)
-
-			if _config == nil {
-				return nil, nil
-			}
-
-			config := _config.(tree.SocksV4Config)
-
-			return handler.Handle(config), nil
-		},
+		Build: build.V4BaseConfig,
 	}
 
 	handlerDef := di.Def{
 		Name:  "v4_config_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v4.NewHandler()
-		},
+		Build: build.V4ConfigHandler,
 	}
 
 	loggerConfigDef := di.Def{
 		Name:  "v4_logger_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("log_tree")
-
-			if _config == nil {
-				return v4.NewLoggerConfig(nil)
-			}
-
-			__config := _config.(*tree.LogConfig)
-
-			if __config == nil {
-				return udp.NewLoggerConfig(nil)
-			}
-
-			config := __config.SocksV4
-
-			return v4.NewLoggerConfig(config)
-		},
+		Build: build.V4LoggerConfig,
 	}
 
 	replicatorDef := di.Def{
 		Name:  "v4_config_replicator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("v4_base_config")
-
-			if _config == nil {
-				return nil, nil
-			}
-
-			config := _config.(v4.Config)
-
-			return v4.NewConfigReplicator(config)
-		},
+		Build: build.V4ConfigReplicator,
 	}
 
 	err := builder.Add(
@@ -477,64 +372,25 @@ func registerV4aConfig(builder di.Builder) {
 	configDef := di.Def{
 		Name:  "v4a_base_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("v4a_tree")
-			handler := ctn.Get("v4a_config_handler").(v4a.Handler)
-
-			if _config == nil {
-				return nil, nil
-			}
-
-			config := _config.(tree.SocksV4aConfig)
-
-			return handler.Handle(config), nil
-		},
+		Build: build.V4aBaseConfig,
 	}
 
 	handlerDef := di.Def{
 		Name:  "v4a_config_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a.NewHandler()
-		},
+		Build: build.V4aConfigHandler,
 	}
 
 	loggerConfigDef := di.Def{
 		Name:  "v4a_logger_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("log_tree")
-
-			if _config == nil {
-				return v4a.NewLoggerConfig(nil)
-			}
-
-			__config := _config.(*tree.LogConfig)
-
-			if __config == nil {
-				return udp.NewLoggerConfig(nil)
-			}
-
-			config := __config.SocksV4a
-
-			return v4a.NewLoggerConfig(config)
-		},
+		Build: build.V4aLoggerConfig,
 	}
 
 	replicatorDef := di.Def{
 		Name:  "v4a_config_replicator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("v4a_base_config")
-
-			if _config == nil {
-				return nil, nil
-			}
-
-			config := _config.(v4a.Config)
-
-			return v4a.NewConfigReplicator(config)
-		},
+		Build: build.V4aConfigReplicator,
 	}
 
 	err := builder.Add(
@@ -553,64 +409,25 @@ func registerV5Config(builder di.Builder) {
 	configDef := di.Def{
 		Name:  "v5_base_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("v5_tree")
-			handler := ctn.Get("v5_config_handler").(v5.Handler)
-
-			if _config == nil {
-				return nil, nil
-			}
-
-			config := _config.(tree.SocksV5Config)
-
-			return handler.Handle(config), nil
-		},
+		Build: build.V5BaseConfig,
 	}
 
 	handlerDef := di.Def{
 		Name:  "v5_config_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v5.NewHandler()
-		},
+		Build: build.V5ConfigHandler,
 	}
 
 	loggerConfigDef := di.Def{
 		Name:  "v5_logger_config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("log_tree")
-
-			if _config == nil {
-				return v5.NewLoggerConfig(nil)
-			}
-
-			__config := _config.(*tree.LogConfig)
-
-			if __config == nil {
-				return udp.NewLoggerConfig(nil)
-			}
-
-			config := __config.SocksV5
-
-			return v5.NewLoggerConfig(config)
-		},
+		Build: build.V5LoggerConfig,
 	}
 
 	replicatorDef := di.Def{
 		Name:  "v5_config_replicator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			_config := ctn.Get("v5_base_config")
-
-			if _config == nil {
-				return nil, nil
-			}
-
-			config := _config.(v5.Config)
-
-			return v5.NewConfigReplicator(config)
-		},
+		Build: build.V5ConfigReplicator,
 	}
 
 	err := builder.Add(

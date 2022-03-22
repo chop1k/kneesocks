@@ -3,7 +3,12 @@ package build
 import (
 	"errors"
 	"os"
+	"socks/internal/kneesocks/config/tcp"
 	"socks/internal/kneesocks/config/tree"
+	"socks/internal/kneesocks/config/udp"
+	v4 "socks/internal/kneesocks/config/v4"
+	"socks/internal/kneesocks/config/v4a"
+	v5 "socks/internal/kneesocks/config/v5"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/sarulabs/di"
@@ -305,4 +310,197 @@ func LogTreeBuilder(ctn di.Container) (interface{}, error) {
 	validator := ctn.Get("validator").(validator.Validate)
 
 	return tree.NewLogBuilder(validator)
+}
+
+func TcpBaseConfig(ctn di.Container) (interface{}, error) {
+	config := ctn.Get("tcp_tree").(tree.TcpConfig)
+	handler := ctn.Get("tcp_config_handler").(tcp.Handler)
+
+	return handler.Handle(config), nil
+}
+
+func TcpConfigHandler(ctn di.Container) (interface{}, error) {
+	return tcp.NewHandler()
+}
+
+func TcpLoggerConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("log_tree")
+
+	if _config == nil {
+		return tcp.NewLoggerConfig(nil)
+	}
+
+	config := _config.(tree.LogConfig).Tcp
+
+	return tcp.NewLoggerConfig(config)
+}
+
+func TcpConfigReplicator(ctn di.Container) (interface{}, error) {
+	base := ctn.Get("tcp_base_config").(tcp.Config)
+
+	return tcp.NewConfigReplicator(base.Deadline)
+}
+
+func UdpBaseConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("udp_tree")
+	handler := ctn.Get("udp_config_handler").(udp.Handler)
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(tree.UdpConfig)
+
+	return handler.Handle(config), nil
+}
+
+func UdpConfigHandler(ctn di.Container) (interface{}, error) {
+	return udp.NewHandler()
+}
+
+func UdpLoggerConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("log_tree")
+
+	if _config == nil {
+		return udp.NewLoggerConfig(nil)
+	}
+
+	config := _config.(tree.LogConfig).Udp
+
+	return udp.NewLoggerConfig(config)
+}
+
+func UdpConfigReplicator(ctn di.Container) (interface{}, error) {
+	_base := ctn.Get("udp_base_config")
+
+	if _base == nil {
+		return nil, nil
+	}
+
+	base := _base.(udp.Config)
+
+	return udp.NewConfigReplicator(base.Buffer, base.Deadline)
+}
+
+func V4BaseConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("v4_tree")
+	handler := ctn.Get("v4_config_handler").(v4.Handler)
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(tree.SocksV4Config)
+
+	return handler.Handle(config), nil
+}
+
+func V4ConfigHandler(ctn di.Container) (interface{}, error) {
+	return v4.NewHandler()
+}
+
+func V4LoggerConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("log_tree")
+
+	if _config == nil {
+		return v4.NewLoggerConfig(nil)
+	}
+
+	config := _config.(tree.LogConfig).SocksV4
+
+	return v4.NewLoggerConfig(config)
+}
+
+func V4ConfigReplicator(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("v4_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v4.Config)
+
+	return v4.NewConfigReplicator(config)
+}
+
+func V4aBaseConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("v4a_tree")
+	handler := ctn.Get("v4a_config_handler").(v4a.Handler)
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(tree.SocksV4aConfig)
+
+	return handler.Handle(config), nil
+}
+
+func V4aConfigHandler(ctn di.Container) (interface{}, error) {
+	return v4a.NewHandler()
+}
+
+func V4aLoggerConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("log_tree")
+
+	if _config == nil {
+		return v4a.NewLoggerConfig(nil)
+	}
+
+	config := _config.(tree.LogConfig).SocksV4a
+
+	return v4a.NewLoggerConfig(config)
+}
+
+func V4aConfigReplicator(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("v4a_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v4a.Config)
+
+	return v4a.NewConfigReplicator(config)
+}
+
+func V5BaseConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("v5_tree")
+	handler := ctn.Get("v5_config_handler").(v5.Handler)
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(tree.SocksV5Config)
+
+	return handler.Handle(config), nil
+}
+
+func V5ConfigHandler(ctn di.Container) (interface{}, error) {
+	return v5.NewHandler()
+}
+
+func V5LoggerConfig(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("log_tree")
+
+	if _config == nil {
+		return v5.NewLoggerConfig(nil)
+	}
+
+	config := _config.(tree.LogConfig).SocksV5
+
+	return v5.NewLoggerConfig(config)
+}
+
+func V5ConfigReplicator(ctn di.Container) (interface{}, error) {
+	_config := ctn.Get("v5_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v5.Config)
+
+	return v5.NewConfigReplicator(config)
 }

@@ -1,65 +1,52 @@
 package dependency
 
 import (
+	"socks/internal/kneesocks/dependency/build"
+
 	"github.com/sarulabs/di"
-	"socks/internal/kneesocks/managers"
 )
 
 func registerManagers(builder di.Builder) {
 	bindManagerDef := di.Def{
 		Name:  "bind_manager",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewBindManager(), nil
-		},
+		Build: build.BindManager,
 	}
 
 	bindRateManagerDef := di.Def{
 		Name:  "bind_rate_manager",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewBindRateManager()
-		},
+		Build: build.BindRateManager,
 	}
 
 	connectionsManagerDef := di.Def{
 		Name:  "connections_manager",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewConnectionsManager()
-		},
+		Build: build.ConnectionsManager,
 	}
 
 	udpClientManagerDef := di.Def{
 		Name:  "udp_client_manager",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewUdpClientManager()
-		},
+		Build: build.UdpClientManager,
 	}
 
 	udpHostManagerDef := di.Def{
 		Name:  "udp_host_manager",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewUdpHostManager()
-		},
+		Build: build.UdpHostManager,
 	}
 
 	whitelistManagerDef := di.Def{
 		Name:  "whitelist_manager",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewWhitelistManager()
-		},
+		Build: build.WhitelistManager,
 	}
 
 	blacklistManagerDef := di.Def{
 		Name:  "blacklist_manager",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return managers.NewBlacklistManager()
-		},
+		Build: build.BlacklistManager,
 	}
 
 	err := builder.Add(

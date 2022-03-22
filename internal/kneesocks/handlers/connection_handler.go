@@ -81,7 +81,6 @@ func (b ConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request []by
 }
 
 func (b ConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte, client net.Conn) {
-	println("a")
 	if b.v4Handler == nil && b.v4aHandler == nil {
 		// TODO: log
 
@@ -89,8 +88,6 @@ func (b ConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte, cl
 
 		return
 	}
-
-	println("b")
 
 	if len(request) < 9 {
 		b.bindHandler.Handle(config, request, client)

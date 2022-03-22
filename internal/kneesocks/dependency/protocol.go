@@ -1,14 +1,7 @@
 package dependency
 
 import (
-	"socks/internal/kneesocks/config/tcp"
-	"socks/internal/kneesocks/config/udp"
-	"socks/pkg/protocol"
-	"socks/pkg/protocol/auth/password"
-	v4 "socks/pkg/protocol/v4"
-	"socks/pkg/protocol/v4a"
-	v5 "socks/pkg/protocol/v5"
-	"socks/pkg/utils"
+	"socks/internal/kneesocks/dependency/build"
 
 	"github.com/sarulabs/di"
 )
@@ -17,11 +10,7 @@ func registerProtocol(builder di.Builder) {
 	receiverDef := di.Def{
 		Name:  "receiver",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			buffer := ctn.Get("buffer_reader").(utils.BufferReader)
-
-			return protocol.NewReceiver(buffer)
-		},
+		Build: build.Receiver,
 	}
 
 	err := builder.Add(
@@ -46,38 +35,25 @@ func registerPasswordAuth(builder di.Builder) {
 	parserDef := di.Def{
 		Name:  "auth_password_parser",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return password.NewParser(), nil
-		},
+		Build: build.AuthPasswordParser,
 	}
 
 	builderDef := di.Def{
 		Name:  "auth_password_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return password.NewBuilder()
-		},
+		Build: build.AuthPasswordBuilder,
 	}
 
 	receiverDef := di.Def{
 		Name:  "auth_password_receiver",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			parser := ctn.Get("auth_password_parser").(password.Parser)
-			buffer := ctn.Get("buffer_reader").(utils.BufferReader)
-
-			return password.NewReceiver(parser, buffer)
-		},
+		Build: build.AuthPasswordReceiver,
 	}
 
 	senderDef := di.Def{
 		Name:  "auth_password_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			builder := ctn.Get("auth_password_builder").(password.Builder)
-
-			return password.NewSender(builder)
-		},
+		Build: build.AuthPasswordSender,
 	}
 
 	err := builder.Add(
@@ -96,31 +72,19 @@ func registerV4Protocol(builder di.Builder) {
 	parserDef := di.Def{
 		Name:  "v4_parser",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v4.NewParser(), nil
-		},
+		Build: build.V4Parser,
 	}
 
 	builderDef := di.Def{
 		Name:  "v4_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v4.NewBuilder(), nil
-		},
+		Build: build.V4Builder,
 	}
 
 	senderDef := di.Def{
 		Name:  "v4_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			bind := ctn.Get("tcp_base_config").(tcp.Config).Bind
-			builder := ctn.Get("v4_builder").(v4.Builder)
-
-			return v4.NewSender(
-				bind,
-				builder,
-			)
-		},
+		Build: build.V4Sender,
 	}
 
 	err := builder.Add(
@@ -138,31 +102,19 @@ func registerV4aProtocol(builder di.Builder) {
 	parserDef := di.Def{
 		Name:  "v4a_parser",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a.NewParser(), nil
-		},
+		Build: build.V4aParser,
 	}
 
 	builderDef := di.Def{
 		Name:  "v4a_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v4a.NewBuilder(), nil
-		},
+		Build: build.V4aBuilder,
 	}
 
 	senderDef := di.Def{
 		Name:  "v4a_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			bind := ctn.Get("tcp_base_config").(tcp.Config).Bind
-			builder := ctn.Get("v4a_builder").(v4a.Builder)
-
-			return v4a.NewSender(
-				bind,
-				builder,
-			)
-		},
+		Build: build.V4aSender,
 	}
 
 	err := builder.Add(
@@ -180,52 +132,25 @@ func registerV5Protocol(builder di.Builder) {
 	parserDef := di.Def{
 		Name:  "v5_parser",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
-
-			return v5.NewParser(addressUtils), nil
-		},
+		Build: build.V5Parser,
 	}
 
 	builderDef := di.Def{
 		Name:  "v5_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return v5.NewBuilder()
-		},
+		Build: build.V5Builder,
 	}
 
 	receiverDef := di.Def{
 		Name:  "v5_receiver",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			parser := ctn.Get("v5_parser").(v5.Parser)
-			buffer := ctn.Get("buffer_reader").(utils.BufferReader)
-
-			return v5.NewReceiver(parser, buffer)
-		},
+		Build: build.V5Receiver,
 	}
 
 	senderDef := di.Def{
 		Name:  "v5_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			tcpConfig := ctn.Get("tcp_base_config").(tcp.Config).Bind
-
-			_udpConfig := ctn.Get("udp_base_config")
-
-			var udpConfig *udp.BindConfig
-
-			if _udpConfig == nil {
-				udpConfig = nil
-			} else {
-				udpConfig = &_udpConfig.(*udp.Config).Bind
-			}
-
-			builder := ctn.Get("v5_builder").(v5.Builder)
-
-			return v5.NewSender(tcpConfig, udpConfig, builder)
-		},
+		Build: build.V5Sender,
 	}
 
 	err := builder.Add(

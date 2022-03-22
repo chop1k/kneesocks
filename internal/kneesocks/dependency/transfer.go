@@ -1,39 +1,28 @@
 package dependency
 
 import (
+	"socks/internal/kneesocks/dependency/build"
+
 	"github.com/sarulabs/di"
-	"socks/internal/kneesocks/managers"
-	"socks/internal/kneesocks/transfer"
 )
 
 func registerTransfer(builder di.Builder) {
 	bindHandlerDef := di.Def{
 		Name:  "transfer_bind_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			bindRate := ctn.Get("bind_rate_manager").(managers.BindRateManager)
-			handler := ctn.Get("transfer_handler").(transfer.Handler)
-
-			return transfer.NewBindHandler(bindRate, handler)
-		},
+		Build: build.TransferBindHandler,
 	}
 
 	connectHandlerDef := di.Def{
 		Name:  "transfer_connect_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			handler := ctn.Get("transfer_handler").(transfer.Handler)
-
-			return transfer.NewConnectHandler(handler)
-		},
+		Build: build.TransferConnectHandler,
 	}
 
 	transferHandlerDef := di.Def{
 		Name:  "transfer_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return transfer.NewHandler()
-		},
+		Build: build.TransferHandler,
 	}
 
 	err := builder.Add(

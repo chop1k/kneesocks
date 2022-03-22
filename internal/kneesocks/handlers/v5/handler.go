@@ -37,8 +37,8 @@ func NewHandler(
 	validator helpers.Validator,
 	cleaner helpers.Cleaner,
 	replicator v52.ConfigReplicator,
-) (Handler, error) {
-	return Handler{
+) (*Handler, error) {
+	return &Handler{
 		parser:                parser,
 		authenticationHandler: authenticationHandler,
 		logger:                logger,
