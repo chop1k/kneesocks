@@ -1,13 +1,14 @@
 package dependency
 
 import (
-	"github.com/sarulabs/di"
 	"socks/internal/kneesocks/config/tcp"
 	"socks/internal/kneesocks/config/udp"
 	"socks/internal/kneesocks/handlers"
 	tcpLogger "socks/internal/kneesocks/logger/tcp"
 	udpLogger "socks/internal/kneesocks/logger/udp"
 	"socks/internal/kneesocks/server"
+
+	"github.com/sarulabs/di"
 )
 
 func registerServer(builder di.Builder) {
@@ -31,7 +32,14 @@ func registerServer(builder di.Builder) {
 		Name:  "udp_server",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			packetHandler := ctn.Get("packet_handler").(handlers.PacketHandler)
+			_packetHandler := ctn.Get("packet_handler")
+
+			if _packetHandler == nil {
+				return nil, nil
+			}
+
+			packetHandler := _packetHandler.(handlers.PacketHandler)
+
 			config := ctn.Get("udp_base_config").(udp.Config).Bind
 			logger := ctn.Get("udp_logger").(udpLogger.Logger)
 			replicator := ctn.Get("udp_config_replicator").(udp.ConfigReplicator)

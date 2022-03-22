@@ -1,19 +1,15 @@
 package v5
 
 type ConfigReplicator struct {
-	config *Config
+	config Config
 }
 
-func NewConfigReplicator(config *Config) (ConfigReplicator, error) {
+func NewConfigReplicator(config Config) (ConfigReplicator, error) {
 	return ConfigReplicator{config: config}, nil
 }
 
-func (b ConfigReplicator) Copy() *Config {
-	if b.config == nil {
-		return nil
-	}
-
-	config := *b.config
+func (b ConfigReplicator) Copy() Config {
+	config := b.config
 
 	methods := make([]string, len(b.config.AuthenticationMethodsAllowed))
 
@@ -40,5 +36,5 @@ func (b ConfigReplicator) Copy() *Config {
 
 	config.Users = users
 
-	return &config
+	return config
 }

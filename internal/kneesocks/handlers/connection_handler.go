@@ -3,17 +3,17 @@ package handlers
 import (
 	"net"
 	"socks/internal/kneesocks/config/tcp"
-	"socks/internal/kneesocks/handlers/v4"
+	v4 "socks/internal/kneesocks/handlers/v4"
 	"socks/internal/kneesocks/handlers/v4a"
-	"socks/internal/kneesocks/handlers/v5"
+	v5 "socks/internal/kneesocks/handlers/v5"
 	tcp2 "socks/internal/kneesocks/logger/tcp"
 	"socks/pkg/protocol"
 )
 
 type ConnectionHandler struct {
-	v4Handler   v4.Handler
-	v4aHandler  v4a.Handler
-	v5Handler   v5.Handler
+	v4Handler   *v4.Handler
+	v4aHandler  *v4a.Handler
+	v5Handler   *v5.Handler
 	logger      tcp2.Logger
 	receiver    protocol.Receiver
 	bindHandler BindHandler
@@ -21,9 +21,9 @@ type ConnectionHandler struct {
 }
 
 func NewConnectionHandler(
-	v4Handler v4.Handler,
-	v4aHandler v4a.Handler,
-	v5Handler v5.Handler,
+	v4Handler *v4.Handler,
+	v4aHandler *v4a.Handler,
+	v5Handler *v5.Handler,
 	logger tcp2.Logger,
 	receiver protocol.Receiver,
 	bindHandler BindHandler,
@@ -66,6 +66,14 @@ func (b ConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request []by
 	if request[0] == 4 {
 		b.checkV4(config, request, client)
 	} else if request[0] == 5 {
+		if b.v5Handler == nil {
+			// TODO: log
+
+			_ = client.Close()
+
+			return
+		}
+
 		b.checkV5(config, request, client)
 	} else {
 		b.bindHandler.Handle(config, request, client)
@@ -73,6 +81,17 @@ func (b ConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request []by
 }
 
 func (b ConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte, client net.Conn) {
+	println("a")
+	if b.v4Handler == nil && b.v4aHandler == nil {
+		// TODO: log
+
+		_ = client.Close()
+
+		return
+	}
+
+	println("b")
+
 	if len(request) < 9 {
 		b.bindHandler.Handle(config, request, client)
 
@@ -80,10 +99,26 @@ func (b ConnectionHandler) checkV4(config tcp.DeadlineConfig, request []byte, cl
 	}
 
 	if request[4] == 0 && request[5] == 0 && request[6] == 0 && request[7] != 0 {
+		if b.v4aHandler == nil {
+			// TODO: log
+
+			_ = client.Close()
+
+			return
+		}
+
 		b.logger.Connection.ProtocolDetermined(client.RemoteAddr().String(), "socksV4a")
 
 		b.v4aHandler.Handle(request, client)
 	} else {
+		if b.v4Handler == nil {
+			// TODO: log
+
+			_ = client.Close()
+
+			return
+		}
+
 		b.logger.Connection.ProtocolDetermined(client.RemoteAddr().String(), "socksV4")
 
 		b.v4Handler.Handle(request, client)

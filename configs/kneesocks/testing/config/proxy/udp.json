@@ -1,0 +1,12 @@
+{
+    "Bind": {
+        "Address": "",
+        "Port": 1080
+    },
+    "Buffer": {
+        "PacketSize": 65535
+    },
+    "Deadline": {
+        "Read": 30
+    }
+}

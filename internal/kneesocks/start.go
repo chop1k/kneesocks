@@ -1,9 +1,10 @@
 package kneesocks
 
 import (
-	"github.com/sarulabs/di"
 	"socks/internal/kneesocks/dependency"
 	"socks/internal/kneesocks/server"
+
+	"github.com/sarulabs/di"
 )
 
 func Start() {
@@ -21,7 +22,13 @@ func Start() {
 func start(builder di.Builder) {
 	ctn := builder.Build()
 
-	go ctn.Get("udp_server").(server.UdpServer).Listen()
+	_udp := ctn.Get("udp_server")
+
+	if _udp != nil {
+		udp := _udp.(server.UdpServer)
+
+		go udp.Listen()
+	}
 
 	ctn.Get("tcp_server").(server.TcpServer).Listen()
 }

@@ -12,12 +12,8 @@ func NewHandler() (Handler, error) {
 	return Handler{}, nil
 }
 
-func (h Handler) Handle(raw *tree.SocksV4Config) (*Config, error) {
-	if raw == nil {
-		return nil, nil
-	}
-
-	return &Config{
+func (h Handler) Handle(raw tree.SocksV4Config) Config {
+	return Config{
 		AllowConnect: raw.AllowConnect,
 		AllowBind:    raw.AllowBind,
 		Deadline: DeadlineConfig{
@@ -36,5 +32,5 @@ func (h Handler) Handle(raw *tree.SocksV4Config) (*Config, error) {
 				ClientWriteBuffersPerSecond: raw.Restrictions.Rate.ClientWriteBuffersPerSecond,
 			},
 		},
-	}, nil
+	}
 }

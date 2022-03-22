@@ -1,6 +1,7 @@
 package v5
 
 import (
+	"errors"
 	"net"
 	"socks/internal/kneesocks/config/tcp"
 	"socks/internal/kneesocks/config/udp"
@@ -10,13 +11,13 @@ import (
 
 type Sender struct {
 	tcpConfig tcp.BindConfig
-	udpConfig udp.BindConfig
+	udpConfig *udp.BindConfig
 	builder   Builder
 }
 
 func NewSender(
 	tcpConfig tcp.BindConfig,
-	udpConfig udp.BindConfig,
+	udpConfig *udp.BindConfig,
 	builder Builder,
 ) (Sender, error) {
 	return Sender{
@@ -160,6 +161,12 @@ func (b Sender) SendSuccessWithTcpPort(config v52.Config, client net.Conn) error
 }
 
 func (b Sender) SendSuccessWithUdpPort(config v52.Config, client net.Conn) error {
+	if b.udpConfig == nil {
+		// TODO: log
+
+		return errors.New("wut")
+	}
+
 	return b.responseWithSuccess(config, 1, "0.0.0.0", b.udpConfig.Port, client)
 }
 

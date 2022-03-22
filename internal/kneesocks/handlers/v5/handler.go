@@ -55,15 +55,7 @@ func NewHandler(
 }
 
 func (b Handler) Handle(request []byte, client net.Conn) {
-	configPointer := b.replicator.Copy()
-
-	if configPointer == nil {
-		_ = client.Close()
-
-		return
-	}
-
-	config := *configPointer
+	config := b.replicator.Copy()
 
 	methods, err := b.parser.ParseMethods(request)
 

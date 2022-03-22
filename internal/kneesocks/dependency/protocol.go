@@ -1,15 +1,16 @@
 package dependency
 
 import (
-	"github.com/sarulabs/di"
 	"socks/internal/kneesocks/config/tcp"
 	"socks/internal/kneesocks/config/udp"
 	"socks/pkg/protocol"
 	"socks/pkg/protocol/auth/password"
-	"socks/pkg/protocol/v4"
+	v4 "socks/pkg/protocol/v4"
 	"socks/pkg/protocol/v4a"
-	"socks/pkg/protocol/v5"
+	v5 "socks/pkg/protocol/v5"
 	"socks/pkg/utils"
+
+	"github.com/sarulabs/di"
 )
 
 func registerProtocol(builder di.Builder) {
@@ -210,7 +211,17 @@ func registerV5Protocol(builder di.Builder) {
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
 			tcpConfig := ctn.Get("tcp_base_config").(tcp.Config).Bind
-			udpConfig := ctn.Get("udp_base_config").(udp.Config).Bind
+
+			_udpConfig := ctn.Get("udp_base_config")
+
+			var udpConfig *udp.BindConfig
+
+			if _udpConfig == nil {
+				udpConfig = nil
+			} else {
+				udpConfig = &_udpConfig.(*udp.Config).Bind
+			}
+
 			builder := ctn.Get("v5_builder").(v5.Builder)
 
 			return v5.NewSender(tcpConfig, udpConfig, builder)

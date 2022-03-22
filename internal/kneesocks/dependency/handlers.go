@@ -1,7 +1,6 @@
 package dependency
 
 import (
-	"github.com/sarulabs/di"
 	"socks/internal/kneesocks/config/tcp"
 	udpConfig "socks/internal/kneesocks/config/udp"
 	v4Config "socks/internal/kneesocks/config/v4"
@@ -28,6 +27,8 @@ import (
 	v4aProtocol "socks/pkg/protocol/v4a"
 	v5Protocol "socks/pkg/protocol/v5"
 	"socks/pkg/utils"
+
+	"github.com/sarulabs/di"
 )
 
 func registerHandlers(builder di.Builder) {
@@ -48,9 +49,36 @@ func registerHandlers(builder di.Builder) {
 		Name:  "connection_handler",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			v4 := ctn.Get("v4_handler").(v4Handlers.Handler)
-			v4a := ctn.Get("v4a_handler").(v4aHandler.Handler)
-			v5 := ctn.Get("v5_handler").(v5Handlers.Handler)
+			_v4 := ctn.Get("v4_handler")
+
+			var v4 *v4Handlers.Handler
+
+			if _v4 == nil {
+				v4 = nil
+			} else {
+				v4 = _v4.(*v4Handlers.Handler)
+			}
+
+			_v4a := ctn.Get("v4a_handler")
+
+			var v4a *v4aHandler.Handler
+
+			if _v4 == nil {
+				v4a = nil
+			} else {
+				v4a = _v4a.(*v4aHandler.Handler)
+			}
+
+			_v5 := ctn.Get("v5_handler")
+
+			var v5 *v5Handlers.Handler
+
+			if _v5 == nil {
+				v5 = nil
+			} else {
+				v5 = _v5.(*v5Handlers.Handler)
+			}
+
 			logger := ctn.Get("tcp_logger").(tcpLogger.Logger)
 			receiver := ctn.Get("receiver").(protocolHelpers.Receiver)
 			bindHandler := ctn.Get("bind_handler").(handlers.BindHandler)
@@ -78,7 +106,14 @@ func registerHandlers(builder di.Builder) {
 			clients := ctn.Get("udp_client_manager").(managers.UdpClientManager)
 			hosts := ctn.Get("udp_host_manager").(managers.UdpHostManager)
 			logger := ctn.Get("udp_logger").(udp.Logger)
-			replicator := ctn.Get("udp_config_replicator").(udpConfig.ConfigReplicator)
+
+			_replicator := ctn.Get("udp_config_replicator")
+
+			if _replicator == nil {
+				return nil, nil
+			}
+
+			replicator := _replicator.(udpConfig.ConfigReplicator)
 
 			return handlers.NewPacketHandler(
 				parser,
@@ -160,7 +195,13 @@ func registerV4Handlers(builder di.Builder) {
 			errorHandler := ctn.Get("v4_error_handler").(v4Handlers.ErrorHandler)
 			validator := ctn.Get("v4_validator").(helpers.Validator)
 			cleaner := ctn.Get("v4_cleaner").(helpers.Cleaner)
-			replicator := ctn.Get("v4_config_replicator").(v4Config.ConfigReplicator)
+			_replicator := ctn.Get("v4_config_replicator")
+
+			if _replicator == nil {
+				return nil, nil
+			}
+
+			replicator := _replicator.(v4Config.ConfigReplicator)
 
 			return v4Handlers.NewHandler(
 				parser,
@@ -318,7 +359,13 @@ func registerV4aHandlers(builder di.Builder) {
 			errorHandler := ctn.Get("v4a_error_handler").(v4aHandler.ErrorHandler)
 			validator := ctn.Get("v4a_validator").(v4aHelpers.Validator)
 			cleaner := ctn.Get("v4a_cleaner").(v4aHelpers.Cleaner)
-			replicator := ctn.Get("v4a_config_replicator").(v4aConfig.ConfigReplicator)
+			_replicator := ctn.Get("v4a_config_replicator")
+
+			if _replicator == nil {
+				return nil, nil
+			}
+
+			replicator := _replicator.(v4aConfig.ConfigReplicator)
 
 			return v4aHandler.NewHandler(
 				parser,
@@ -519,7 +566,13 @@ func registerV5Handlers(builder di.Builder) {
 			validator := ctn.Get("v5_validator").(v5Helpers.Validator)
 			receiver := ctn.Get("v5_receiver").(v5Protocol.Receiver)
 			cleaner := ctn.Get("v5_cleaner").(v5Helpers.Cleaner)
-			replicator := ctn.Get("v5_config_replicator").(v5Config.ConfigReplicator)
+			_replicator := ctn.Get("v5_config_replicator")
+
+			if _replicator == nil {
+				return nil, nil
+			}
+
+			replicator := _replicator.(v5Config.ConfigReplicator)
 
 			return v5Handlers.NewHandler(
 				parser,
