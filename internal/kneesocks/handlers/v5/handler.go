@@ -13,9 +13,9 @@ type Handler struct {
 	parser                v54.Parser
 	authenticationHandler AuthenticationHandler
 	logger                v53.Logger
-	connectHandler        ConnectHandler
-	bindHandler           BindHandler
-	udpAssociationHandler UdpAssociationHandler
+	connectHandler        *ConnectHandler
+	bindHandler           *BindHandler
+	udpAssociationHandler *UdpAssociationHandler
 	errorHandler          ErrorHandler
 	sender                v54.Sender
 	receiver              v54.Receiver
@@ -28,9 +28,9 @@ func NewHandler(
 	parser v54.Parser,
 	authenticationHandler AuthenticationHandler,
 	logger v53.Logger,
-	connectHandler ConnectHandler,
-	bindHandler BindHandler,
-	udpAssociationHandler UdpAssociationHandler,
+	connectHandler *ConnectHandler,
+	bindHandler *BindHandler,
+	udpAssociationHandler *UdpAssociationHandler,
 	errorHandler ErrorHandler,
 	sender v54.Sender,
 	receiver v54.Receiver,
@@ -105,6 +105,30 @@ func (b Handler) handleCommand(config v52.Config, name string, chunk v54.Request
 		address = fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
 	} else {
 		b.errorHandler.HandleInvalidAddressTypeError(config, chunk.AddressType, chunk.Address, client)
+
+		return
+	}
+
+	if chunk.CommandCode == 1 && b.connectHandler == nil {
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
+
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	if chunk.CommandCode == 2 && b.bindHandler == nil {
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
+
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	if chunk.CommandCode == 3 && b.udpAssociationHandler == nil {
+		b.sender.SendConnectionNotAllowedAndClose(config, client)
+
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return
 	}

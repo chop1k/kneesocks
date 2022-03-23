@@ -22,7 +22,7 @@ func (b ConnectLogger) Request(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Received connect request. ")
+		Msg("Received connect request.")
 }
 
 func (b ConnectLogger) Failed(client string, address string) {
@@ -35,7 +35,7 @@ func (b ConnectLogger) Failed(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect failed. ")
+		Msg("Connect failed.")
 }
 
 func (b ConnectLogger) Successful(client string, address string) {
@@ -48,7 +48,7 @@ func (b ConnectLogger) Successful(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect successful. ")
+		Msg("Connect successful.")
 }
 
 func (b ConnectLogger) HostUnreachable(client string, address string) {
@@ -61,7 +61,7 @@ func (b ConnectLogger) HostUnreachable(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Host unreachable. ")
+		Msg("Host unreachable.")
 }
 
 func (b ConnectLogger) Timeout(client string, address string) {
@@ -74,7 +74,7 @@ func (b ConnectLogger) Timeout(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect failed due to timeout. ")
+		Msg("Connect failed due to timeout.")
 }
 
 func (b ConnectLogger) NetworkUnreachable(client string, address string) {
@@ -87,7 +87,7 @@ func (b ConnectLogger) NetworkUnreachable(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Network unreachable. ")
+		Msg("Network unreachable.")
 }
 
 func (b ConnectLogger) Refused(client string, address string) {
@@ -100,5 +100,5 @@ func (b ConnectLogger) Refused(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Connect refused by host. ")
+		Msg("Connect refused by host.")
 }

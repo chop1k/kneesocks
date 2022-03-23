@@ -20,8 +20,8 @@ func NewConnectHandler(
 	sender v4a.Sender,
 	errorHandler ErrorHandler,
 	transmitter helpers.Transmitter,
-) (ConnectHandler, error) {
-	return ConnectHandler{
+) (*ConnectHandler, error) {
+	return &ConnectHandler{
 		logger:       logger,
 		sender:       sender,
 		errorHandler: errorHandler,

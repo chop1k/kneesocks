@@ -12,8 +12,8 @@ import (
 type Handler struct {
 	parser         v44.Parser
 	logger         v43.Logger
-	connectHandler ConnectHandler
-	bindHandler    BindHandler
+	connectHandler *ConnectHandler
+	bindHandler    *BindHandler
 	sender         v44.Sender
 	errorHandler   ErrorHandler
 	validator      helpers.Validator
@@ -24,8 +24,8 @@ type Handler struct {
 func NewHandler(
 	parser v44.Parser,
 	logger v43.Logger,
-	connectHandler ConnectHandler,
-	bindHandler BindHandler,
+	connectHandler *ConnectHandler,
+	bindHandler *BindHandler,
 	sender v44.Sender,
 	errorHandler ErrorHandler,
 	validator helpers.Validator,
@@ -57,6 +57,22 @@ func (b Handler) Handle(request []byte, client net.Conn) {
 	}
 
 	address := fmt.Sprintf("%s:%d", chunk.DestinationIp, chunk.DestinationPort)
+
+	if chunk.CommandCode == 1 && b.connectHandler == nil {
+		b.sender.SendFailAndClose(config, client)
+
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
+
+		return
+	}
+
+	if chunk.CommandCode == 2 && b.bindHandler == nil {
+		b.sender.SendFailAndClose(config, client)
+
+		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
+
+		return
+	}
 
 	if !b.validator.ValidateRestrictions(config, chunk.CommandCode, address, client) {
 		return

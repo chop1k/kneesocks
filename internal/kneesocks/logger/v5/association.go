@@ -21,7 +21,7 @@ func (b AssociationLogger) Request(client string) {
 
 	e.
 		Str("client", client).
-		Msg("Received udp association request. ")
+		Msg("Received udp association request.")
 }
 
 func (b AssociationLogger) Successful(client string, address string) {
@@ -34,7 +34,7 @@ func (b AssociationLogger) Successful(client string, address string) {
 	e.
 		Str("client", client).
 		Str("bind_address", address).
-		Msg("Udp associate successful. ")
+		Msg("Udp associate successful.")
 }
 
 func (b AssociationLogger) Failed(client string, address string) {
@@ -47,5 +47,5 @@ func (b AssociationLogger) Failed(client string, address string) {
 	e.
 		Str("client", client).
 		Str("bind_address", address).
-		Msg("Udp associate failed. ")
+		Msg("Udp associate failed.")
 }

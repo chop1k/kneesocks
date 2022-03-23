@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"net"
-	"socks/internal/kneesocks/config/v5"
+	v5 "socks/internal/kneesocks/config/v5"
 	v52 "socks/internal/kneesocks/logger/v5"
 	"socks/internal/kneesocks/managers"
 	v53 "socks/pkg/protocol/v5"
@@ -53,30 +53,6 @@ func (b Validator) ValidateRestrictions(config v5.Config, command byte, name str
 		b.sender.SendAddressNotSupportedAndClose(config, client)
 
 		b.logger.Restrictions.IPv6AddressNotAllowed(client.RemoteAddr().String(), address)
-
-		return false
-	}
-
-	if !config.AllowConnect && command == 1 {
-		b.sender.SendConnectionNotAllowedAndClose(config, client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return false
-	}
-
-	if !config.AllowBind && command == 2 {
-		b.sender.SendConnectionNotAllowedAndClose(config, client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return false
-	}
-
-	if !config.AllowUdpAssociation && command == 3 {
-		b.sender.SendConnectionNotAllowedAndClose(config, client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
 
 		return false
 	}

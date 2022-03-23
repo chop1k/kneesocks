@@ -22,5 +22,5 @@ func (b TransferLogger) TransferFinished(client string, host string) {
 	e.
 		Str("client", client).
 		Str("host", host).
-		Msg("Transfer finished. ")
+		Msg("Transfer finished.")
 }

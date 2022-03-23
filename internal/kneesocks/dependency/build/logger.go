@@ -1,6 +1,9 @@
 package build
 
 import (
+	"io"
+	"os"
+	"path"
 	tcpConfig "socks/internal/kneesocks/config/tcp"
 	udpConfig "socks/internal/kneesocks/config/udp"
 	v4Config "socks/internal/kneesocks/config/v4"
@@ -11,39 +14,245 @@ import (
 	v4 "socks/internal/kneesocks/logger/v4"
 	"socks/internal/kneesocks/logger/v4a"
 	v5 "socks/internal/kneesocks/logger/v5"
+	"socks/pkg/utils"
 
 	"github.com/rs/zerolog"
 	"github.com/sarulabs/di"
 )
 
 func TcpZeroLogger(ctn di.Container) (interface{}, error) {
-	cfg := ctn.Get("tcp_logger_config").(tcpConfig.LoggerConfig)
+	config := ctn.Get("tcp_logger_config").(tcpConfig.LoggerConfig)
 
-	return tcp.BuildZerolog(cfg)
+	level, err := config.GetLevel()
+
+	var loggers []io.Writer
+
+	if err != nil {
+		return utils.BuildDefaultZerolog(126, loggers)
+	}
+
+	if output, err := config.GetConsoleOutput(); err == nil {
+		loggers = append(loggers, zerolog.ConsoleWriter{
+			Out:        os.Stdout,
+			TimeFormat: output.TimeFormat,
+		})
+	} else {
+		if err == tcpConfig.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	if output, err := config.GetFileOutput(); err == nil {
+		dir := path.Dir(output.Path)
+
+		dirErr := os.MkdirAll(dir, 0700)
+
+		if dirErr != nil {
+			return zerolog.Logger{}, dirErr
+		}
+
+		file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
+
+		if err != nil {
+			return zerolog.Logger{}, err
+		}
+
+		loggers = append(loggers, file)
+	} else {
+		if err == tcpConfig.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	return utils.BuildDefaultZerolog(level, loggers)
 }
 
 func UdpZeroLogger(ctn di.Container) (interface{}, error) {
-	cfg := ctn.Get("udp_logger_config").(udpConfig.LoggerConfig)
+	config := ctn.Get("udp_logger_config").(udpConfig.LoggerConfig)
 
-	return udp.BuildZerolog(cfg)
+	level, err := config.GetLevel()
+
+	var loggers []io.Writer
+
+	if err != nil {
+		return utils.BuildDefaultZerolog(126, loggers)
+	}
+
+	if output, err := config.GetConsoleOutput(); err == nil {
+		loggers = append(loggers, zerolog.ConsoleWriter{
+			Out:        os.Stdout,
+			TimeFormat: output.TimeFormat,
+		})
+	} else {
+		if err == udpConfig.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	if output, err := config.GetFileOutput(); err == nil {
+		dir := path.Dir(output.Path)
+
+		dirErr := os.MkdirAll(dir, 0700)
+
+		if dirErr != nil {
+			return zerolog.Logger{}, dirErr
+		}
+
+		file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
+
+		if err != nil {
+			return zerolog.Logger{}, err
+		}
+
+		loggers = append(loggers, file)
+	} else {
+		if err == udpConfig.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	return utils.BuildDefaultZerolog(level, loggers)
 }
 
 func V4ZeroLogger(ctn di.Container) (interface{}, error) {
-	cfg := ctn.Get("v4_logger_config").(v4Config.LoggerConfig)
+	config := ctn.Get("v4_logger_config").(v4Config.LoggerConfig)
 
-	return v4.BuildZerolog(cfg)
+	level, err := config.GetLevel()
+
+	var loggers []io.Writer
+
+	if err != nil {
+		return utils.BuildDefaultZerolog(126, loggers)
+	}
+
+	if output, err := config.GetConsoleOutput(); err == nil {
+		loggers = append(loggers, zerolog.ConsoleWriter{
+			Out:        os.Stdout,
+			TimeFormat: output.TimeFormat,
+		})
+	} else {
+		if err == v4Config.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	if output, err := config.GetFileOutput(); err == nil {
+		dir := path.Dir(output.Path)
+
+		dirErr := os.MkdirAll(dir, 0700)
+
+		if dirErr != nil {
+			return zerolog.Logger{}, dirErr
+		}
+
+		file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
+
+		if err != nil {
+			return zerolog.Logger{}, err
+		}
+
+		loggers = append(loggers, file)
+	} else {
+		if err == v4Config.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	return utils.BuildDefaultZerolog(level, loggers)
 }
 
 func V4aZeroLogger(ctn di.Container) (interface{}, error) {
-	cfg := ctn.Get("v4a_logger_config").(v4aConfig.LoggerConfig)
+	config := ctn.Get("v4a_logger_config").(v4aConfig.LoggerConfig)
 
-	return v4a.BuildZerolog(cfg)
+	level, err := config.GetLevel()
+
+	var loggers []io.Writer
+
+	if err != nil {
+		return utils.BuildDefaultZerolog(126, loggers)
+	}
+
+	if output, err := config.GetConsoleOutput(); err == nil {
+		loggers = append(loggers, zerolog.ConsoleWriter{
+			Out:        os.Stdout,
+			TimeFormat: output.TimeFormat,
+		})
+	} else {
+		if err == v4aConfig.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	if output, err := config.GetFileOutput(); err == nil {
+		dir := path.Dir(output.Path)
+
+		dirErr := os.MkdirAll(dir, 0700)
+
+		if dirErr != nil {
+			return zerolog.Logger{}, dirErr
+		}
+
+		file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
+
+		if err != nil {
+			return zerolog.Logger{}, err
+		}
+
+		loggers = append(loggers, file)
+	} else {
+		if err == v4aConfig.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	return utils.BuildDefaultZerolog(level, loggers)
 }
 
 func V5ZeroLogger(ctn di.Container) (interface{}, error) {
-	cfg := ctn.Get("v5_logger_config").(v5Config.LoggerConfig)
+	config := ctn.Get("v5_logger_config").(v5Config.LoggerConfig)
 
-	return v5.BuildZerolog(cfg)
+	level, err := config.GetLevel()
+
+	var loggers []io.Writer
+
+	if err != nil {
+		return utils.BuildDefaultZerolog(126, loggers)
+	}
+
+	if output, err := config.GetConsoleOutput(); err == nil {
+		loggers = append(loggers, zerolog.ConsoleWriter{
+			Out:        os.Stdout,
+			TimeFormat: output.TimeFormat,
+		})
+	} else {
+		if err == v5Config.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	if output, err := config.GetFileOutput(); err == nil {
+		dir := path.Dir(output.Path)
+
+		dirErr := os.MkdirAll(dir, 0700)
+
+		if dirErr != nil {
+			return zerolog.Logger{}, dirErr
+		}
+
+		file, err := os.OpenFile(output.Path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
+
+		if err != nil {
+			return zerolog.Logger{}, err
+		}
+
+		loggers = append(loggers, file)
+	} else {
+		if err == v5Config.LoggerDisabledError {
+			return utils.BuildDefaultZerolog(126, loggers)
+		}
+	}
+
+	return utils.BuildDefaultZerolog(level, loggers)
 }
 
 func TcpConnectionLogger(ctn di.Container) (interface{}, error) {

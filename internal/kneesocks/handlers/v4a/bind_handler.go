@@ -26,8 +26,8 @@ func NewBindHandler(
 	errorHandler ErrorHandler,
 	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
-) (BindHandler, error) {
-	return BindHandler{
+) (*BindHandler, error) {
+	return &BindHandler{
 		logger:       logger,
 		utils:        utils,
 		sender:       sender,

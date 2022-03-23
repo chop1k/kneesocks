@@ -2,7 +2,7 @@ package v5
 
 import (
 	"net"
-	"socks/internal/kneesocks/config/v5"
+	v5 "socks/internal/kneesocks/config/v5"
 	v52 "socks/internal/kneesocks/logger/v5"
 	"socks/internal/kneesocks/managers"
 	v53 "socks/pkg/protocol/v5"
@@ -23,8 +23,8 @@ func NewUdpAssociationHandler(
 	logger v52.Logger,
 	sender v53.Sender,
 	errorHandler ErrorHandler,
-) (UdpAssociationHandler, error) {
-	return UdpAssociationHandler{
+) (*UdpAssociationHandler, error) {
+	return &UdpAssociationHandler{
 		utils:         utils,
 		clientManager: clientManager,
 		logger:        logger,

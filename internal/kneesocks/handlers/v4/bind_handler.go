@@ -6,7 +6,7 @@ import (
 	"socks/internal/kneesocks/handlers/v4/helpers"
 	v42 "socks/internal/kneesocks/logger/v4"
 	"socks/internal/kneesocks/managers"
-	"socks/pkg/protocol/v4"
+	v4 "socks/pkg/protocol/v4"
 	"socks/pkg/utils"
 )
 
@@ -26,8 +26,8 @@ func NewBindHandler(
 	errorHandler ErrorHandler,
 	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
-) (BindHandler, error) {
-	return BindHandler{
+) (*BindHandler, error) {
+	return &BindHandler{
 		logger:       logger,
 		utils:        utils,
 		sender:       sender,

@@ -5,7 +5,7 @@ import (
 	v53 "socks/internal/kneesocks/config/v5"
 	"socks/internal/kneesocks/handlers/v5/helpers"
 	v52 "socks/internal/kneesocks/logger/v5"
-	"socks/pkg/protocol/v5"
+	v5 "socks/pkg/protocol/v5"
 	"socks/pkg/utils"
 )
 
@@ -23,8 +23,8 @@ func NewConnectHandler(
 	sender v5.Sender,
 	errorHandler ErrorHandler,
 	transmitter helpers.Transmitter,
-) (ConnectHandler, error) {
-	return ConnectHandler{
+) (*ConnectHandler, error) {
+	return &ConnectHandler{
 		logger:       logger,
 		utils:        addressUtils,
 		sender:       sender,

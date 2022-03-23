@@ -74,7 +74,7 @@ func (b RestrictionsLogger) IPv4AddressNotAllowed(client string, address string)
 	e.
 		Str("client", client).
 		Str("address", address).
-		Msg("IPv4 address type not allowed by ruleset. ")
+		Msg("IPv4 address type not allowed by ruleset.")
 }
 
 func (b RestrictionsLogger) DomainAddressNotAllowed(client string, address string) {
@@ -87,7 +87,7 @@ func (b RestrictionsLogger) DomainAddressNotAllowed(client string, address strin
 	e.
 		Str("client", client).
 		Str("address", address).
-		Msg("Domain address type not allowed by ruleset. ")
+		Msg("Domain address type not allowed by ruleset.")
 }
 
 func (b RestrictionsLogger) IPv6AddressNotAllowed(client string, address string) {
@@ -100,5 +100,5 @@ func (b RestrictionsLogger) IPv6AddressNotAllowed(client string, address string)
 	e.
 		Str("client", client).
 		Str("address", address).
-		Msg("IPv6 address type not allowed by ruleset. ")
+		Msg("IPv6 address type not allowed by ruleset.")
 }

@@ -22,7 +22,7 @@ func (b AuthLogger) Successful(client string, name string) {
 	e.
 		Str("client", client).
 		Str("name", name).
-		Msg("Authentication successful. ")
+		Msg("Authentication successful.")
 }
 
 func (b AuthLogger) Failed(client string) {
@@ -34,5 +34,5 @@ func (b AuthLogger) Failed(client string) {
 
 	e.
 		Str("client", client).
-		Msg("Authentication failed. ")
+		Msg("Authentication failed.")
 }

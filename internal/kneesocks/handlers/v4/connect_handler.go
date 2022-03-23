@@ -5,7 +5,7 @@ import (
 	v43 "socks/internal/kneesocks/config/v4"
 	"socks/internal/kneesocks/handlers/v4/helpers"
 	v42 "socks/internal/kneesocks/logger/v4"
-	"socks/pkg/protocol/v4"
+	v4 "socks/pkg/protocol/v4"
 )
 
 type ConnectHandler struct {
@@ -20,8 +20,8 @@ func NewConnectHandler(
 	sender v4.Sender,
 	errorHandler ErrorHandler,
 	transmitter helpers.Transmitter,
-) (ConnectHandler, error) {
-	return ConnectHandler{
+) (*ConnectHandler, error) {
+	return &ConnectHandler{
 		logger:       logger,
 		sender:       sender,
 		errorHandler: errorHandler,

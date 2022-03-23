@@ -120,6 +120,18 @@ func V4ConnectHandler(ctn di.Container) (interface{}, error) {
 	errorHandler := ctn.Get("v4_error_handler").(v4Handlers.ErrorHandler)
 	transmitter := ctn.Get("v4_transmitter").(helpers.Transmitter)
 
+	_config := ctn.Get("v4_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v4Config.Config)
+
+	if !config.AllowConnect {
+		return nil, nil
+	}
+
 	return v4Handlers.NewConnectHandler(
 		logger,
 		sender,
@@ -136,6 +148,18 @@ func V4BindHandler(ctn di.Container) (interface{}, error) {
 	bindManager := ctn.Get("bind_manager").(managers.BindManager)
 	transmitter := ctn.Get("v4_transmitter").(helpers.Transmitter)
 
+	_config := ctn.Get("v4_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v4Config.Config)
+
+	if !config.AllowBind {
+		return nil, nil
+	}
+
 	return v4Handlers.NewBindHandler(
 		logger,
 		addressUtils,
@@ -149,8 +173,6 @@ func V4BindHandler(ctn di.Container) (interface{}, error) {
 func V4Handler(ctn di.Container) (interface{}, error) {
 	parser := ctn.Get("v4_parser").(v4Protocol.Parser)
 	logger := ctn.Get("v4_logger").(v4Logger.Logger)
-	connectHandler := ctn.Get("v4_connect_handler").(v4Handlers.ConnectHandler)
-	bindHandler := ctn.Get("v4_bind_handler").(v4Handlers.BindHandler)
 	sender := ctn.Get("v4_sender").(v4Protocol.Sender)
 	errorHandler := ctn.Get("v4_error_handler").(v4Handlers.ErrorHandler)
 	validator := ctn.Get("v4_validator").(helpers.Validator)
@@ -162,6 +184,26 @@ func V4Handler(ctn di.Container) (interface{}, error) {
 	}
 
 	replicator := _replicator.(v4Config.ConfigReplicator)
+
+	_connectHandler := ctn.Get("v4_connect_handler")
+
+	var connectHandler *v4Handlers.ConnectHandler
+
+	if _connectHandler == nil {
+		connectHandler = nil
+	} else {
+		connectHandler = _connectHandler.(*v4Handlers.ConnectHandler)
+	}
+
+	_bindHandler := ctn.Get("v4_bind_handler")
+
+	var bindHandler *v4Handlers.BindHandler
+
+	if _bindHandler == nil {
+		bindHandler = nil
+	} else {
+		bindHandler = _bindHandler.(*v4Handlers.BindHandler)
+	}
 
 	return v4Handlers.NewHandler(
 		parser,
@@ -224,6 +266,18 @@ func V4aConnectHandler(ctn di.Container) (interface{}, error) {
 	errorHandler := ctn.Get("v4a_error_handler").(v4aHandlers.ErrorHandler)
 	transmitter := ctn.Get("v4a_transmitter").(v4aHelpers.Transmitter)
 
+	_config := ctn.Get("v4a_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v4aConfig.Config)
+
+	if !config.AllowConnect {
+		return nil, nil
+	}
+
 	return v4aHandlers.NewConnectHandler(
 		logger,
 		sender,
@@ -240,6 +294,18 @@ func V4aBindHandler(ctn di.Container) (interface{}, error) {
 	bindManager := ctn.Get("bind_manager").(managers.BindManager)
 	transmitter := ctn.Get("v4a_transmitter").(v4aHelpers.Transmitter)
 
+	_config := ctn.Get("v4a_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v4aConfig.Config)
+
+	if !config.AllowBind {
+		return nil, nil
+	}
+
 	return v4aHandlers.NewBindHandler(
 		logger,
 		addressUtils,
@@ -253,8 +319,6 @@ func V4aBindHandler(ctn di.Container) (interface{}, error) {
 func V4aHandler(ctn di.Container) (interface{}, error) {
 	parser := ctn.Get("v4a_parser").(v4aProtocol.Parser)
 	logger := ctn.Get("v4a_logger").(v4aLogger.Logger)
-	connectHandler := ctn.Get("v4a_connect_handler").(v4aHandlers.ConnectHandler)
-	bindHandler := ctn.Get("v4a_bind_handler").(v4aHandlers.BindHandler)
 	sender := ctn.Get("v4a_sender").(v4aProtocol.Sender)
 	errorHandler := ctn.Get("v4a_error_handler").(v4aHandlers.ErrorHandler)
 	validator := ctn.Get("v4a_validator").(v4aHelpers.Validator)
@@ -266,6 +330,26 @@ func V4aHandler(ctn di.Container) (interface{}, error) {
 	}
 
 	replicator := _replicator.(v4aConfig.ConfigReplicator)
+
+	_connectHandler := ctn.Get("v4a_connect_handler")
+
+	var connectHandler *v4aHandlers.ConnectHandler
+
+	if _connectHandler == nil {
+		connectHandler = nil
+	} else {
+		connectHandler = _connectHandler.(*v4aHandlers.ConnectHandler)
+	}
+
+	_bindHandler := ctn.Get("v4a_bind_handler")
+
+	var bindHandler *v4aHandlers.BindHandler
+
+	if _bindHandler == nil {
+		bindHandler = nil
+	} else {
+		bindHandler = _bindHandler.(*v4aHandlers.BindHandler)
+	}
 
 	return v4aHandlers.NewHandler(
 		parser,
@@ -343,6 +427,18 @@ func V5ConnectHandler(ctn di.Container) (interface{}, error) {
 	errorHandler := ctn.Get("v5_error_handler").(v5Handlers.ErrorHandler)
 	transmitter := ctn.Get("v5_transmitter").(v5Helpers.Transmitter)
 
+	_config := ctn.Get("v5_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v5Config.Config)
+
+	if !config.AllowConnect {
+		return nil, nil
+	}
+
 	return v5Handlers.NewConnectHandler(
 		logger,
 		addressUtils,
@@ -359,6 +455,18 @@ func V5BindHandler(ctn di.Container) (interface{}, error) {
 	errorHandler := ctn.Get("v5_error_handler").(v5Handlers.ErrorHandler)
 	bindManager := ctn.Get("bind_manager").(managers.BindManager)
 	transmitter := ctn.Get("v5_transmitter").(v5Helpers.Transmitter)
+
+	_config := ctn.Get("v5_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v5Config.Config)
+
+	if !config.AllowBind {
+		return nil, nil
+	}
 
 	return v5Handlers.NewBindHandler(
 		addressUtils,
@@ -377,6 +485,18 @@ func V5UdpAssociationHandler(ctn di.Container) (interface{}, error) {
 	sender := ctn.Get("v5_sender").(v5Protocol.Sender)
 	errorHandler := ctn.Get("v5_error_handler").(v5Handlers.ErrorHandler)
 
+	_config := ctn.Get("v5_base_config")
+
+	if _config == nil {
+		return nil, nil
+	}
+
+	config := _config.(v5Config.Config)
+
+	if !config.AllowUdpAssociation {
+		return nil, nil
+	}
+
 	return v5Handlers.NewUdpAssociationHandler(
 		addressUtils,
 		udpManager,
@@ -390,9 +510,6 @@ func V5Handler(ctn di.Container) (interface{}, error) {
 	parser := ctn.Get("v5_parser").(v5Protocol.Parser)
 	authenticationHandler := ctn.Get("authentication_handler").(v5Handlers.AuthenticationHandler)
 	logger := ctn.Get("v5_logger").(v5Logger.Logger)
-	connectHandler := ctn.Get("v5_connect_handler").(v5Handlers.ConnectHandler)
-	bindHandler := ctn.Get("v5_bind_handler").(v5Handlers.BindHandler)
-	associationHandler := ctn.Get("v5_udp_association_handler").(v5Handlers.UdpAssociationHandler)
 	sender := ctn.Get("v5_sender").(v5Protocol.Sender)
 	errorHandler := ctn.Get("v5_error_handler").(v5Handlers.ErrorHandler)
 	validator := ctn.Get("v5_validator").(v5Helpers.Validator)
@@ -405,6 +522,36 @@ func V5Handler(ctn di.Container) (interface{}, error) {
 	}
 
 	replicator := _replicator.(v5Config.ConfigReplicator)
+
+	_connectHandler := ctn.Get("v5_connect_handler")
+
+	var connectHandler *v5Handlers.ConnectHandler
+
+	if _connectHandler == nil {
+		connectHandler = nil
+	} else {
+		connectHandler = _connectHandler.(*v5Handlers.ConnectHandler)
+	}
+
+	_bindHandler := ctn.Get("v5_bind_handler")
+
+	var bindHandler *v5Handlers.BindHandler
+
+	if _bindHandler == nil {
+		bindHandler = nil
+	} else {
+		bindHandler = _bindHandler.(*v5Handlers.BindHandler)
+	}
+
+	_associationHandler := ctn.Get("v5_udp_association_handler")
+
+	var associationHandler *v5Handlers.UdpAssociationHandler
+
+	if _associationHandler == nil {
+		associationHandler = nil
+	} else {
+		associationHandler = _associationHandler.(*v5Handlers.UdpAssociationHandler)
+	}
 
 	return v5Handlers.NewHandler(
 		parser,

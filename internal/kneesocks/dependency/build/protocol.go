@@ -103,7 +103,9 @@ func V5Sender(ctn di.Container) (interface{}, error) {
 	if _udpConfig == nil {
 		udpConfig = nil
 	} else {
-		udpConfig = &_udpConfig.(*udp.Config).Bind
+		__udpConfig := _udpConfig.(udp.Config)
+
+		udpConfig = &__udpConfig.Bind
 	}
 
 	builder := ctn.Get("v5_builder").(v5.Builder)

@@ -22,7 +22,7 @@ func (b BindLogger) Request(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Received bind request. ")
+		Msg("Received bind request.")
 }
 
 func (b BindLogger) Failed(client string, address string) {
@@ -35,7 +35,7 @@ func (b BindLogger) Failed(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Bind failed. ")
+		Msg("Bind failed.")
 }
 
 func (b BindLogger) Successful(client string, address string) {
@@ -48,7 +48,7 @@ func (b BindLogger) Successful(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Bind successful. ")
+		Msg("Bind successful.")
 }
 
 func (b BindLogger) Timeout(client string, address string) {
@@ -61,7 +61,7 @@ func (b BindLogger) Timeout(client string, address string) {
 	e.
 		Str("client", client).
 		Str("host", address).
-		Msg("Bind failed due to timeout. ")
+		Msg("Bind failed due to timeout.")
 }
 
 func (b BindLogger) Bound(client string, host string) {
@@ -74,5 +74,5 @@ func (b BindLogger) Bound(client string, host string) {
 	e.
 		Str("client", client).
 		Str("host", host).
-		Msg("Bound successfully. ")
+		Msg("Bound successfully.")
 }

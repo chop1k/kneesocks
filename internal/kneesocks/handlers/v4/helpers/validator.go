@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"net"
-	"socks/internal/kneesocks/config/v4"
+	v4 "socks/internal/kneesocks/config/v4"
 	v42 "socks/internal/kneesocks/logger/v4"
 	"socks/internal/kneesocks/managers"
 	v43 "socks/pkg/protocol/v4"
@@ -33,22 +33,6 @@ func NewValidator(
 }
 
 func (b Validator) ValidateRestrictions(config v4.Config, command byte, address string, client net.Conn) bool {
-	if !config.AllowConnect && command == 1 {
-		b.sender.SendFailAndClose(config, client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return false
-	}
-
-	if !config.AllowBind && command == 2 {
-		b.sender.SendFailAndClose(config, client)
-
-		b.logger.Restrictions.NotAllowed(client.RemoteAddr().String(), address)
-
-		return false
-	}
-
 	if b.whitelist.IsWhitelisted(config.Restrictions.WhiteList, address) {
 		b.sender.SendFailAndClose(config, client)
 

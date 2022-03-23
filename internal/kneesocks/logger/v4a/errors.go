@@ -22,7 +22,7 @@ func (b ErrorsLogger) ParseError(client string, err error) {
 	e.
 		Str("client", client).
 		Err(err).
-		Msg("Cannot parse v4a request due to error. ")
+		Msg("Cannot parse v4a request due to error.")
 }
 
 func (b ErrorsLogger) UnknownError(client string, address string, err error) {
@@ -36,7 +36,7 @@ func (b ErrorsLogger) UnknownError(client string, address string, err error) {
 		Str("client", client).
 		Str("host", address).
 		Err(err).
-		Msg("Cannot handle v4a request due to error. ")
+		Msg("Cannot handle v4a request due to error.")
 }
 
 func (b ErrorsLogger) AddressParsingError(client string, host string, address string, err error) {
