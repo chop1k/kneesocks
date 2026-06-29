@@ -1,15 +1,21 @@
-FROM golang as build-stage
+FROM golang:1.26 AS build-stage
 
-WORKDIR /
+WORKDIR /src
 
-RUN git clone https://github.com/chop1k/kneesocks
+# .dockerignore
+# compilation flags
+# buildkit cache mounts
 
-WORKDIR /kneesocks
+COPY go.mod go.sum .
 
-RUN CGO_ENABLED=0 go test -i -o e2e socks/test/e2e
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 go test -c -o e2e socks/test/e2e
 
 FROM alpine
 
-COPY --from=build-stage /kneesocks/e2e /bin/e2e
+COPY --from=build-stage /src/e2e /bin/e2e
 
 CMD ["e2e"]

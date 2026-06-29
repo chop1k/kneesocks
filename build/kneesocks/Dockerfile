@@ -1,17 +1,19 @@
-FROM golang as build-stage
+FROM golang:1.26 AS build-stage
 
-WORKDIR /
+WORKDIR /src
 
-RUN git clone https://github.com/chop1k/kneesocks
+COPY go.mod go.sum .
 
-WORKDIR /kneesocks
+RUN go mod download
+
+COPY . .
 
 RUN CGO_ENABLED=0 go build -o kneesocks cmd/kneesocks/main.go
 
 FROM alpine
 
-COPY --from=build-stage /kneesocks/kneesocks /bin/kneesocks
-
 RUN mkdir /var/log/kneesocks /etc/kneesocks
+
+COPY --from=build-stage /src/kneesocks /bin/kneesocks
 
 CMD ["kneesocks"]
