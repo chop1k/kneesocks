@@ -13,7 +13,7 @@ type SocksV5Config struct {
 }
 
 type User struct {
-	Password     string       `validate:"required,max=255"`
+	Password     string       `validate:"max=255"`
 	Restrictions Restrictions `validate:"required"`
 }
 
