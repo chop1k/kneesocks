@@ -15,9 +15,9 @@
     "BindPort": 9999
   },
   "Picture": {
-    "BigPicturePath": "./configs/test_server/images/1.gif",
-    "MiddlePicturePath": "./configs/test_server/images/2.jpg",
-    "SmallPicturePath": "./configs/test_server/images/3.jpg"
+    "BigPicturePath": "/usr/share/kneesocks/images/1.gif",
+    "MiddlePicturePath": "/usr/share/kneesocks/images/2.jpg",
+    "SmallPicturePath": "/usr/share/kneesocks/images/3.jpg"
   },
   "Log": {
     "Path": "/tmp/test-server.log"
