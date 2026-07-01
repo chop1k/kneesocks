@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	NoAuthenticationMethodsProvidedError = errors.New("No authentication methods provided. ")
-	MethodUnsupportedError               = errors.New("Method unsupported. ")
+	NoAuthenticationMethodsProvidedError = errors.New("no authentication methods provided")
+	MethodUnsupportedError               = errors.New("method unsupported")
 )
 
 type Authenticator interface {

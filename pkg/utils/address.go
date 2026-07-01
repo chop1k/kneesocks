@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	CannotParseIpError        = errors.New("Cannot parse IP address. ")
-	CannotParseAddressError   = errors.New("Cannot parse address. ")
-	InvalidIPv6AddressError   = errors.New("Invalid IPv6 address. ")
-	InvalidAddressLengthError = errors.New("Invalid address length. ")
-	InvalidAddressTypeError   = errors.New("Invalid address type. ")
+	CannotParseIpError        = errors.New("cannot parse IP address")
+	CannotParseAddressError   = errors.New("cannot parse address")
+	InvalidIPv6AddressError   = errors.New("invalid IPv6 address")
+	InvalidAddressLengthError = errors.New("invalid address length")
+	InvalidAddressTypeError   = errors.New("invalid address type")
 )
 
 type AddressUtils struct {

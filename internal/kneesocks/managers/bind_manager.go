@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	AddressNotExistsError    = errors.New("Address does not exists. ")
-	HostChannelClosedError   = errors.New("Host channel is closed. ")
-	ClientChannelClosedError = errors.New("Client channel is closed. ")
-	AddressAlreadyBoundError = errors.New("Address already bound. ")
-	TimeoutError             = errors.New("Timeout exceeded. ")
+	AddressNotExistsError    = errors.New("address does not exists")
+	HostChannelClosedError   = errors.New("host channel is closed")
+	ClientChannelClosedError = errors.New("client channel is closed")
+	AddressAlreadyBoundError = errors.New("address already bound")
+	TimeoutError             = errors.New("timeout exceeded")
 )
 
 type bundle struct {

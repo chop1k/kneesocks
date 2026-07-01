@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	InvalidSocksVersionError = errors.New("Invalid socks version. ")
-	InvalidChunkSizeError    = errors.New("Invalid chunk size. ")
+	InvalidSocksVersionError = errors.New("invalid socks version")
+	InvalidChunkSizeError    = errors.New("invalid chunk size")
 )
 
 type Parser struct {

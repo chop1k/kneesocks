@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	CannotParseIPError                = errors.New("Cannot parser ip address. ")
-	CannotConvertIPToIPv4Error        = errors.New("Cannot convert IP address to ipv4. ")
-	CannotConvertIPToIPv6Error        = errors.New("Cannot convert IP address to ipv6. ")
-	UnknownAddressTypeError           = errors.New("Unknown address type. ")
-	TooManyAuthenticationMethodsError = errors.New("Too many authentication methods, 256 maximum. ")
-	DomainTooLongError                = errors.New("Domain too long. ")
+	CannotParseIPError                = errors.New("cannot parser ip address")
+	CannotConvertIPToIPv4Error        = errors.New("cannot convert IP address to ipv4")
+	CannotConvertIPToIPv6Error        = errors.New("cannot convert IP address to ipv6")
+	UnknownAddressTypeError           = errors.New("unknown address type")
+	TooManyAuthenticationMethodsError = errors.New("too many authentication methods, 256 maximum")
+	DomainTooLongError                = errors.New("domain too long")
 )
 
 type Builder struct {

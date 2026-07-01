@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	InvalidSocksVersionError    = errors.New("Invalid socks version error. ")
-	InvalidChunkSizeError       = errors.New("Invalid chunk size error. ")
-	InvalidNumberOfMethodsError = errors.New("Invalid number of methods. ")
-	InvalidCommandCodeError     = errors.New("Invalid command code. ")
-	InvalidReservedByteError    = errors.New("Invalid rsv byte. ")
-	InvalidFragmentByteError    = errors.New("Invalid frag byte. ")
+	InvalidSocksVersionError    = errors.New("invalid socks version error")
+	InvalidChunkSizeError       = errors.New("invalid chunk size error")
+	InvalidNumberOfMethodsError = errors.New("invalid number of methods")
+	InvalidCommandCodeError     = errors.New("invalid command code")
+	InvalidReservedByteError    = errors.New("invalid rsv byte")
+	InvalidFragmentByteError    = errors.New("invalid frag byte")
 )
 
 type Parser struct {

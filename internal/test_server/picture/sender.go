@@ -39,7 +39,7 @@ func (s Sender) getAddress(picture byte, address string) (string, error) {
 	} else {
 		s.logger.InvalidPicture(address, picture)
 
-		return "", errors.New("Invalid picture. ")
+		return "", errors.New("invalid picture")
 	}
 }
 
