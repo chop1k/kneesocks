@@ -2,7 +2,8 @@ package actions
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
+
 	"log"
 	"os"
 	"strconv"
@@ -26,7 +27,7 @@ func Start(ctx *cli.Context) error {
 }
 
 func check(file *os.File, ctx *cli.Context) error {
-	_pid, err := ioutil.ReadAll(file)
+	_pid, err := io.ReadAll(file)
 
 	if err != nil {
 		log.Fatalf("Got error while reading pid file: %s.\n", err)
