@@ -38,7 +38,7 @@ func (s Stand) register(protocol string, command string, number int, builder di.
 	testingDef := di.Def{
 		Name:  "t",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return t, nil
 		},
 	}
@@ -46,7 +46,7 @@ func (s Stand) register(protocol string, command string, number int, builder di.
 	testDef := di.Def{
 		Name:  "test",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
 			v4Test := ctn.Get("v4_test").(v4.Test)
@@ -71,7 +71,7 @@ func (s Stand) registerConfig(protocol string, command string, number int, build
 	configPathDef := di.Def{
 		Name:  "config_path",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			path, ok := os.LookupEnv("config_path")
 
 			if !ok {
@@ -85,7 +85,7 @@ func (s Stand) registerConfig(protocol string, command string, number int, build
 	validatorDef := di.Def{
 		Name:  "validator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return *validator.New(), nil
 		},
 	}
@@ -93,7 +93,7 @@ func (s Stand) registerConfig(protocol string, command string, number int, build
 	configDef := di.Def{
 		Name:  "config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			validate := ctn.Get("validator").(validator.Validate)
 			path := ctn.Get("config_path").(string)
@@ -105,7 +105,7 @@ func (s Stand) registerConfig(protocol string, command string, number int, build
 	caseDef := di.Def{
 		Name:  "case",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return config.NewCase(protocol, command, number), nil
 		},
 	}
@@ -113,7 +113,7 @@ func (s Stand) registerConfig(protocol string, command string, number int, build
 	scopeDef := di.Def{
 		Name:  "scope",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 
@@ -138,7 +138,7 @@ func (s Stand) registerPicture(builder di.Builder, t *testing.T) {
 	pictureDef := di.Def{
 		Name:  "picture",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
 			cfg := ctn.Get("config").(config.Config)
@@ -161,7 +161,7 @@ func (s Stand) registerServer(builder di.Builder, t *testing.T) {
 	serverDef := di.Def{
 		Name:  "server",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			pic := ctn.Get("picture").(picture.Picture)
@@ -183,7 +183,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 	builderDef := di.Def{
 		Name:  "v4_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return v4Protocol.NewBuilder(), nil
 		},
 	}
@@ -191,7 +191,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 	senderDef := di.Def{
 		Name:  "v4_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v4_builder").(v4Protocol.Builder)
@@ -203,7 +203,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 	comparatorDef := di.Def{
 		Name:  "v4_comparator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v4_builder").(v4Protocol.Builder)
@@ -215,7 +215,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 	bindTesterDef := di.Def{
 		Name:  "v4_bind_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			pic := ctn.Get("picture").(picture.Picture)
@@ -231,7 +231,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 	connectTesterDef := di.Def{
 		Name:  "v4_connect_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			srv := ctn.Get("server").(server.Server)
@@ -246,7 +246,7 @@ func (s Stand) registerV4(builder di.Builder, t *testing.T) {
 	testDef := di.Def{
 		Name:  "v4_test",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
 			connectTester := ctn.Get("v4_connect_tester").(v4.ConnectTester)
@@ -274,7 +274,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 	builderDef := di.Def{
 		Name:  "v4a_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return v4aProtocol.NewBuilder(), nil
 		},
 	}
@@ -282,7 +282,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 	bindTesterDef := di.Def{
 		Name:  "v4a_bind_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			pic := ctn.Get("picture").(picture.Picture)
@@ -298,7 +298,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 	senderDef := di.Def{
 		Name:  "v4a_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v4a_builder").(v4aProtocol.Builder)
@@ -310,7 +310,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 	comparatorDef := di.Def{
 		Name:  "v4a_comparator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v4a_builder").(v4aProtocol.Builder)
@@ -322,7 +322,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 	connectTesterDef := di.Def{
 		Name:  "v4a_connect_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			srv := ctn.Get("server").(server.Server)
@@ -337,7 +337,7 @@ func (s Stand) registerV4a(builder di.Builder, t *testing.T) {
 	testDef := di.Def{
 		Name:  "v4a_test",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
 			connectTester := ctn.Get("v4a_connect_tester").(v4a.ConnectTester)
@@ -365,7 +365,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	addressUtilsDef := di.Def{
 		Name:  "address_utils",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return utils.NewUtils()
 		},
 	}
@@ -373,7 +373,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	passwordBuilderDef := di.Def{
 		Name:  "v5_password_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return password.NewBuilder()
 		},
 	}
@@ -381,7 +381,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	builderDef := di.Def{
 		Name:  "v5_builder",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return v5Protocol.NewBuilder()
 		},
 	}
@@ -389,7 +389,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	parserDef := di.Def{
 		Name:  "v5_parser",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			addressUtils := ctn.Get("address_utils").(utils.AddressUtils)
 
 			return v5Protocol.NewParser(addressUtils), nil
@@ -399,7 +399,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	senderDef := di.Def{
 		Name:  "v5_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v5_builder").(v5Protocol.Builder)
@@ -412,7 +412,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	comparatorDef := di.Def{
 		Name:  "v5_comparator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			builder := ctn.Get("v5_builder").(v5Protocol.Builder)
@@ -425,7 +425,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	bindTesterDef := di.Def{
 		Name:  "v5_bind_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			srv := ctn.Get("server").(server.Server)
@@ -441,7 +441,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	associationTesterDef := di.Def{
 		Name:  "v5_association_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			srv := ctn.Get("server").(server.Server)
@@ -457,7 +457,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	authTesterDef := di.Def{
 		Name:  "v5_auth_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			srv := ctn.Get("server").(server.Server)
@@ -472,7 +472,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	connectTesterDef := di.Def{
 		Name:  "v5_connect_tester",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			cfg := ctn.Get("config").(config.Config)
 			srv := ctn.Get("server").(server.Server)
@@ -487,7 +487,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 	testDef := di.Def{
 		Name:  "v5_test",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			t := ctn.Get("t").(*testing.T)
 			_case := ctn.Get("case").(config.Case)
 			auth := ctn.Get("v5_auth_tester").(v5.AuthTester)
