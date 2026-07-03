@@ -1,12 +1,13 @@
 package v4a
 
 import (
-	"github.com/rs/zerolog"
 	"io"
 	"os"
 	"path"
 	"socks/internal/kneesocks/config/v4a"
 	"socks/pkg/utils"
+
+	"github.com/rs/zerolog"
 )
 
 func BuildZerolog(config v4a.LoggerConfig) (zerolog.Logger, error) {

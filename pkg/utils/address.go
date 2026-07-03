@@ -63,15 +63,16 @@ func (u AddressUtils) ParseAddress(addr string) (string, int, error) {
 func (u AddressUtils) ConvertAddress(addrType byte, bytes []byte) (string, error) {
 	var addr string
 
-	if addrType == 1 {
+	switch addrType {
+	case 1:
 		if len(bytes) < 4 {
 			return "", InvalidAddressLengthError
 		}
 
 		addr = net.IPv4(bytes[0], bytes[1], bytes[2], bytes[3]).String()
-	} else if addrType == 3 {
+	case 3:
 		addr = string(bytes)
-	} else if addrType == 4 {
+	case 4:
 		if len(bytes) < 16 {
 			return "", InvalidAddressLengthError
 		}
@@ -88,7 +89,7 @@ func (u AddressUtils) ConvertAddress(addrType byte, bytes []byte) (string, error
 		}
 
 		addr = ipv6.String()
-	} else {
+	default:
 		return "", InvalidAddressTypeError
 	}
 

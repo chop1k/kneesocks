@@ -42,10 +42,7 @@ func (b UdpAssociationHandler) HandleUdpAssociation(config v5.Config, _ string, 
 		return
 	}
 
-	err = b.clientManager.Add(address)
-
-	if err != nil {
-	}
+	_ = b.clientManager.Add(address)
 
 	b.udpSendResponse(config, address, client)
 }

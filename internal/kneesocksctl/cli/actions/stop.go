@@ -47,7 +47,7 @@ func Stop(ctx *cli.Context) error {
 
 	rmErr := os.Remove(path)
 
-	if err != nil {
+	if rmErr != nil {
 		log.Fatalf("Got error while removing pid file: %s.\n", rmErr)
 	}
 
