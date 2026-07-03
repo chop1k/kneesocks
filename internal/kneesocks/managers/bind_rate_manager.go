@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ClientAlreadyExistsError = errors.New("Client already exists. ")
+	ClientAlreadyExistsError = errors.New("client already exists")
 )
 
 type BindRateManager struct {

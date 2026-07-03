@@ -23,11 +23,12 @@ func NewTest(_case config.Case, t *testing.T, connect ConnectTester, bind BindTe
 }
 
 func (t Test) Start() {
-	if t._case.Command == "connect" {
+	switch t._case.Command {
+	case "connect":
 		t.connect.Test(t._case.Number)
-	} else if t._case.Command == "bind" {
+	case "bind":
 		t.bind.Test(t._case.Number)
-	} else {
+	default:
 		require.Fail(t.t, "Unsupported command \"%s\".", t._case.Command)
 	}
 }

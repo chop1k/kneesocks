@@ -98,11 +98,12 @@ func (b PacketHandler) checkBound(payload []byte, address string, conn net.Packe
 func (b PacketHandler) sendPacket(chunk v52.UdpRequest, client net.Addr, conn net.PacketConn) {
 	var address string
 
-	if chunk.AddressType == 1 || chunk.AddressType == 3 {
+	switch chunk.AddressType {
+	case 1, 3:
 		address = fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
-	} else if chunk.AddressType == 4 {
+	case 4:
 		address = fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
-	} else {
+	default:
 		return
 	}
 

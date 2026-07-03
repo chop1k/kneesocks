@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	LoggerDisabledError        = errors.New("Tcp logger is disabled. ")
-	ConsoleOutputDisabledError = errors.New("Tcp console output is disabled. ")
-	FileOutputDisabledError    = errors.New("Tcp file output is disabled. ")
+	LoggerDisabledError        = errors.New("tcp logger is disabled")
+	ConsoleOutputDisabledError = errors.New("tcp console output is disabled")
+	FileOutputDisabledError    = errors.New("tcp file output is disabled")
 )
 
 type LoggerConfig struct {

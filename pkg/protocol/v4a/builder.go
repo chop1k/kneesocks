@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	DestinationIpIsNullError = errors.New("Destination ip is null. ")
+	DestinationIpIsNullError = errors.New("destination ip is null")
 )
 
 type Builder struct {

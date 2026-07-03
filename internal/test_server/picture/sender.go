@@ -30,16 +30,17 @@ func (s Sender) Send(address string, picture byte, conn net.Conn) error {
 }
 
 func (s Sender) getAddress(picture byte, address string) (string, error) {
-	if picture == 1 {
+	switch picture {
+	case 1:
 		return s.config.Picture.BigPicturePath, nil
-	} else if picture == 2 {
+	case 2:
 		return s.config.Picture.MiddlePicturePath, nil
-	} else if picture == 3 {
+	case 3:
 		return s.config.Picture.SmallPicturePath, nil
-	} else {
+	default:
 		s.logger.InvalidPicture(address, picture)
 
-		return "", errors.New("Invalid picture. ")
+		return "", errors.New("invalid picture")
 	}
 }
 

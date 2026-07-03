@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ImpossibleError = errors.New("Now < previously saved now. ")
+	ImpossibleError = errors.New("now < previously saved now")
 )
 
 type BaseLimitedConn struct {

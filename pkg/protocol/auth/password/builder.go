@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	InvalidVersionError  = errors.New("Invalid version, must be 1. ")
-	NameTooLongError     = errors.New("Name too long, 256 maximum. ")
-	PasswordTooLongError = errors.New("Password too long, 256 maximum. ")
+	InvalidVersionError  = errors.New("invalid version, must be 1")
+	NameTooLongError     = errors.New("name too long, 256 maximum")
+	PasswordTooLongError = errors.New("password too long, 256 maximum")
 )
 
 type Builder struct {

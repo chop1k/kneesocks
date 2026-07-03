@@ -48,13 +48,14 @@ func (p Picture) CompareUsingUdp(picture byte, packet net.PacketConn) {
 }
 
 func (p Picture) getPath(picture byte) string {
-	if picture == 1 {
+	switch picture {
+	case 1:
 		return p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "big-picture"))
-	} else if picture == 2 {
+	case 2:
 		return p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "middle-picture"))
-	} else if picture == 3 {
+	case 3:
 		return p.generateFilePath(fmt.Sprintf("%s-%s-%s", p._case.Protocol, p._case.Command, "small-picture"))
-	} else {
+	default:
 		require.Fail(p.t, "Unknown picture %d. ", picture)
 
 		return ""
@@ -170,11 +171,12 @@ func (p Picture) receivePictureUsingUdp(packet net.PacketConn, writer io.Writer)
 }
 
 func (p Picture) compareHash(path string, file *os.File, picture byte, h hash.Hash) {
-	if picture == 1 {
+	switch picture {
+	case 1:
 		require.Equal(p.t, p.config.Picture.BigPictureHash, fmt.Sprintf("%x", h.Sum(nil)))
-	} else if picture == 2 {
+	case 2:
 		require.Equal(p.t, p.config.Picture.MiddlePictureHash, fmt.Sprintf("%x", h.Sum(nil)))
-	} else if picture == 3 {
+	case 3:
 		require.Equal(p.t, p.config.Picture.SmallPictureHash, fmt.Sprintf("%x", h.Sum(nil)))
 	}
 

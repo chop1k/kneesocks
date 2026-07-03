@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	AddressNotExistsError    = errors.New("Address does not exists. ")
-	HostChannelClosedError   = errors.New("Host channel is closed. ")
-	ClientChannelClosedError = errors.New("Client channel is closed. ")
-	AddressAlreadyBoundError = errors.New("Address already bound. ")
-	TimeoutError             = errors.New("Timeout exceeded. ")
+	AddressNotExistsError    = errors.New("address does not exists")
+	HostChannelClosedError   = errors.New("host channel is closed")
+	ClientChannelClosedError = errors.New("client channel is closed")
+	AddressAlreadyBoundError = errors.New("address already bound")
+	TimeoutError             = errors.New("timeout exceeded")
 )
 
 type bundle struct {
@@ -55,7 +55,7 @@ func (m BindManager) Bind(addr string) error {
 func (m BindManager) Remove(addr string) {
 	channel, is := m.addresses[addr]
 
-	if is == false {
+	if !is {
 		return
 	}
 
@@ -109,7 +109,7 @@ func (m BindManager) ReceiveClient(address string, deadline time.Duration) (net.
 		timer.Stop()
 
 		break
-	case _ = <-timer.C:
+	case <-timer.C:
 		timer.Stop()
 
 		return nil, TimeoutError
@@ -143,7 +143,7 @@ func (m BindManager) ReceiveHost(address string, deadline time.Duration) (net.Co
 		timer.Stop()
 
 		break
-	case _ = <-timer.C:
+	case <-timer.C:
 		timer.Stop()
 
 		return nil, TimeoutError

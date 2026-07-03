@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	LoggerDisabledError        = errors.New("Udp logger is disabled. ")
-	ConsoleOutputDisabledError = errors.New("Udp console output is disabled. ")
-	FileOutputDisabledError    = errors.New("Udp file output is disabled. ")
+	LoggerDisabledError        = errors.New("udp logger is disabled")
+	ConsoleOutputDisabledError = errors.New("udp console output is disabled")
+	FileOutputDisabledError    = errors.New("udp file output is disabled")
 )
 
 type LoggerConfig struct {

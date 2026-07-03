@@ -16,7 +16,7 @@ func Register(builder di.Builder) {
 	configPathDef := di.Def{
 		Name:  "config_path",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			path, ok := os.LookupEnv("config_path")
 
 			if !ok {
@@ -30,7 +30,7 @@ func Register(builder di.Builder) {
 	validatorDef := di.Def{
 		Name:  "validator",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			return *validator.New(), nil
 		},
 	}
@@ -38,7 +38,7 @@ func Register(builder di.Builder) {
 	configDef := di.Def{
 		Name:  "config",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			validate := ctn.Get("validator").(validator.Validate)
 			configPath := ctn.Get("config_path").(string)
 
@@ -49,7 +49,7 @@ func Register(builder di.Builder) {
 	zeroLoggerDef := di.Def{
 		Name:  "zero_logger",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			cfg := ctn.Get("config").(_config.Config)
 
 			consoleLogger := zerolog.ConsoleWriter{
@@ -74,7 +74,7 @@ func Register(builder di.Builder) {
 	loggerDef := di.Def{
 		Name:  "logger",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			logger := ctn.Get("zero_logger").(zerolog.Logger)
 
 			return _logger.NewLogger(logger)
@@ -84,7 +84,7 @@ func Register(builder di.Builder) {
 	connectionHandlerDef := di.Def{
 		Name:  "connection_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			config := ctn.Get("config").(_config.Config)
 			logger := ctn.Get("logger").(_logger.Logger)
 			sender := ctn.Get("picture_sender").(_picture.Sender)
@@ -96,7 +96,7 @@ func Register(builder di.Builder) {
 	packetHandlerDef := di.Def{
 		Name:  "packet_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			config := ctn.Get("config").(_config.Config)
 			logger := ctn.Get("logger").(_logger.Logger)
 
@@ -107,7 +107,7 @@ func Register(builder di.Builder) {
 	bindHandlerDef := di.Def{
 		Name:  "bind_handler",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			config := ctn.Get("config").(_config.Config)
 			logger := ctn.Get("logger").(_logger.Logger)
 			picture := ctn.Get("picture_sender").(_picture.Sender)
@@ -119,7 +119,7 @@ func Register(builder di.Builder) {
 	serverDef := di.Def{
 		Name:  "server",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			config := ctn.Get("config").(_config.Config)
 			logger := ctn.Get("logger").(_logger.Logger)
 			connectionHandler := ctn.Get("connection_handler").(_handlers.ConnectHandler)
@@ -133,7 +133,7 @@ func Register(builder di.Builder) {
 	pictureSenderDef := di.Def{
 		Name:  "picture_sender",
 		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (any, error) {
 			config := ctn.Get("config").(_config.Config)
 			logger := ctn.Get("logger").(_logger.Logger)
 

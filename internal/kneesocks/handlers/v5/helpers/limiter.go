@@ -26,11 +26,7 @@ func (b Limiter) IsLimited(config v5.Config, name string) bool {
 
 	if !ok {
 		limit = tree.RateRestrictions{
-			MaxSimultaneousConnections:  -1,
-			HostReadBuffersPerSecond:    -1,
-			HostWriteBuffersPerSecond:   -1,
-			ClientReadBuffersPerSecond:  -1,
-			ClientWriteBuffersPerSecond: -1,
+			MaxSimultaneousConnections: -1,
 		}
 	} else {
 		limit = user.Restrictions.Rate

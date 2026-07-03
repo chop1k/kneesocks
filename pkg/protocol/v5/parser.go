@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	InvalidSocksVersionError    = errors.New("Invalid socks version error. ")
-	InvalidChunkSizeError       = errors.New("Invalid chunk size error. ")
-	InvalidNumberOfMethodsError = errors.New("Invalid number of methods. ")
-	InvalidCommandCodeError     = errors.New("Invalid command code. ")
-	InvalidReservedByteError    = errors.New("Invalid rsv byte. ")
-	InvalidFragmentByteError    = errors.New("Invalid frag byte. ")
+	InvalidSocksVersionError    = errors.New("invalid socks version error")
+	InvalidChunkSizeError       = errors.New("invalid chunk size error")
+	InvalidNumberOfMethodsError = errors.New("invalid number of methods")
+	InvalidCommandCodeError     = errors.New("invalid command code")
+	InvalidReservedByteError    = errors.New("invalid rsv byte")
+	InvalidFragmentByteError    = errors.New("invalid frag byte")
 )
 
 type Parser struct {
@@ -77,24 +77,25 @@ func (b Parser) ParseRequest(bytes []byte) (RequestChunk, error) {
 	var addrEnd int
 	var addrStart int
 
-	if bytes[3] == 1 {
+	switch bytes[3] {
+	case 1:
 		addrStart = 4
 		addrEnd = 8
-	} else if bytes[3] == 3 {
+	case 3:
 		addrStart = 5
 		addrEnd = int(bytes[4] + 5)
 
 		if length < addrEnd+2 {
 			return RequestChunk{}, InvalidChunkSizeError
 		}
-	} else if bytes[3] == 4 {
+	case 4:
 		addrStart = 4
 		addrEnd = 20
 
 		if length < 22 {
 			return RequestChunk{}, InvalidChunkSizeError
 		}
-	} else {
+	default:
 		return RequestChunk{}, UnknownAddressTypeError
 	}
 
@@ -124,31 +125,32 @@ func (b Parser) ParseUdpRequest(bytes []byte) (UdpRequest, error) {
 		return UdpRequest{}, InvalidReservedByteError
 	}
 
-	if bytes[2] < 0 || bytes[2] > 127 {
+	if bytes[2] > 127 {
 		return UdpRequest{}, InvalidFragmentByteError
 	}
 
 	var addrEnd int
 	var addrStart int
 
-	if bytes[3] == 1 {
+	switch bytes[3] {
+	case 1:
 		addrStart = 4
 		addrEnd = 8
-	} else if bytes[3] == 3 {
+	case 3:
 		addrStart = 5
 		addrEnd = int(bytes[4] + 5)
 
 		if length < addrEnd+2 {
 			return UdpRequest{}, InvalidChunkSizeError
 		}
-	} else if bytes[3] == 4 {
+	case 4:
 		addrStart = 4
 		addrEnd = 20
 
 		if length < 22 {
 			return UdpRequest{}, InvalidChunkSizeError
 		}
-	} else {
+	default:
 		return UdpRequest{}, UnknownAddressTypeError
 	}
 

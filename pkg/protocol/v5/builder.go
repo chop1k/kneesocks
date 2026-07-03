@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	CannotParseIPError                = errors.New("Cannot parser ip address. ")
-	CannotConvertIPToIPv4Error        = errors.New("Cannot convert IP address to ipv4. ")
-	CannotConvertIPToIPv6Error        = errors.New("Cannot convert IP address to ipv6. ")
-	UnknownAddressTypeError           = errors.New("Unknown address type. ")
-	TooManyAuthenticationMethodsError = errors.New("Too many authentication methods, 256 maximum. ")
-	DomainTooLongError                = errors.New("Domain too long. ")
+	CannotParseIPError                = errors.New("cannot parser ip address")
+	CannotConvertIPToIPv4Error        = errors.New("cannot convert IP address to ipv4")
+	CannotConvertIPToIPv6Error        = errors.New("cannot convert IP address to ipv6")
+	UnknownAddressTypeError           = errors.New("unknown address type")
+	TooManyAuthenticationMethodsError = errors.New("too many authentication methods, 256 maximum")
+	DomainTooLongError                = errors.New("domain too long")
 )
 
 type Builder struct {
@@ -35,7 +35,8 @@ func (b Builder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 	buffer.WriteByte(0)
 	buffer.WriteByte(chunk.AddressType)
 
-	if chunk.AddressType == 1 {
+	switch chunk.AddressType {
+	case 1:
 		ip := net.ParseIP(chunk.Address)
 
 		if ip == nil {
@@ -49,7 +50,7 @@ func (b Builder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 		}
 
 		buffer.Write(ipv4)
-	} else if chunk.AddressType == 4 {
+	case 4:
 		ip := net.ParseIP(chunk.Address)
 
 		if ip == nil {
@@ -63,9 +64,9 @@ func (b Builder) BuildResponse(chunk ResponseChunk) ([]byte, error) {
 		}
 
 		buffer.Write(ipv6)
-	} else if chunk.AddressType == 3 {
+	case 3:
 		buffer.Write([]byte(chunk.Address))
-	} else {
+	default:
 		return nil, UnknownAddressTypeError
 	}
 
@@ -101,7 +102,8 @@ func (b Builder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 	buffer.WriteByte(0)
 	buffer.WriteByte(chunk.AddressType)
 
-	if chunk.AddressType == 1 {
+	switch chunk.AddressType {
+	case 1:
 		ip := net.ParseIP(chunk.Address)
 
 		if ip == nil {
@@ -115,14 +117,14 @@ func (b Builder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 		}
 
 		buffer.Write(ipv4)
-	} else if chunk.AddressType == 3 {
+	case 3:
 		if len(chunk.Address) > 256 {
 			return nil, DomainTooLongError
 		}
 
 		buffer.WriteByte(byte(len(chunk.Address)))
 		buffer.Write([]byte(chunk.Address))
-	} else if chunk.AddressType == 4 {
+	case 4:
 		ip := net.ParseIP(chunk.Address)
 
 		if ip == nil {
@@ -136,7 +138,7 @@ func (b Builder) BuildRequest(chunk RequestChunk) ([]byte, error) {
 		}
 
 		buffer.Write(ipv6)
-	} else {
+	default:
 		return nil, UnknownAddressTypeError
 	}
 
@@ -157,7 +159,8 @@ func (b Builder) BuildUdpRequest(chunk UdpRequest) ([]byte, error) {
 	buffer.WriteByte(chunk.Fragment)
 	buffer.WriteByte(chunk.AddressType)
 
-	if chunk.AddressType == 1 {
+	switch chunk.AddressType {
+	case 1:
 		ip := net.ParseIP(chunk.Address)
 
 		if ip == nil {
@@ -171,14 +174,14 @@ func (b Builder) BuildUdpRequest(chunk UdpRequest) ([]byte, error) {
 		}
 
 		buffer.Write(ipv4)
-	} else if chunk.AddressType == 3 {
+	case 3:
 		if len(chunk.Address) > 256 {
 			return nil, DomainTooLongError
 		}
 
 		buffer.WriteByte(byte(len(chunk.Address)))
 		buffer.Write([]byte(chunk.Address))
-	} else if chunk.AddressType == 4 {
+	case 4:
 		ip := net.ParseIP(chunk.Address)
 
 		if ip == nil {
@@ -192,7 +195,7 @@ func (b Builder) BuildUdpRequest(chunk UdpRequest) ([]byte, error) {
 		}
 
 		buffer.Write(ipv6)
-	} else {
+	default:
 		return nil, UnknownAddressTypeError
 	}
 

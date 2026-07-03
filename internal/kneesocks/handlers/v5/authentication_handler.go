@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	NoAuthenticationMethodsProvidedError = errors.New("No authentication methods provided. ")
-	MethodUnsupportedError               = errors.New("Method unsupported. ")
+	NoAuthenticationMethodsProvidedError = errors.New("no authentication methods provided")
+	MethodUnsupportedError               = errors.New("method unsupported")
 )
 
 type Authenticator interface {
@@ -43,11 +43,12 @@ func (b AuthenticationHandler) HandleAuthentication(config v52.Config, methods v
 	for _, method := range _methods {
 		code := byte(255)
 
-		if method == "no-authentication" {
+		switch method {
+		case "no-authentication":
 			code = 0
-		} else if method == "name/password" {
+		case "name/password":
 			code = 2
-		} else {
+		default:
 			continue
 		}
 
@@ -74,11 +75,12 @@ func (b AuthenticationHandler) selectMethod(config v52.Config, code byte, client
 		return "", err
 	}
 
-	if code == 0 {
+	switch code {
+	case 0:
 		return b.noAuth.Authenticate(config, client)
-	} else if code == 2 {
+	case 2:
 		return b.password.Authenticate(config, client)
-	} else {
+	default:
 		_ = b.sender.SendMethodSelection(config, 255, client)
 
 		return "", MethodUnsupportedError

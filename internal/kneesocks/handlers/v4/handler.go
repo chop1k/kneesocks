@@ -70,11 +70,12 @@ func (b Handler) Handle(request []byte, client net.Conn) {
 		return
 	}
 
-	if chunk.CommandCode == 1 {
+	switch chunk.CommandCode {
+	case 1:
 		b.handleConnect(config, address, client)
-	} else if chunk.CommandCode == 2 {
+	case 2:
 		b.handleBind(config, address, client)
-	} else {
+	default:
 		b.sender.SendFailAndClose(config, client)
 
 		return

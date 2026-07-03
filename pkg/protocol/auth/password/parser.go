@@ -3,9 +3,9 @@ package password
 import "errors"
 
 var (
-	InvalidChunkSizeError    = errors.New("Invalid chunk size. ")
-	InvalidNameSizeError     = errors.New("Invalid name size. ")
-	InvalidPasswordSizeError = errors.New("Invalid password size. ")
+	InvalidChunkSizeError    = errors.New("invalid chunk size")
+	InvalidNameSizeError     = errors.New("invalid name size")
+	InvalidPasswordSizeError = errors.New("invalid password size")
 )
 
 type Parser struct {

@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	ClientNotExistsError = errors.New("Client is not exists. ")
-	NilPointerError      = errors.New("Got nil instead of set. ")
+	ClientNotExistsError = errors.New("client is not exists")
+	NilPointerError      = errors.New("got nil instead of set")
 )
 
 type UdpClientManager struct {

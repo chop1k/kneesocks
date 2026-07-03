@@ -61,13 +61,14 @@ func (s Sender) SendPassword(conn net.Conn) {
 func (s Sender) sendRequest(command byte, addressType byte, port uint16, conn net.Conn) {
 	var address string
 
-	if addressType == 1 {
+	switch addressType {
+	case 1:
 		address = s.config.Server.IPv4
-	} else if addressType == 3 {
+	case 3:
 		address = s.config.Server.Domain
-	} else if addressType == 4 {
+	case 4:
 		address = s.config.Server.IPv6
-	} else {
+	default:
 		require.Fail(s.t, "Unsupported address type \"%d\". ", addressType)
 	}
 

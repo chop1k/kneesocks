@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	UserNotFoundError = errors.New("User not found. ")
+	UserNotFoundError = errors.New("user not found")
 )
 
 type PasswordAuthenticator struct {
