@@ -38,7 +38,7 @@ func (s Server) SendPictureRequest(picture byte, conn net.Conn) {
 }
 
 func (s Server) SendBindRequest(picture byte, addressType byte, port uint16) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", s.config.Server.IPv4, s.config.Server.BindPort))
+	conn, err := net.Dial("tcp", net.JoinHostPort(s.config.Server.IPv4, fmt.Sprintf("%d", s.config.Server.BindPort)))
 
 	require.NoError(s.t, err)
 
