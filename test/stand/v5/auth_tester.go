@@ -39,15 +39,16 @@ func NewAuthTester(
 func (t AuthTester) Test(number int) {
 	scope := t.scope.GetV5Auth(number)
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", t.config.Socks.Address, t.config.Socks.TcpPort))
+	conn, err := net.Dial("tcp", net.JoinHostPort(t.config.Socks.Address, fmt.Sprintf("%d", t.config.Socks.TcpPort)))
 
 	require.NoError(t.t, err)
 
-	if scope.Method == 0 {
+	switch scope.Method {
+	case 0:
 		t.handleNoAuth(scope.Picture, scope.AddressType, conn)
-	} else if scope.Method == 2 {
+	case 2:
 		t.handlePasswordAuth(scope.Picture, scope.AddressType, conn)
-	} else {
+	default:
 		require.Fail(t.t, "Unsupported method. ")
 	}
 }

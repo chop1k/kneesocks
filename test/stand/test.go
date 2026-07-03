@@ -34,13 +34,14 @@ func NewTest(
 }
 
 func (t Test) Start() {
-	if t._case.Protocol == "v4" {
+	switch t._case.Protocol {
+	case "v4":
 		t.v4.Start()
-	} else if t._case.Protocol == "v4a" {
+	case "v4a":
 		t.v4a.Start()
-	} else if t._case.Protocol == "v5" {
+	case "v5":
 		t.v5.Start()
-	} else {
+	default:
 		require.Fail(t.t, "Unsupported protocol \"%s\".", t._case.Protocol)
 	}
 }

@@ -63,11 +63,12 @@ func (b ConnectionHandler) checkProtocol(config tcp.DeadlineConfig, request []by
 		return
 	}
 
-	if request[0] == 4 {
+	switch request[0] {
+	case 4:
 		b.checkV4(config, request, client)
-	} else if request[0] == 5 {
+	case 5:
 		b.checkV5(config, request, client)
-	} else {
+	default:
 		b.bindHandler.Handle(config, request, client)
 	}
 }

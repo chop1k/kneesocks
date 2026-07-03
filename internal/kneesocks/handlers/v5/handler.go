@@ -107,11 +107,12 @@ func (b Handler) handleChunk(config v52.Config, name string, client net.Conn) {
 func (b Handler) handleCommand(config v52.Config, name string, chunk v54.RequestChunk, client net.Conn) {
 	var address string
 
-	if chunk.AddressType == 4 {
+	switch chunk.AddressType {
+	case 4:
 		address = fmt.Sprintf("[%s]:%d", chunk.Address, chunk.Port)
-	} else if chunk.AddressType == 1 || chunk.AddressType == 3 {
+	case 1, 3:
 		address = fmt.Sprintf("%s:%d", chunk.Address, chunk.Port)
-	} else {
+	default:
 		b.errorHandler.HandleInvalidAddressTypeError(config, chunk.AddressType, chunk.Address, client)
 
 		return
@@ -121,13 +122,14 @@ func (b Handler) handleCommand(config v52.Config, name string, chunk v54.Request
 		return
 	}
 
-	if chunk.CommandCode == 1 {
+	switch chunk.CommandCode {
+	case 1:
 		b.handleConnect(config, name, address, client)
-	} else if chunk.CommandCode == 2 {
+	case 2:
 		b.handleBind(config, name, address, client)
-	} else if chunk.CommandCode == 3 {
+	case 3:
 		b.handleUdpAssociate(config, name, address, client)
-	} else {
+	default:
 		b.errorHandler.HandleUnknownCommandError(config, chunk.CommandCode, address, client)
 
 		return

@@ -73,13 +73,14 @@ func (c Comparator) CompareConnectResponse(addressType byte, conn net.Conn) {
 
 	var address string
 
-	if addressType == 1 {
+	switch addressType {
+	case 1:
 		address = c.config.Server.IPv4
-	} else if addressType == 3 {
+	case 3:
 		address = c.config.Server.Domain
-	} else if addressType == 4 {
+	case 4:
 		address = c.config.Server.IPv6
-	} else {
+	default:
 		require.Fail(c.t, "Unsupported address type \"%d\". ", addressType)
 	}
 
@@ -125,13 +126,14 @@ func (c Comparator) CompareSecondBindResponse(port uint16, addressType byte, con
 
 	var address string
 
-	if addressType == 1 {
+	switch addressType {
+	case 1:
 		address = c.config.Server.IPv4
-	} else if addressType == 3 {
+	case 3:
 		address = c.config.Server.Domain
-	} else if addressType == 4 {
+	case 4:
 		address = c.config.Server.IPv6
-	} else {
+	default:
 		require.Fail(c.t, "Unsupported address type \"%d\". ", addressType)
 	}
 
