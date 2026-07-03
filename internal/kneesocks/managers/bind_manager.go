@@ -55,7 +55,7 @@ func (m BindManager) Bind(addr string) error {
 func (m BindManager) Remove(addr string) {
 	channel, is := m.addresses[addr]
 
-	if is == false {
+	if !is {
 		return
 	}
 
@@ -109,7 +109,7 @@ func (m BindManager) ReceiveClient(address string, deadline time.Duration) (net.
 		timer.Stop()
 
 		break
-	case _ = <-timer.C:
+	case <-timer.C:
 		timer.Stop()
 
 		return nil, TimeoutError
@@ -143,7 +143,7 @@ func (m BindManager) ReceiveHost(address string, deadline time.Duration) (net.Co
 		timer.Stop()
 
 		break
-	case _ = <-timer.C:
+	case <-timer.C:
 		timer.Stop()
 
 		return nil, TimeoutError
