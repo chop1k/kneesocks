@@ -17,8 +17,8 @@ APP_ROOT = .
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Application - Sources
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-SRC_DIR = internal
-BIN_DIR = cmd
+SRC_DIR = $(APP_ROOT)/internal
+BIN_DIR = $(APP_ROOT)/cmd
 APP_SOURCES = $(shell find . -type f -name "*.go")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -33,7 +33,7 @@ SERVICE_NAME = test_server
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Application - Build
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-BUILD_DIR = build
+BUILD_DIR = $(APP_ROOT)/build
 BUILD_ENTRYPOINT = $(APP_ROOT)/$(BIN_DIR)/$(APP_NAME)/main.go
 BUILD_TARGET = $(APP_ROOT)/$(BUILD_DIR)/$(APP_VERSION)/$(APP_NAME)
 
@@ -149,7 +149,7 @@ code-style:
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -f $(DEPLOYED_COMPOSE_FILE) $(DEPLOYED_APP_DOCKERFILE)
+	rm -f $(DEPLOYED_COMPOSE_FILE) $(DEPLOYED_APP_DOCKERFILE) $(DEPLOYED_E2E_DOCKERFILE) $(DEPLOYED_SERVICE_DOCKERFILE)
 
 help:
 	@echo "Make scripts for track-my-tasks app:"
