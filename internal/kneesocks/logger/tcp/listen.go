@@ -6,10 +6,10 @@ type ListenLogger struct {
 	logger zerolog.Logger
 }
 
-func NewListenLogger(logger zerolog.Logger) (ListenLogger, error) {
+func NewListenLogger(logger zerolog.Logger) ListenLogger {
 	return ListenLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b ListenLogger) Listen(address string) {

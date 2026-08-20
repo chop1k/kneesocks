@@ -4,10 +4,10 @@ type UdpHostManager struct {
 	hosts map[string]string
 }
 
-func NewUdpHostManager() (UdpHostManager, error) {
+func NewUdpHostManager() UdpHostManager {
 	return UdpHostManager{
 		hosts: make(map[string]string),
-	}, nil
+	}
 }
 
 func (u UdpHostManager) Add(host string, client string) error {

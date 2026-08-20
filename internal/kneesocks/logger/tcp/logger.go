@@ -10,10 +10,10 @@ func NewLogger(
 	connection ConnectionLogger,
 	errors ErrorsLogger,
 	listen ListenLogger,
-) (Logger, error) {
+) Logger {
 	return Logger{
 		Connection: connection,
 		Errors:     errors,
 		Listen:     listen,
-	}, nil
+	}
 }

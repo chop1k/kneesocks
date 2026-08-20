@@ -15,10 +15,10 @@ type LoggerConfig struct {
 	config tree.LogConfig
 }
 
-func NewLoggerConfig(config tree.LogConfig) (LoggerConfig, error) {
+func NewLoggerConfig(config tree.LogConfig) LoggerConfig {
 	return LoggerConfig{
 		config: config,
-	}, nil
+	}
 }
 
 func (b LoggerConfig) GetLevel() (int, error) {

@@ -7,8 +7,8 @@ import (
 type Handler struct {
 }
 
-func NewHandler() (Handler, error) {
-	return Handler{}, nil
+func NewHandler() Handler {
+	return Handler{}
 }
 
 func (b Handler) TransferToHost(client net.Conn, host net.Conn) {

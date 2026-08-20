@@ -26,7 +26,7 @@ func NewBindHandler(
 	errorHandler ErrorHandler,
 	bindManager managers.BindManager,
 	transmitter helpers.Transmitter,
-) (BindHandler, error) {
+) BindHandler {
 	return BindHandler{
 		logger:       logger,
 		utils:        utils,
@@ -34,7 +34,7 @@ func NewBindHandler(
 		errorHandler: errorHandler,
 		bindManager:  bindManager,
 		transmitter:  transmitter,
-	}, nil
+	}
 }
 
 func (b BindHandler) HandleBind(config v43.Config, address string, client net.Conn) {

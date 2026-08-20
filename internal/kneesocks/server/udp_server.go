@@ -20,13 +20,13 @@ func NewUdpServer(
 	packetHandler handlers.PacketHandler,
 	bindConfig udp.BindConfig,
 	replicator udp.ConfigReplicator,
-) (UdpServer, error) {
+) UdpServer {
 	return UdpServer{
 		logger:        logger,
 		packetHandler: packetHandler,
 		bindConfig:    bindConfig,
 		replicator:    replicator,
-	}, nil
+	}
 }
 
 func (s UdpServer) Listen() {

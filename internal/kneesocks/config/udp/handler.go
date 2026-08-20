@@ -8,8 +8,8 @@ import (
 type Handler struct {
 }
 
-func NewHandler() (Handler, error) {
-	return Handler{}, nil
+func NewHandler() Handler {
+	return Handler{}
 }
 
 func (h Handler) Handle(raw tree.UdpConfig) Config {

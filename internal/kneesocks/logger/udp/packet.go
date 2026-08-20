@@ -6,10 +6,10 @@ type PacketLogger struct {
 	logger zerolog.Logger
 }
 
-func NewPacketLogger(logger zerolog.Logger) (PacketLogger, error) {
+func NewPacketLogger(logger zerolog.Logger) PacketLogger {
 	return PacketLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b PacketLogger) Accepted(client string) {

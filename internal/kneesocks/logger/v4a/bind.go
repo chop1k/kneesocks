@@ -6,10 +6,10 @@ type BindLogger struct {
 	logger zerolog.Logger
 }
 
-func NewBindLogger(logger zerolog.Logger) (BindLogger, error) {
+func NewBindLogger(logger zerolog.Logger) BindLogger {
 	return BindLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b BindLogger) Request(client string, address string) {

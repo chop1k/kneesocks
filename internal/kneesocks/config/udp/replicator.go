@@ -8,11 +8,11 @@ type ConfigReplicator struct {
 func NewConfigReplicator(
 	buffer BufferConfig,
 	deadline DeadlineConfig,
-) (ConfigReplicator, error) {
+) ConfigReplicator {
 	return ConfigReplicator{
 		buffer:   buffer,
 		deadline: deadline,
-	}, nil
+	}
 }
 
 func (c ConfigReplicator) CopyBuffer() BufferConfig {

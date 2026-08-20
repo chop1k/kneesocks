@@ -37,7 +37,7 @@ func NewHandler(
 	validator helpers.Validator,
 	cleaner helpers.Cleaner,
 	replicator v52.ConfigReplicator,
-) (Handler, error) {
+) Handler {
 	return Handler{
 		parser:                parser,
 		authenticationHandler: authenticationHandler,
@@ -51,7 +51,7 @@ func NewHandler(
 		validator:             validator,
 		cleaner:               cleaner,
 		replicator:            replicator,
-	}, nil
+	}
 }
 
 func (b Handler) Handle(request []byte, client net.Conn) {

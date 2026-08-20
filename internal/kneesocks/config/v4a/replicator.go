@@ -4,8 +4,8 @@ type ConfigReplicator struct {
 	config *Config
 }
 
-func NewConfigReplicator(config *Config) (ConfigReplicator, error) {
-	return ConfigReplicator{config: config}, nil
+func NewConfigReplicator(config *Config) ConfigReplicator {
+	return ConfigReplicator{config: config}
 }
 
 func (b ConfigReplicator) Copy() *Config {

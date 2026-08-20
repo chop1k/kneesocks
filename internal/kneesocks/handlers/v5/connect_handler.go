@@ -23,14 +23,14 @@ func NewConnectHandler(
 	sender v5.Sender,
 	errorHandler ErrorHandler,
 	transmitter helpers.Transmitter,
-) (ConnectHandler, error) {
+) ConnectHandler {
 	return ConnectHandler{
 		logger:       logger,
 		utils:        addressUtils,
 		sender:       sender,
 		errorHandler: errorHandler,
 		transmitter:  transmitter,
-	}, nil
+	}
 }
 
 func (b ConnectHandler) HandleConnect(config v53.Config, name string, address string, client net.Conn) {

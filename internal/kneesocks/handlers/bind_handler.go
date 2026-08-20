@@ -22,13 +22,13 @@ func NewBindHandler(
 	logger tcp.Logger,
 	bind transfer.BindHandler,
 	bindManager managers.BindManager,
-) (BindHandler, error) {
+) BindHandler {
 	return BindHandler{
 		utils:       utils,
 		logger:      logger,
 		bind:        bind,
 		bindManager: bindManager,
-	}, nil
+	}
 }
 
 func (b BindHandler) Handle(config tcp2.DeadlineConfig, request []byte, host net.Conn) {

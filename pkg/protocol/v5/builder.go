@@ -19,8 +19,8 @@ var (
 type Builder struct {
 }
 
-func NewBuilder() (Builder, error) {
-	return Builder{}, nil
+func NewBuilder() Builder {
+	return Builder{}
 }
 
 func (b Builder) BuildMethodSelection(chunk MethodSelectionChunk) ([]byte, error) {

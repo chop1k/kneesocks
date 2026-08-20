@@ -1,9 +1,6 @@
 package stand
 
 import (
-	"github.com/go-playground/validator/v10"
-	"github.com/sarulabs/di"
-	"github.com/stretchr/testify/require"
 	"os"
 	"socks/pkg/protocol/auth/password"
 	v4Protocol "socks/pkg/protocol/v4"
@@ -17,6 +14,10 @@ import (
 	"socks/test/stand/v4a"
 	"socks/test/stand/v5"
 	"testing"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/sarulabs/di"
+	"github.com/stretchr/testify/require"
 )
 
 type Stand struct {
@@ -366,7 +367,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Name:  "address_utils",
 		Scope: di.App,
 		Build: func(ctn di.Container) (any, error) {
-			return utils.NewUtils()
+			return utils.NewUtils(), nil
 		},
 	}
 
@@ -374,7 +375,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Name:  "v5_password_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (any, error) {
-			return password.NewBuilder()
+			return password.NewBuilder(), nil
 		},
 	}
 
@@ -382,7 +383,7 @@ func (s Stand) registerV5(builder di.Builder, t *testing.T) {
 		Name:  "v5_builder",
 		Scope: di.App,
 		Build: func(ctn di.Container) (any, error) {
-			return v5Protocol.NewBuilder()
+			return v5Protocol.NewBuilder(), nil
 		},
 	}
 

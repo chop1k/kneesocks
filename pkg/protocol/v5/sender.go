@@ -18,12 +18,12 @@ func NewSender(
 	tcpConfig tcp.BindConfig,
 	udpConfig udp.BindConfig,
 	builder Builder,
-) (Sender, error) {
+) Sender {
 	return Sender{
 		tcpConfig: tcpConfig,
 		udpConfig: udpConfig,
 		builder:   builder,
-	}, nil
+	}
 }
 
 func (b Sender) SendMethodSelection(config v52.Config, method byte, client net.Conn) error {

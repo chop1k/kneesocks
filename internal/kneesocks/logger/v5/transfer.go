@@ -6,10 +6,10 @@ type TransferLogger struct {
 	logger zerolog.Logger
 }
 
-func NewTransferLogger(logger zerolog.Logger) (TransferLogger, error) {
+func NewTransferLogger(logger zerolog.Logger) TransferLogger {
 	return TransferLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b TransferLogger) TransferFinished(client string, host string) {

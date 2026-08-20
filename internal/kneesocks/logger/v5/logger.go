@@ -18,7 +18,7 @@ func NewLogger(
 	errors ErrorsLogger,
 	restrictions RestrictionsLogger,
 	transfer TransferLogger,
-) (Logger, error) {
+) Logger {
 	return Logger{
 		Association:  association,
 		Auth:         auth,
@@ -27,5 +27,5 @@ func NewLogger(
 		Errors:       errors,
 		Restrictions: restrictions,
 		Transfer:     transfer,
-	}, nil
+	}
 }

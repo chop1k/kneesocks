@@ -6,10 +6,10 @@ type AssociationLogger struct {
 	logger zerolog.Logger
 }
 
-func NewAssociationLogger(logger zerolog.Logger) (AssociationLogger, error) {
+func NewAssociationLogger(logger zerolog.Logger) AssociationLogger {
 	return AssociationLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b AssociationLogger) Request(client string) {

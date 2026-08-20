@@ -7,10 +7,10 @@ type ConnectionsManager struct {
 	mutex       sync.Mutex
 }
 
-func NewConnectionsManager() (*ConnectionsManager, error) {
+func NewConnectionsManager() *ConnectionsManager {
 	return &ConnectionsManager{
 		connections: make(map[string]int),
-	}, nil
+	}
 }
 
 func (c *ConnectionsManager) Increment(name string) {

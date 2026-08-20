@@ -19,12 +19,12 @@ func NewErrorHandler(
 	logger v4.Logger,
 	sender v42.Sender,
 	errors utils.ErrorUtils,
-) (ErrorHandler, error) {
+) ErrorHandler {
 	return ErrorHandler{
 		logger: logger,
 		sender: sender,
 		errors: errors,
-	}, nil
+	}
 }
 
 func (b ErrorHandler) HandleDialError(config v43.Config, err error, address string, client net.Conn) {

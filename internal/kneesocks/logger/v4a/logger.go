@@ -14,12 +14,12 @@ func NewLogger(
 	errors ErrorsLogger,
 	restrictions RestrictionsLogger,
 	transfer TransferLogger,
-) (Logger, error) {
+) Logger {
 	return Logger{
 		Bind:         bind,
 		Connect:      connect,
 		Errors:       errors,
 		Restrictions: restrictions,
 		Transfer:     transfer,
-	}, nil
+	}
 }

@@ -14,8 +14,8 @@ var (
 type Builder struct {
 }
 
-func NewBuilder() (Builder, error) {
-	return Builder{}, nil
+func NewBuilder() Builder {
+	return Builder{}
 }
 
 func (b Builder) BuildResponse(chunk ResponseChunk) ([]byte, error) {

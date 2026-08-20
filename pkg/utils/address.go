@@ -18,8 +18,8 @@ var (
 type AddressUtils struct {
 }
 
-func NewUtils() (AddressUtils, error) {
-	return AddressUtils{}, nil
+func NewUtils() AddressUtils {
+	return AddressUtils{}
 }
 
 func (u AddressUtils) DetermineAddressType(addr string) (byte, error) {

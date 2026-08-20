@@ -14,11 +14,11 @@ type BindHandler struct {
 func NewBindHandler(
 	bindRate managers.BindRateManager,
 	handler Handler,
-) (BindHandler, error) {
+) BindHandler {
 	return BindHandler{
 		bindRate: bindRate,
 		handler:  handler,
-	}, nil
+	}
 }
 
 func (b BindHandler) HandleClient(client net.Conn, host net.Conn) {

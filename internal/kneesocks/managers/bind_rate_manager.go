@@ -13,10 +13,10 @@ type BindRateManager struct {
 	rate map[string]tree.RateRestrictions
 }
 
-func NewBindRateManager() (BindRateManager, error) {
+func NewBindRateManager() BindRateManager {
 	return BindRateManager{
 		rate: make(map[string]tree.RateRestrictions),
-	}, nil
+	}
 }
 
 func (b BindRateManager) Add(client string, rate tree.RateRestrictions) error {

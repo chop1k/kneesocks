@@ -22,14 +22,14 @@ func NewValidator(
 	sender v4a3.Sender,
 	logger v4a2.Logger,
 	limiter Limiter,
-) (Validator, error) {
+) Validator {
 	return Validator{
 		whitelist: whitelist,
 		blacklist: blacklist,
 		sender:    sender,
 		logger:    logger,
 		limiter:   limiter,
-	}, nil
+	}
 }
 
 func (b Validator) ValidateRestrictions(config v4a.Config, command byte, address string, client net.Conn) bool {

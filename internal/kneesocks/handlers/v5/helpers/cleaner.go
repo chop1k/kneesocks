@@ -9,8 +9,8 @@ type Cleaner struct {
 	manager *managers.ConnectionsManager
 }
 
-func NewCleaner(manager *managers.ConnectionsManager) (Cleaner, error) {
-	return Cleaner{manager: manager}, nil
+func NewCleaner(manager *managers.ConnectionsManager) Cleaner {
+	return Cleaner{manager: manager}
 }
 
 func (b Cleaner) Clean(name string) {

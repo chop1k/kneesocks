@@ -5,8 +5,8 @@ import "io"
 type BufferReader struct {
 }
 
-func NewBufferReader() (BufferReader, error) {
-	return BufferReader{}, nil
+func NewBufferReader() BufferReader {
+	return BufferReader{}
 }
 
 func (b BufferReader) Read(reader io.Reader, length int) ([]byte, error) {

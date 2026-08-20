@@ -13,10 +13,10 @@ type Limiter struct {
 
 func NewLimiter(
 	manager *managers.ConnectionsManager,
-) (Limiter, error) {
+) Limiter {
 	return Limiter{
 		manager: manager,
-	}, nil
+	}
 }
 
 func (b Limiter) IsLimited(config v5.Config, name string) bool {

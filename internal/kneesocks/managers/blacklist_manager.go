@@ -7,8 +7,8 @@ import (
 type BlacklistManager struct {
 }
 
-func NewBlacklistManager() (BlacklistManager, error) {
-	return BlacklistManager{}, nil
+func NewBlacklistManager() BlacklistManager {
+	return BlacklistManager{}
 }
 
 func (b BlacklistManager) IsBlacklisted(list []string, address string) bool {

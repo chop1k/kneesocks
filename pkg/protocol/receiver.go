@@ -13,10 +13,10 @@ type Receiver struct {
 
 func NewReceiver(
 	buffer utils.BufferReader,
-) (Receiver, error) {
+) Receiver {
 	return Receiver{
 		buffer: buffer,
-	}, nil
+	}
 }
 
 func (b Receiver) ReceiveWelcome(config tcp.DeadlineConfig, conn net.Conn) ([]byte, error) {

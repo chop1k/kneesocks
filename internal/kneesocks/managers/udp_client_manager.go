@@ -2,6 +2,7 @@ package managers
 
 import (
 	"errors"
+
 	"github.com/emirpasic/gods/sets/hashset"
 )
 
@@ -14,10 +15,10 @@ type UdpClientManager struct {
 	clients map[string]*hashset.Set
 }
 
-func NewUdpClientManager() (UdpClientManager, error) {
+func NewUdpClientManager() UdpClientManager {
 	return UdpClientManager{
 		clients: make(map[string]*hashset.Set),
-	}, nil
+	}
 }
 
 func (u UdpClientManager) Add(client string) error {

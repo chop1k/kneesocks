@@ -6,10 +6,10 @@ type AuthLogger struct {
 	logger zerolog.Logger
 }
 
-func NewAuthLogger(logger zerolog.Logger) (AuthLogger, error) {
+func NewAuthLogger(logger zerolog.Logger) AuthLogger {
 	return AuthLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b AuthLogger) Successful(client string, name string) {

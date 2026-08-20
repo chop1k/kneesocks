@@ -8,8 +8,8 @@ import (
 type NoAuthAuthenticator struct {
 }
 
-func NewNoAuthAuthenticator() (NoAuthAuthenticator, error) {
-	return NoAuthAuthenticator{}, nil
+func NewNoAuthAuthenticator() NoAuthAuthenticator {
+	return NoAuthAuthenticator{}
 }
 
 func (b NoAuthAuthenticator) Authenticate(_ v5.Config, _ net.Conn) (string, error) {

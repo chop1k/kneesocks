@@ -8,13 +8,13 @@ import (
 type Handler struct {
 }
 
-func NewHandler() (Handler, error) {
-	return Handler{}, nil
+func NewHandler() Handler {
+	return Handler{}
 }
 
-func (h Handler) Handle(raw *tree.SocksV4Config) (*Config, error) {
+func (h Handler) Handle(raw *tree.SocksV4Config) *Config {
 	if raw == nil {
-		return nil, nil
+		return nil
 	}
 
 	return &Config{
@@ -36,5 +36,5 @@ func (h Handler) Handle(raw *tree.SocksV4Config) (*Config, error) {
 				ClientWriteBuffersPerSecond: raw.Restrictions.Rate.ClientWriteBuffersPerSecond,
 			},
 		},
-	}, nil
+	}
 }

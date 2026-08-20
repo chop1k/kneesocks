@@ -10,8 +10,8 @@ type ConnectHandler struct {
 	handler Handler
 }
 
-func NewConnectHandler(handler Handler) (ConnectHandler, error) {
-	return ConnectHandler{handler: handler}, nil
+func NewConnectHandler(handler Handler) ConnectHandler {
+	return ConnectHandler{handler: handler}
 }
 
 func (b ConnectHandler) HandleClient(rate tree.RateRestrictions, client net.Conn, host net.Conn) {

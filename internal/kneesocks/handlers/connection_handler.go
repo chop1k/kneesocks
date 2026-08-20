@@ -28,7 +28,7 @@ func NewConnectionHandler(
 	receiver protocol.Receiver,
 	bindHandler BindHandler,
 	replicator tcp.ConfigReplicator,
-) (ConnectionHandler, error) {
+) ConnectionHandler {
 	return ConnectionHandler{
 		v5Handler:   v5Handler,
 		v4aHandler:  v4aHandler,
@@ -37,7 +37,7 @@ func NewConnectionHandler(
 		receiver:    receiver,
 		bindHandler: bindHandler,
 		replicator:  replicator,
-	}, nil
+	}
 }
 
 func (b ConnectionHandler) HandleConnection(client net.Conn) {

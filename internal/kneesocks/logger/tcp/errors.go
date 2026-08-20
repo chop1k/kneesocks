@@ -6,10 +6,10 @@ type ErrorsLogger struct {
 	logger zerolog.Logger
 }
 
-func NewErrorsLogger(logger zerolog.Logger) (ErrorsLogger, error) {
+func NewErrorsLogger(logger zerolog.Logger) ErrorsLogger {
 	return ErrorsLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b ErrorsLogger) ListenError(address string, err error) {

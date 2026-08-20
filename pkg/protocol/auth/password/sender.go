@@ -12,10 +12,10 @@ type Sender struct {
 
 func NewSender(
 	builder Builder,
-) (Sender, error) {
+) Sender {
 	return Sender{
 		builder: builder,
-	}, nil
+	}
 }
 
 func (b Sender) SendResponse(config v5.Config, code byte, client net.Conn) error {

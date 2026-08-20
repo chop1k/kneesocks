@@ -9,8 +9,8 @@ import (
 type ErrorUtils struct {
 }
 
-func NewErrorUtils() (ErrorUtils, error) {
-	return ErrorUtils{}, nil
+func NewErrorUtils() ErrorUtils {
+	return ErrorUtils{}
 }
 
 func (u ErrorUtils) errorToErrno(err error) int {

@@ -6,10 +6,10 @@ type RestrictionsLogger struct {
 	logger zerolog.Logger
 }
 
-func NewRestrictionsLogger(logger zerolog.Logger) (RestrictionsLogger, error) {
+func NewRestrictionsLogger(logger zerolog.Logger) RestrictionsLogger {
 	return RestrictionsLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b RestrictionsLogger) NotAllowed(client string, address string) {

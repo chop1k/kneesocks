@@ -8,14 +8,11 @@ import (
 type Handler struct {
 }
 
-func NewHandler() (Handler, error) {
-	return Handler{}, nil
+func NewHandler() Handler {
+	return Handler{}
 }
 
-func (h Handler) Handle(raw *tree.SocksV4aConfig) (*Config, error) {
-	if raw == nil {
-		return nil, nil
-	}
+func (h Handler) Handle(raw *tree.SocksV4aConfig) *Config {
 
 	return &Config{
 		AllowConnect: raw.AllowConnect,
@@ -36,5 +33,5 @@ func (h Handler) Handle(raw *tree.SocksV4aConfig) (*Config, error) {
 				ClientWriteBuffersPerSecond: raw.Restrictions.Rate.ClientWriteBuffersPerSecond,
 			},
 		},
-	}, nil
+	}
 }

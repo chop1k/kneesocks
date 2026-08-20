@@ -15,11 +15,11 @@ type Receiver struct {
 func NewReceiver(
 	parser Parser,
 	buffer utils.BufferReader,
-) (Receiver, error) {
+) Receiver {
 	return Receiver{
 		parser: parser,
 		buffer: buffer,
-	}, nil
+	}
 }
 
 func (b Receiver) ReceiveRequest(config v52.Config, conn net.Conn) (RequestChunk, error) {

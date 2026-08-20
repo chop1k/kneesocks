@@ -18,12 +18,12 @@ func NewTcpServer(
 	connectionHandler handlers.ConnectionHandler,
 	tcpLogger tcp2.Logger,
 	bind tcp.BindConfig,
-) (TcpServer, error) {
+) TcpServer {
 	return TcpServer{
 		connectionHandler: connectionHandler,
 		logger:            tcpLogger,
 		bind:              bind,
-	}, nil
+	}
 }
 
 func (s TcpServer) Listen() {

@@ -8,15 +8,11 @@ import (
 type Handler struct {
 }
 
-func NewHandler() (Handler, error) {
-	return Handler{}, nil
+func NewHandler() Handler {
+	return Handler{}
 }
 
-func (h Handler) Handle(raw *tree.SocksV5Config) (*Config, error) {
-	if raw == nil {
-		return nil, nil
-	}
-
+func (h Handler) Handle(raw *tree.SocksV5Config) *Config {
 	users := make(map[string]User)
 
 	for name, user := range raw.Users {
@@ -44,5 +40,5 @@ func (h Handler) Handle(raw *tree.SocksV5Config) (*Config, error) {
 			Bind:             time.Second * time.Duration(raw.Deadline.Bind),
 		},
 		Users: users,
-	}, nil
+	}
 }

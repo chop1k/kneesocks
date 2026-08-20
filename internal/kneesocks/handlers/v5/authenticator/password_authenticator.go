@@ -22,12 +22,12 @@ func NewPasswordAuthenticator(
 	errorHandler v5.ErrorHandler,
 	sender password2.Sender,
 	receiver password2.Receiver,
-) (PasswordAuthenticator, error) {
+) PasswordAuthenticator {
 	return PasswordAuthenticator{
 		errorHandler: errorHandler,
 		sender:       sender,
 		receiver:     receiver,
-	}, nil
+	}
 }
 
 func (b PasswordAuthenticator) Authenticate(config v52.Config, client net.Conn) (string, error) {

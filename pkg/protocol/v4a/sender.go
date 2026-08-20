@@ -15,11 +15,11 @@ type Sender struct {
 func NewSender(
 	bindConfig tcp.BindConfig,
 	builder Builder,
-) (Sender, error) {
+) Sender {
 	return Sender{
 		bindConfig: bindConfig,
 		builder:    builder,
-	}, nil
+	}
 }
 
 func (b Sender) build(status byte, ip net.IP, port uint16) ([]byte, error) {

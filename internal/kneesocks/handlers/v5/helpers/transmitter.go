@@ -18,12 +18,12 @@ func NewTransmitter(
 	connectHandler transfer.ConnectHandler,
 	bindHandler transfer.BindHandler,
 	bindRate managers.BindRateManager,
-) (Transmitter, error) {
+) Transmitter {
 	return Transmitter{
 		connectHandler: connectHandler,
 		bindHandler:    bindHandler,
 		bindRate:       bindRate,
-	}, nil
+	}
 }
 
 func (b Transmitter) TransferConnect(config v5.Config, name string, client net.Conn, host net.Conn) {

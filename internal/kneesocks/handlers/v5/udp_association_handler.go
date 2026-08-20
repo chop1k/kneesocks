@@ -23,14 +23,14 @@ func NewUdpAssociationHandler(
 	logger v52.Logger,
 	sender v53.Sender,
 	errorHandler ErrorHandler,
-) (UdpAssociationHandler, error) {
+) UdpAssociationHandler {
 	return UdpAssociationHandler{
 		utils:         utils,
 		clientManager: clientManager,
 		logger:        logger,
 		sender:        sender,
 		errorHandler:  errorHandler,
-	}, nil
+	}
 }
 
 func (b UdpAssociationHandler) HandleUdpAssociation(config v5.Config, _ string, client net.Conn) {

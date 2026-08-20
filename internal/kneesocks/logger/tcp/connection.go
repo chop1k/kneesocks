@@ -6,10 +6,10 @@ type ConnectionLogger struct {
 	logger zerolog.Logger
 }
 
-func NewConnectionLogger(logger zerolog.Logger) (ConnectionLogger, error) {
+func NewConnectionLogger(logger zerolog.Logger) ConnectionLogger {
 	return ConnectionLogger{
 		logger: logger,
-	}, nil
+	}
 }
 
 func (b ConnectionLogger) Accepted(client string) {

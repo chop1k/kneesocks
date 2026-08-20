@@ -7,8 +7,8 @@ import (
 type WhitelistManager struct {
 }
 
-func NewWhitelistManager() (WhitelistManager, error) {
-	return WhitelistManager{}, nil
+func NewWhitelistManager() WhitelistManager {
+	return WhitelistManager{}
 }
 
 func (b WhitelistManager) IsWhitelisted(list []string, address string) bool {
