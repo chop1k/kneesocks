@@ -1,63 +1,73 @@
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Go & Tools
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-GO_COMPILER = go
-GO_LINTER = go
+GO_COMPILER        = go
+GO_LINTER          = go
 GO_STATIC_ANALYZER = go
-DOCKER_BIN = docker
+DOCKER_BIN         = docker
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Application
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-APP_NAME = kneesocks
+APP_NAME    = kneesocks
 APP_VERSION = v1.0.2
 APP_RELEASE = prod
-APP_ROOT = .
+APP_ROOT    = .
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Application - Sources
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 SRC_DIR = $(APP_ROOT)/internal
 BIN_DIR = $(APP_ROOT)/cmd
-APP_SOURCES = $(shell find . -type f -name "*.go")
-
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Application - Testing
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-E2E_NAME = e2e
-E2E_TESTS_DIR = $(APP_ROOT)/test/$(E2E_NAME)
-E2E_BINARY_TARGET = $(APP_ROOT)/$(BUILD_DIR)/$(APP_VERSION)/$(E2E_NAME)
-UNIT_TEST_PACKAGES = ./internal/... ./cmd/... ./pkg/...
-SERVICE_NAME = test_server
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Application - Build
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-BUILD_DIR = $(APP_ROOT)/build
+BUILD_DIR        = $(APP_ROOT)/build
 BUILD_ENTRYPOINT = $(APP_ROOT)/$(BIN_DIR)/$(APP_NAME)/main.go
-BUILD_TARGET = $(APP_ROOT)/$(BUILD_DIR)/$(APP_VERSION)/$(APP_NAME)
+BUILD_TARGET     = $(APP_ROOT)/$(BUILD_DIR)/$(APP_VERSION)/$(APP_NAME)
+
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Application - Deploy
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-DEPLOY_DIR = $(APP_ROOT)/deploy
-DEPLOY_APP_DIR = $(DEPLOY_DIR)/$(APP_NAME)
-DEPLOY_E2E_DIR = $(DEPLOY_DIR)/$(E2E_NAME)
-DEPLOY_SERVICE_DIR = $(DEPLOY_DIR)/$(SERVICE_NAME)
-DEPLOYED_COMPOSE_FILE = $(APP_ROOT)/compose.yml
-DEPLOYED_APP_DOCKERFILE = $(APP_ROOT)/Dockerfile.$(APP_NAME)
-DEPLOYED_E2E_DOCKERFILE = $(APP_ROOT)/Dockerfile.$(E2E_NAME)
-DEPLOYED_SERVICE_DOCKERFILE = $(APP_ROOT)/Dockerfile.$(SERVICE_NAME)
+DEPLOY_DIR                      = $(APP_ROOT)/deploy
+DEPLOY_PROD_DIR                 = $(DEPLOY_DIR)/prod
+DEPLOY_DEV_DIR                  = $(DEPLOY_DIR)/dev
+DEPLOY_TEST_DIR                 = $(DEPLOY_DIR)/test
+
+DEPLOYED_DOCKERIGNORE_FILE      = $(APP_ROOT)/.dockerignore
+DEPLOYED_COMPOSE_FILE           = $(APP_ROOT)/compose.yml
+DEPLOYED_AIR_FILE               = $(APP_ROOT)/.air.toml
+DEPLOYED_APP_DOCKERFILE         = $(APP_ROOT)/app.Dockerfile
+DEPLOYED_SERVICE_DOCKERFILE     = $(APP_ROOT)/test_server.Dockerfile
+DEPLOYED_E2E_DOCKERFILE         = $(APP_ROOT)/e2e.Dockerfile
+
+DEPLOYED_APP_CONTAINER_NAME     = kneesocks-app
+DEPLOYED_APP_IMAGE_NAME         = kneesocks-app:latest
+DEPLOYED_SERVICE_CONTAINER_NAME = kneesocks-test-service
+DEPLOYED_SERVICE_IMAGE_NAME     = kneesocks-test-service:latest
+DEPLOYED_E2E_CONTAINER_NAME     = kneesocks-e2e
+DEPLOYED_E2E_IMAGE_NAME         = kneesocks-e2e:latest
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Application - Testing
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+E2E_NAME           = e2e
+E2E_TESTS_DIR      = $(APP_ROOT)/test/$(E2E_NAME)
+E2E_BINARY_TARGET  = $(BUILD_DIR)/$(APP_VERSION)/$(E2E_NAME)
+UNIT_TEST_PACKAGES = $(SRC_DIR) $(BIN_DIR) ./pkg/...
+SERVICE_NAME       = test_server
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # PHONY & such
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-PHONY_TARGETS = all
+PHONY_TARGETS  = all
 PHONY_TARGETS += all-tests all-build all-code
-PHONY_TARGETS += run-binary run-compose run-docker
-PHONY_TARGETS += run-tests-e2e run-tests-e2e-compose run-tests-unit
-PHONY_TARGETS += tests-e2e tests-e2e-compose tests-unit
-PHONY_TARGETS += application-binary application-compose application-docker-image
+PHONY_TARGETS += run-compose
+PHONY_TARGETS += run-tests-e2e-compose run-tests-unit-compose
+PHONY_TARGETS += tests-e2e-compose tests-unit-compose
+PHONY_TARGETS += application-compose
 PHONY_TARGETS += deploy-prod deploy-test
 PHONY_TARGETS += code-inspect code-style
 PHONY_TARGETS += clean
@@ -68,88 +78,70 @@ PHONY_TARGETS += help
 
 all: all-tests all-build all-code
 
-all-tests: tests-e2e tests-unit
+all-tests: tests-e2e-compose tests-unit-compose
 
-all-build: application-binary application-compose application-docker-image
+all-build: application-compose-images
 
 all-code: code-inspect code-style
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Run
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-run-binary: application-binary
-	$(BUILD_TARGET) migrate && \
-	$(BUILD_TARGET) seed && \
-	$(BUILD_TARGET) serve
-
-run-compose: run-docker
-
-run-docker: application-compose
+run-compose: application-compose-images
 	$(DOCKER_BIN) compose up
 
-run-tests-e2e: $(E2E_BINARY_TARGET)
-	$(E2E_BINARY_TARGET)
-
-run-tests-e2e-compose: tests-e2e-compose
+run-tests-e2e-compose: application-compose-images
 	$(DOCKER_BIN) compose up
 
-run-tests-unit: tests-unit
+run-tests-unit-compose:
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Tests
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-tests-e2e: $(E2E_BINARY_TARGET)
+tests-e2e-compose: deploy-$(APP_RELEASE)
 
-tests-e2e-compose: deploy-test
+tests-unit-compose: deploy-$(APP_RELEASE)
 
-tests-unit:
-	$(GO_COMPILER) test $(UNIT_TEST_PACKAGES)
-
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Build
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-application-binary: $(BUILD_TARGET)
-
-application-compose: deploy-$(APP_RELEASE)
-
-application-docker-image: application-compose
-	$(DOCKER_BIN) build -f $(DEPLOYED_APP_DOCKERFILE) -t $(APP_NAME):$(APP_VERSION) $(APP_ROOT)
-
-$(BUILD_TARGET): $(APP_SOURCES)
-	$(GO_COMPILER) build -o $(BUILD_TARGET) $(BUILD_ENTRYPOINT)
-
-$(E2E_BINARY_TARGET): $(APP_SOURCES)
-	$(GO_COMPILER) test -c -o $(E2E_BINARY_TARGET) $(E2E_TESTS_DIR)
+application-compose-images: deploy-$(APP_RELEASE)
+	$(DOCKER_BIN) compose build
 
 deploy-prod:
-	cp $(DEPLOY_APP_DIR)/prod/compose.yml $(DEPLOYED_COMPOSE_FILE)
-	cp $(DEPLOY_APP_DIR)/prod/Dockerfile $(DEPLOYED_APP_DOCKERFILE)
+	cp $(DEPLOY_PROD_DIR)/.dockerignore $(DEPLOYED_DOCKERIGNORE_FILE)
+	cp $(DEPLOY_PROD_DIR)/compose.yml $(DEPLOYED_COMPOSE_FILE)
+	cp $(DEPLOY_PROD_DIR)/Dockerfile $(DEPLOYED_APP_DOCKERFILE)
 
 deploy-dev:
-	cp $(DEPLOY_APP_DIR)/dev/compose.yml $(DEPLOYED_COMPOSE_FILE)
-	cp $(DEPLOY_APP_DIR)/dev/Dockerfile $(DEPLOYED_APP_DOCKERFILE)
+	cp $(DEPLOY_DEV_DIR)/compose.yml $(DEPLOYED_COMPOSE_FILE)
+	cp $(DEPLOY_DEV_DIR)/.air.toml $(DEPLOYED_AIR_FILE)
 
 deploy-test:
-	cp $(DEPLOY_APP_DIR)/test/compose.yml $(DEPLOYED_COMPOSE_FILE)
-	cp $(DEPLOY_APP_DIR)/test/Dockerfile $(DEPLOYED_APP_DOCKERFILE)
-	cp $(DEPLOY_E2E_DIR)/Dockerfile $(DEPLOYED_E2E_DOCKERFILE)
-	cp $(DEPLOY_SERVICE_DIR)/Dockerfile $(DEPLOYED_SERVICE_DOCKERFILE)
+	cp $(DEPLOY_TEST_DIR)/compose.yml $(DEPLOYED_COMPOSE_FILE)
+	cp $(DEPLOY_TEST_DIR)/app.Dockerfile $(DEPLOYED_APP_DOCKERFILE)
+	cp $(DEPLOY_TEST_DIR)/test_server.Dockerfile $(DEPLOYED_SERVICE_DOCKERFILE)
+	cp $(DEPLOY_TEST_DIR)/e2e.Dockerfile $(DEPLOYED_E2E_DOCKERFILE)
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Code quality
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 code-inspect:
 	$(GO_STATIC_ANALYZER) vet ./...
 
 code-style:
 	$(GO_LINTER) fmt ./...
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Housekeeping
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-clean:
+clean-deployment: clean-deployment-$(APP_RELEASE)
+
+clean-deployment-prod:
 	rm -rf $(BUILD_DIR)
-	rm -f $(DEPLOYED_COMPOSE_FILE) $(DEPLOYED_APP_DOCKERFILE) $(DEPLOYED_E2E_DOCKERFILE) $(DEPLOYED_SERVICE_DOCKERFILE)
+	rm -f $(DEPLOYED_DOCKERIGNORE_FILE)
+	rm -f $(DEPLOYED_COMPOSE_FILE)
+	rm -f $(DEPLOYED_APP_DOCKERFILE)
+
+clean-deployment-dev:
+	rm -rf $(BUILD_DIR)
+	rm -f $(DEPLOYED_COMPOSE_FILE)
+	rm -f $(DEPLOYED_AIR_FILE)
+
+clean-deployment-test:
+	rm -rf $(BUILD_DIR)
+	rm -f $(DEPLOYED_COMPOSE_FILE)
+	rm -f $(DEPLOYED_APP_DOCKERFILE)
+	rm -f $(DEPLOYED_SERVICE_DOCKERFILE)
+	rm -f $(DEPLOYED_E2E_DOCKERFILE)
 
 help:
 	@echo "Make scripts for track-my-tasks app:"
@@ -159,12 +151,9 @@ help:
 	@echo "  all-build               build the app binary, compose files and docker image"
 	@echo "  all-code                run static checks and format code"
 	@echo ""
-	@echo "  run-binary              build the app and run migrate -> seed -> serve"
-	@echo "  run-compose             alias of run-docker"
-	@echo "  run-docker              copy deploy/$(APP_RELEASE) files to root and docker compose up"
+	@echo "  run-compose             copy deploy/$(APP_RELEASE) files to root and docker compose up"
 	@echo ""
-	@echo "  run-tests-unit          run unit tests"
-	@echo "  run-tests-e2e           build and run the e2e test binary"
+	@echo "  run-tests-unit-compose  run unit tests"
 	@echo "  run-tests-e2e-compose   copy deploy/test files to root and docker compose up"
 	@echo ""
 	@echo "  code-inspect            run static analysis ($(GO_STATIC_ANALYZER) vet)"
